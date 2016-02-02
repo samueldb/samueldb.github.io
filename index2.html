@@ -1,0 +1,351 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset='utf-8'>
+    <meta http-equiv="X-UA-Compatible" content="chrome=1">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+    <link href='https://fonts.googleapis.com/css?family=Architects+Daughter' rel='stylesheet' type='text/css'>
+    <link rel="stylesheet" type="text/css" href="stylesheets/stylesheet.css" media="screen">
+    <link rel="stylesheet" type="text/css" href="stylesheets/github-light.css" media="screen">
+    <link href="http://code.jquery.com/ui/1.10.4/themes/ui-lightness/jquery-ui.css" rel="stylesheet">
+    <link rel="stylesheet" type="text/css" href="stylesheets/print.css" media="print">
+    <script src="http://libs.cartocdn.com/cartodb.js/v3/3.15/cartodb.js"></script>
+    <script src="http://d3js.org/d3.v3.min.js"></script>
+    <script src="https://code.jquery.com/ui/1.11.4/jquery-ui.js"></script>
+    <style>
+    
+        path.link {
+          fill: none;
+          stroke: #666;
+          stroke-width: 1.5px;
+        }
+
+        circle {
+          fill: #ccc;
+          stroke: #fff;
+          stroke-width: 1.5px;
+        }
+
+        text {
+          fill: #000;
+          font: 10px sans-serif;
+          pointer-events: none;
+        }
+        .node {
+          cursor: move;
+          shape-rendering: crispEdges;
+        }
+
+        .node text {
+          pointer-events: none;
+          text-shadow: 1px 1px 2px #fff;
+          font-size: 0.8em;
+          font-family: sans-serif;
+        }
+        
+        .nodeHighlighted {
+            border: 1px solid black;
+            fill: red;
+        }
+        
+        path.link.LeftToRight {
+            stroke-width: 20px;
+        }
+
+        #tooltip {
+          position: absolute;
+          pointer-events: none;
+          font-size: 0.7em;
+          font-family: sans-serif;
+          padding: 3px;
+          width: auto;
+          height: auto;
+          background-color: #F2F2F2;
+          -webkit-box-shadow: 0px 0px 5px rgba(0, 0, 0, 0.4);
+          -mox-box-shadow: 0px 0px 0px 5px rgba(0, 0, 0, 0.4);
+          box-shadow: 0px 0px 5px rbga(0, 0, 0, 0.4);
+          pointer-events: none;
+        }
+
+        .value {
+          white-space: pre-line;
+          margin: 0;
+        }
+        .btn{
+            display: inline-block;
+            padding: 1px  2px;
+            background: #726277;
+            -webkit-border-radius: 2px;
+            -moz-border-radius: 2px;
+            border-radius: 2px;
+            color: white;
+            margin:1px;
+            margin-left:10px;
+        }
+        .btn:hover { 
+            background-color: red;
+        }
+        
+        svg{
+            transform: rotate(90deg) translateX(200px);
+        }
+    </style>
+    <!--[if lt IE 9]>
+    <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+
+    <title>Généalogie en ligne</title>
+  </head>
+
+  <body>
+    <header>
+      <div class="inner">
+        <h1>Généalogie</h1>
+        <h2>           de la famille Deschamps Berger</h2>
+        <a href="https://github.com/samueldb" class="button"><small>Follow me on</small> GitHub</a>
+      </div>
+    </header>
+
+    <div id="content-wrapper">
+      <div class="inner clearfix">
+        <section id="main-content">
+            <div id="titre"></div>
+            <div id="chart" style="overflow-x:scroll"></div>
+        </section>
+
+        <aside id="sidebar">
+            <div id="RecherchePersonne"></div>
+        </aside>
+      </div>
+    </div>
+
+    <script>
+    'use strict';
+
+    var svg, tooltip, biHiSankey, path, defs, colorScale, highlightColorScale, isTransitioning;
+
+    var OPACITY = {
+        NODE_DEFAULT: 0.9,
+        NODE_FADED: 0.1,
+        NODE_HIGHLIGHT: 0.8,
+        LINK_DEFAULT: 0.6,
+        LINK_FADED: 0.05,
+        LINK_HIGHLIGHT: 0.9
+      },
+      TYPES = ["M", "couple", "F","highlighted"],
+      TYPE_COLORS = ["#77B5FE", "#d95f02", "#FD3F92","#3366FF"],
+      TYPE_HIGHLIGHT_COLORS = ["#66c2a5", "#fc8d62", "#8da0cb","#4050A0"],
+      LINK_COLOR = "#b3b3b3",
+      INFLOW_COLOR = "#2E86D1",
+      OUTFLOW_COLOR = "#D63028",
+      NODE_WIDTH = 15,
+      COLLAPSER = {
+        RADIUS: NODE_WIDTH / 2,
+        SPACING: 2
+      },
+      OUTER_MARGIN = 10,
+      MARGIN = {
+        TOP: 2 * (COLLAPSER.RADIUS + OUTER_MARGIN),
+        RIGHT: OUTER_MARGIN,
+        BOTTOM: OUTER_MARGIN,
+        LEFT: OUTER_MARGIN
+      },
+      TRANSITION_DURATION = 800,
+      HEIGHT = 600 - MARGIN.TOP - MARGIN.BOTTOM,
+      WIDTH =  900 - MARGIN.LEFT - MARGIN.RIGHT,
+      LAYOUT_INTERATIONS = 100,
+      REFRESH_INTERVAL = 7000;
+      
+    var map;
+    var apikey = "261bbc94c8266573016ba9454127b905b931b0a6";
+    var user = 'samuel';
+    var sublayers = [];
+
+    function trouverNodes(flagRecherche,elementsRecherches){
+        var noeuds = [];
+        var sql_statement = "SELECT * FROM nodes";
+        if (flagRecherche == 1){
+            // Dans ce cas, on ajoute une clause WHERE à la recherche
+            sql_statement += " WHERE ";
+            for (var el of elementsRecherches){
+                sql_statement += "own_id = '" + el.id + "' OR ";
+            }
+            sql_statement = sql_statement.substring(0,sql_statement.length - 4);
+            //alert("flag-- " + sql_statement);
+        }
+        $.getJSON('https://samueldeschampsberger.cartodb.com/api/v2/sql/?q='+sql_statement, function(data_json) {
+            if (data_json.rows.length == 0){
+                // Il n'y a personne dans la table
+                alert("Il n'y a pas encore de personne dans cet arbre !");
+            }
+            else if (data_json.rows.length > 0){
+                    // Pour chaque ligne, on vérifie
+                    for (var r of data_json.rows){
+                        noeuds.push({"id":r.own_id,"parent":null,"nom":r.nom,"prenom":r.prenom,"mere":r.mother_id,"pere":r.father_id,"genre":r.genre});
+                    }
+            }
+        });
+        return noeuds;
+    }
+    
+    // Get the nodes from cartodb table
+    // flagRecherche = 0 : pas de choix de personne à rechercher, 1 : on recherche l'arbre d'une personne en particulier
+    function populateNode(flagRecherche,elementsRecherches){
+        var sql_statement = "SELECT * FROM nodes";
+        if (flagRecherche == 1 && elementsRecherches.length > 0){
+            // Dans ce cas, on ajoute une clause WHERE à la recherche
+            sql_statement += " WHERE ";
+            for (var el of elementsRecherches){
+                sql_statement += "own_id = '" + el.id + "' OR ";
+            }
+            sql_statement = sql_statement.substring(0,sql_statement.length - 4);
+            //alert("flag-- " + sql_statement);
+        }
+        var NoeudsBase = [];
+        if (flagRecherche == 1 && elementsRecherches.length > 0){
+            //biHiSankey.nodes = [];
+            //biHiSankey.links = [];
+            NoeudsBase = trouverNodes(flagRecherche,elementsRecherches);}
+        else {
+            NoeudsBase = trouverNodes(0,[]);
+        }
+        $.getJSON('https://samueldeschampsberger.cartodb.com/api/v2/sql/?q='+sql_statement, function(data_json) {
+            if (data_json.rows.length == 0){
+                // Il n'y a personne dans la table
+                document.getElementById('titre').innerHTML = "Il n'y a pas encore de personne dans cet arbre !";
+                hideObject(table_carnet);
+            }
+            else if (data_json.rows.length > 0){
+                    // Pour chaque ligne, on l'ajoute au tableau des noeuds. 
+                    // Et on formatte le tableau pour qu'il soit exploitable par D3
+                    var nodes, links, liste_couple;
+                    nodes = [];
+                    links = [];
+                    liste_couple = [];
+                    for (var r of data_json.rows){
+                        // On remplit les personnes
+                        nodes.push({"type":r.genre,"id":r.own_id,"parent":null,"name":r.nom,"prenom":r.prenom,"f_id":r.father_id,"m_id":r.mother_id,"c_id":r.couple_id,"dBirth":r.date_naissance,"dDie":r.date_deces,"job":r.profession,"img":r.image_url});
+                        // Si 1 des 2 parents est en couple, on ajoute un noeud
+                        if ((r.couple_id != null && r.couple_id != "null")){
+                            var isinliste = 0;
+                            for (var lc of liste_couple){
+                                if (lc.id_c == r.own_id){
+                                    // Si l'id est déjà dans cette liste, on ne l'ajoute pas
+                                    isinliste = 1;
+                                }
+                            }
+                            if (isinliste == 0){
+                                //var Pere = NoeudsBase.find(function(a){return a.id == r.father_id});
+                                var homme = NoeudsBase.find(function(a){return a.id == r.own_id && r.genre == "M"});
+                                var saFemme;
+                                if (homme){
+                                    nodes.push({"type":"couple","id":"c_"+r.couple_id,"parent":null,"name":homme.nom,"prenom":homme.prenom,"id_homme":r.own_id,"id_femme":r.couple_id});
+                                    liste_couple.push({"id_c":r.couple_id,"id_homme":r.own_id});
+                                }
+                            }
+                        }
+                        // On calcul les noeuds 
+                        if (r.father_id == null || r.father_id == " " || r.father_id == "null"){}
+                        else {
+                            links.push({"source":r.father_id,"target":r.own_id,"value":2});
+                            }
+                        if (r.mother_id == null || r.mother_id == " " || r.mother_id == "null"){}
+                        else {
+                            links.push({"source":r.mother_id,"target":r.own_id,"value":1});
+                        }
+                    }
+                    // Une fois les nodes remplis, on ajoute "parent" des noeuds des personnes en couple : 
+                    
+            }
+            
+            // TEST
+            var width = 960;
+            var height = 500;
+// Compute the distinct nodes from the links.
+links.forEach(function(link) {
+    link.source = nodes[link.source] || 
+        (nodes[link.source] = {name: link.source});
+    link.target = nodes[link.target] || 
+        (nodes[link.target] = {name: link.target});
+    link.value = +link.value;
+});
+            var force = d3.layout.force()
+                .nodes(d3.values(nodes))
+                .links(links)
+                .size([width, height])
+                .linkDistance(60)
+                .charge(-300)
+                .on("tick", tick)
+                .start();
+
+            var svg = d3.select("body").append("svg")
+                .attr("width", width)
+                .attr("height", height);
+
+            // build the arrow.
+            svg.append("svg:defs").selectAll("marker")
+                .data(["end"])      // Different link/path types can be defined here
+              .enter().append("svg:marker")    // This section adds in the arrows
+                .attr("id", String)
+                .attr("viewBox", "0 -5 10 10")
+                .attr("refX", 15)
+                .attr("refY", -1.5)
+                .attr("markerWidth", 6)
+                .attr("markerHeight", 6)
+                .attr("orient", "auto")
+              .append("svg:path")
+                .attr("d", "M0,-5L10,0L0,5");
+
+            // add the links and the arrows
+            var path = svg.append("svg:g").selectAll("path")
+                .data(force.links())
+              .enter().append("svg:path")
+            //    .attr("class", function(d) { return "link " + d.type; })
+                .attr("class", "link")
+                .attr("marker-end", "url(#end)");
+
+            // define the nodes
+            var node = svg.selectAll(".node")
+                .data(force.nodes())
+              .enter().append("g")
+                .attr("class", "node")
+                .call(force.drag);
+
+            // add the nodes
+            node.append("circle")
+                .attr("r", 5);
+
+            // add the text 
+            node.append("text")
+                .attr("x", 12)
+                .attr("dy", ".35em")
+                .text(function(d) { return d.name; });
+
+            // add the curvy lines
+            function tick() {
+                path.attr("d", function(d) {
+                    var dx = d.target.x - d.source.x,
+                        dy = d.target.y - d.source.y,
+                        dr = Math.sqrt(dx * dx + dy * dy);
+                    return "M" + 
+                        d.source.x + "," + 
+                        d.source.y + "A" + 
+                        dr + "," + dr + " 0 0,1 " + 
+                        d.target.x + "," + 
+                        d.target.y;
+                });
+
+                node
+                    .attr("transform", function(d) { 
+                    return "translate(" + d.x + "," + d.y + ")"; });
+            }
+
+            });
+            
+    }
+
+    populateNode();
+    </script>
+    
+  </body>
+</html>
