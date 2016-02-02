@@ -8,17 +8,16 @@
     <link rel="stylesheet" type="text/css" href="stylesheets/github-light.css" media="screen">
     <link href="http://code.jquery.com/ui/1.10.4/themes/ui-lightness/jquery-ui.css" rel="stylesheet">
     <link rel="stylesheet" type="text/css" href="stylesheets/print.css" media="print">
+    <link rel="stylesheet" href="http://libs.cartocdn.com/cartodb.js/v3/3.15/themes/css/cartodb.css" />
     <link rel="stylesheet" href="https://cdn.datatables.net/1.10.9/css/jquery.dataTables.min.css" />
-    <link rel="stylesheet" href="https://code.jquery.com/ui/1.11.4/themes/smoothness/jquery-ui.css">
     <script src="https://code.jquery.com/jquery-1.11.3.min.js"></script>
-    <script src="https://code.jquery.com/ui/1.11.4/jquery-ui.js"></script>
+    <script src="https://cdn.datatables.net/1.10.9/js/jquery.dataTables.min.js"></script>
     <script src="http://libs.cartocdn.com/cartodb.js/v3/3.15/cartodb.js"></script>
-    <script src = "http://www.myersdaily.org/joseph/javascript/md5.js"></script>
     <script src="http://sslstatic.wix.com/services/js-sdk/1.60.0/js/wix.min.js"></script>
     <title>Généalogie en ligne</title>
     <header('Access-Control-Allow-Origin: *')>
 
-    <script type="text/javascript" src="javascripts/main.js">
+    <script type="text/javascript" src="javascripts/cartographie.js">
     
     </script>
 
@@ -36,13 +35,6 @@
     --><li><a href="add_personne.html">Ajout d'une personne</a></li><!--
     --><li><a href="cartographie.html">Cartographie</a></li>
     </ul>
-    <div id="content-wrapper">
-      <div class="inner clearfix">
-        <section id="main-content">
-        </section>
-
-        <aside id="sidebar">
-        </aside>
-    </div>
+    <div id="cartodb-map"></div>
 </body>
 </html>

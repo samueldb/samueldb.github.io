@@ -574,6 +574,15 @@ a.button_small {
   text-align:center;
 }
 
+#cartodb-map {
+        width: 1000px;
+        height: 600px;
+        border: 4px solid #e0e0e0;
+        position: relative;
+        margin-top: 100px;
+        margin-left:100px;
+    }
+    
 code, pre {
   margin-bottom: 30px;
   font-family: Monaco, "Bitstream Vera Sans Mono", "Lucida Console", Terminal, monospace;
