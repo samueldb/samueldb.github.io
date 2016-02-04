@@ -96,16 +96,13 @@ var map;
         //$(remplissage_new_personne).append('</p><fieldset style="border:solid 1px black;width:420px"><legend>Photo</legend>Ajouter une photo : <form id="my_form" method="post" enctype="multipart/form-data">'+
         //                                                                                                                                        '<input type="file" id="input_img" accept="image/*">'+
         //                                                                                                                                        '<button type="submit" onclick="javascript:add_Pict()">Ajouter</button>'+
-        //                                                                                                                                        '</form></fieldset>');    
-        $(remplissage_new_personne).append('');       
-        $(remplissage_new_personne).append('</p><fieldset style="border:solid 1px black;width:420px"><legend>Photo</legend>Ajouter une photo : <form id="form_add_pictures" method="POST" target="remember" action="about:blank">'+
-                                                                                                                                                '<input name="file" type="file" id="file" accept="image/*">'+
-                                                                                                                                                '<button type="submit">Ajouter</button>'+
-                                                                                                                                                '</form></fieldset>');                                                                                                                                 
-       //$.getScript("dist.js", function(){});
-       
+        //                                                                                                                                        '</form></fieldset>');       
+        //$(remplissage_new_personne).append('</p><fieldset style="border:solid 1px black;width:420px"><legend>Photo</legend>Ajouter une photo : <form id="form_add_pictures" method="POST">'+
+        //                                                                                                                                        '<input name="file" type="file" id="file" accept="image/*">'+
+        //                                                                                                                                        '<button type="submit">Ajouter</button>'+
+        //                                                                                                                                        '</form></fieldset>');                                                                                                                                 
         
-        $(remplissage_new_personne).append('<script src="javascripts/dist.js" defer async></script>');
+        $(remplissage_new_personne).append('');
         //$(remplissage_new_personne).append('<a style="margin-left: 200px;" id="btn_create_pict" class="btn" style="width:100px;height:10px;" onclick="javascript:add_pict();">importer la photo</a>');
         $(remplissage_new_personne).append('<a style="margin-left: 200px;margin-top:2px;" id="create_carnet" class="button" onclick="javascript:add_Personne(\''+user+'\');">Valider les informations</a>');
         $(remplissage).append("</div></div>");

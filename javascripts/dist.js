@@ -57,7 +57,7 @@
     document.querySelector("form").addEventListener("submit",function(event){
         event.preventDefault();
         var files=document.getElementById("file").files;
-        var commitTitle=document.getElementById("commit-title").value;
+        var commitTitle='import de photo'; // document.getElementById("commit-title").value;
         uploadFiles(files,commitTitle).then(function(){
             alert("Your file has been saved correctly.")}).
         catch(function(err){console.log(err),alert("Something went wrong. Please, try again."+err)})
