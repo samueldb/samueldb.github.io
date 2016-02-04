@@ -70,6 +70,7 @@ var map;
         $('#recherche').length > 0 ? $(recherche).remove():true;
         $('#create_pbis').length > 0 ? $(create_pbis).remove():true;
         $('#cocher').length > 0 ? $(chkbAdr).remove():true;
+        $('#fs_img').length > 0 ? hideObject('#fs_img'):true;
         showObject(remplissage);
         noeudsExistants = trouverNodes()[0];
         //$(remplissage).prepend('<div id=\'remplissage_new_personne\'>');
@@ -101,12 +102,15 @@ var map;
         //                                                                                                                                        '<input name="file" type="file" id="file" accept="image/*">'+
         //                                                                                                                                        '<button type="submit">Ajouter</button>'+
         //                                                                                                                                        '</form></fieldset>');                                                                                                                                 
-        
+        $('#fs_img').length > 0 ? showObject('#fs_img'):true;
         $(remplissage_new_personne).append('');
-        //$(remplissage_new_personne).append('<a style="margin-left: 200px;" id="btn_create_pict" class="btn" style="width:100px;height:10px;" onclick="javascript:add_pict();">importer la photo</a>');
-        $(remplissage_new_personne).append('<a style="margin-left: 200px;margin-top:2px;" id="create_carnet" class="button" onclick="javascript:add_Personne(\''+user+'\');">Valider les informations</a>');
-        $(remplissage).append("</div></div>");
         
+        var new_id_tab = trouverNodes();
+        var new_id = new_id_tab[0].length + 1;
+        $(id_new_pers).text(new_id)
+        //$(remplissage_new_personne).append('<a style="margin-left: 200px;" id="btn_create_pict" class="btn" style="width:100px;height:10px;" onclick="javascript:add_pict();">importer la photo</a>');
+        $(remplissage_new_personne).append('<a style="margin-left: 200px;margin-top:2px;" id="create_carnet" class="button" onclick="javascript:add_Personne(\''+user+'\','+new_id+');">Valider les informations</a>');
+        $(remplissage).append("</div></div>");
     }
 
     function ModifierPersonne(user){
@@ -122,6 +126,7 @@ var map;
         $('#fsA').length > 0 ? $(fsA).remove():true;
         $('#fsR').length > 0 ? $(fsR).remove():true;
         $('#fsI').length > 0 ? $(fsI).remove():true;
+        $('#fs_img').length > 0 ? hideObject('#fs_img'):true;
         var aNames = trouverNodes()[1];
         if (document.getElementById('remplissage_old_personne') == null){
             $(remplissage).append('<div id=\'remplissage_old_personne\'>');
@@ -139,7 +144,7 @@ var map;
         });
     }
 
-    function add_Personne(user){
+    function add_Personne(user,new_id){
         var nom = checkValiditeInsert($(id_txt_new_nom).val(),'string');
         var prenom = checkValiditeInsert($(id_txt_new_prenom).val(),'string');
         var genre = checkValiditeInsert($(genres).val(),'string');
@@ -157,7 +162,7 @@ var map;
         
         var new_geom = "";
         new_geom = geocoder(adr,cp,ville);
-        var new_id = trouverNodes().length + 1;
+        $(id_new_pers).text(new_id)
         if (new_geom != undefined && new_geom != ""){
             var sql_insert = "INSERT INTO nodes (own_id,nom,prenom,genre,father_id,mother_id,couple_id,profession,date_naissance,date_deces,the_geom) VALUES ('"+new_id+"','"+nom+"','"+prenom+"','"+genre+"','"+pere+"','"+mere+"','"+couple+"','"+job+"',to_timestamp('"+date_n+"', 'DD/MM/YYYY'),to_timestamp('"+date_d+"', 'DD/MM/YYYY'),"+new_geom+")&api_key="+apikey+"";
             $.getJSON('https://samueldeschampsberger.cartodb.com/api/v2/sql/?q='+sql_insert, function(res) {
@@ -391,6 +396,7 @@ var map;
         $('#fsA').length > 0 ? $(fsA).remove():true;
         $('#fsR').length > 0 ? $(fsR).remove():true;
         $('#fsI').length > 0 ? $(fsI).remove():true;
+        $('#fs_img').length > 0 ? hideObject('#fs_img'):true;
         var pers = noeudsExistants.find(function (a){return a.id == personne});
         //alert(pers.prenom);
         $(remplissage_old_personne).append('</p><p id="cocher">Cocher les cases à modifier : </p>' + 
@@ -442,7 +448,8 @@ var map;
         //$(remplissage).append("</div></div>");
         $(remplissage_old_personne).append('<fieldset id="fsI" style="border:solid 1px black;width:420px"><legend>Info diverses</legend><div id="id_changt_info" style="width=100%;"><input type="checkbox" name="chgt_job" id="checkbox_j" onclick="clickJob();"/> Profession : '+job+' <input type="text" class="m_txt_new_job" name="m_txt_job" id="m_txt_job" value="nouvelle profession" style="display:none;width:150px;margin-left:20px;"></p>'+
                                                                      '<input type="checkbox" name="chgt_date_n" id="checkbox_dn" onclick="clickDateN();"/>  Date de naissance : '+date_naissance+' <input type="text" id="datepicker_n" style="display:none;width:100px;margin-left:20px;"></p>'+
-                                                                     '<input type="checkbox" name="chgt_date_d" id="checkbox_dd" onclick="clickDateD();"/>  Date du décès : '+date_deces+' <input type="text" id="datepicker_d" style="display:none;width:100px;margin-left:20px;"></p></fieldset>'+
+                                                                     '<input type="checkbox" name="chgt_date_d" id="checkbox_dd" onclick="clickDateD();"/>  Date du décès : '+date_deces+' <input type="text" id="datepicker_d" style="display:none;width:100px;margin-left:20px;"></p></fieldset>');
+        $(remplissage_old_personne).append('<fieldset id="img" style="border:solid 1px black;width:420px"><legend>Photographie</legend><input type="checkbox" name="chgt_img" id="checkbox_img"/> Pour changer l\'image, cocher la case puis insérer la nouvelle dans le champ à droite </p></fieldset>'+
                                                                      '<p><div id="" style="width:600px;margin-left: 110px;"><a style="" id="btn_maj_pers" class="button" onclick="javascript:maj_Personne(\''+personne+'\');">Valider les informations</a></p></div></div>');
     }
 

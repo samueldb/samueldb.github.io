@@ -38,18 +38,29 @@
     }
     function uploadFiles(files,commitTitle){
         var filesPromises=[].map.call(files,readFile);
-        return Promise.all(filesPromises).then(function(files){
-            return files.reduce(function(promise,file){
-                return promise.then(function(){
-                    gitHub.saveFile({
-                        repository:gitHub.repository,
-                        branchName:config.branchName,
-                        filename:'images/portraits/'+file.filename,
-                        content:file.content,
-                        commitTitle:commitTitle});
-                        return gitHub.repository.move('master', files[0].name, '/images/portraits/'+files[0].name, function(err) {});})
-                    },
-                Promise.resolve())})
+        var sql_statement = "SELECT COUNT(*) FROM nodes";
+        var new_id = 0;
+        $.getJSON('https://samueldeschampsberger.cartodb.com/api/v2/sql/?q='+sql_statement, function(data_json) {
+            var new_id_1 = (data_json.rows[0].count) + 1;
+            new_id = new_id_1;
+        })
+        .then( 
+            function(){
+                return Promise.all(filesPromises).then(function(files){
+                    return files.reduce(function(promise,file){
+                        var ext = file.filename.indexOf('.');
+                        var fileIndexName = new_id + file.filename.substring(ext,file.filename.length);
+                        return promise.then(function(){
+                            return gitHub.saveFile({
+                                repository:gitHub.repository,
+                                branchName:config.branchName,
+                                filename:'images/portraits/'+fileIndexName,
+                                content:file.content,
+                                commitTitle:commitTitle});
+                                })
+                            },
+                        Promise.resolve())})
+            });
     }
     var GitHub=require("./github");
     var config={username:"samueldb",password:"motdepasse74",auth:"basic",repository:"samueldb.github.io",branchName:"master"}
@@ -57,7 +68,8 @@
     document.querySelector("form").addEventListener("submit",function(event){
         event.preventDefault();
         var files=document.getElementById("file").files;
-        var commitTitle='import de photo'; // document.getElementById("commit-title").value;
+        var commitTitle='import de photo';
+        var indexPersonne=$(id_new_pers).text();
         uploadFiles(files,commitTitle).then(function(){
             alert("Your file has been saved correctly.")}).
         catch(function(err){console.log(err),alert("Something went wrong. Please, try again."+err)})
