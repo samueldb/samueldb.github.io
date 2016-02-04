@@ -96,8 +96,9 @@ var map;
         //$(remplissage_new_personne).append('</p><fieldset style="border:solid 1px black;width:420px"><legend>Photo</legend>Ajouter une photo : <form id="my_form" method="post" enctype="multipart/form-data">'+
         //                                                                                                                                        '<input type="file" id="input_img" accept="image/*">'+
         //                                                                                                                                        '<button type="submit" onclick="javascript:add_Pict()">Ajouter</button>'+
-        //                                                                                                                                        '</form></fieldset>');       
-        $(remplissage_new_personne).append('</p><fieldset style="border:solid 1px black;width:420px"><legend>Photo</legend>Ajouter une photo : <form id="form_add_pictures" method="POST" action="/content/blank">'+
+        //                                                                                                                                        '</form></fieldset>');    
+        $(remplissage_new_personne).append('<iframe id="remember" name="remember" class="hidden" src="/content/blank"></iframe>');       
+        $(remplissage_new_personne).append('</p><fieldset style="border:solid 1px black;width:420px"><legend>Photo</legend>Ajouter une photo : <form id="form_add_pictures" method="POST" target="remember" action="/content/blank">'+
                                                                                                                                                 '<input name="file" type="file" id="file" accept="image/*">'+
                                                                                                                                                 '<button type="submit">Ajouter</button>'+
                                                                                                                                                 '</form></fieldset>');                                                                                                                                 
