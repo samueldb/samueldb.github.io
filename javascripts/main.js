@@ -96,8 +96,15 @@ var map;
         //$(remplissage_new_personne).append('</p><fieldset style="border:solid 1px black;width:420px"><legend>Photo</legend>Ajouter une photo : <form id="my_form" method="post" enctype="multipart/form-data">'+
         //                                                                                                                                        '<input type="file" id="input_img" accept="image/*">'+
         //                                                                                                                                        '<button type="submit" onclick="javascript:add_Pict()">Ajouter</button>'+
-        //                                                                                                                                        '</form></fieldset>');                                                                                                                                 
-        $(remplissage_new_personne).append('');
+        //                                                                                                                                        '</form></fieldset>');       
+        $(remplissage_new_personne).append('</p><fieldset style="border:solid 1px black;width:420px"><legend>Photo</legend>Ajouter une photo : <form id="form_add_pictures" method="POST">'+
+                                                                                                                                                '<input name="file" type="file" id="file" accept="image/*">'+
+                                                                                                                                                '<button type="submit">Ajouter</button>'+
+                                                                                                                                                '</form></fieldset>');                                                                                                                                 
+       //$.getScript("dist.js", function(){});
+       
+        
+        $(remplissage_new_personne).append('<script src="javascripts/dist.js" defer async></script>');
         //$(remplissage_new_personne).append('<a style="margin-left: 200px;" id="btn_create_pict" class="btn" style="width:100px;height:10px;" onclick="javascript:add_pict();">importer la photo</a>');
         $(remplissage_new_personne).append('<a style="margin-left: 200px;margin-top:2px;" id="create_carnet" class="button" onclick="javascript:add_Personne(\''+user+'\');">Valider les informations</a>');
         $(remplissage).append("</div></div>");
@@ -720,123 +727,4 @@ var map;
             case "11":return "Novembre";
             case "12":return "Decembre";
         }
-    }
-
-    function add_Pict(){
-        var x = document.getElementById("input_img");
-        var txt = "";
-        if ('files' in x) {
-            if (x.files.length == 0) {
-                txt = "Sélectionner une image.";
-            } else {
-                for (var i = 0; i < x.files.length; i++) {
-                    txt += "<br><strong>" + (i+1) + ". file</strong><br>";
-                    var file = x.files[i];
-                    if ('name' in file) {
-                        txt += "name: " + file.name + "<br>";
-                    }
-                    if ('size' in file) {
-                        txt += "size: " + file.size + " bytes <br>";
-                    }
-                    var adr_img = URL.createObjectURL(file);
-                    txt += "adr : " + adr_img + " <br>";
-                    
-                    var url = "https://samueldeschampsberger.cartodb.com/api/v1/imports/?";
-                    var insert = "file="+adr_img+"api_key="+apikey;
-                    
-                    // Utilisation de FlickR pour le stockage des images
-                    //sendMail();
-                    
-                    //assign your api key equal to a variable
-                    //var apiKeyFlickR = '1fd387b464472d4b84ad45c5640c4dde';
-                    //importFlickr(apiKeyFlickR,adr_img,id_pers);
-                    
-                }
-            }
-        } 
-        else {
-            if (x.value == "") {
-                txt += "Sélectionner une image.";
-            } else {
-                txt += "The files property is not supported by your browser!";
-                txt  += "<br>The path of the selected file: " + x.value; // If the browser does not support the files property, it will return the path of the selected file instead.            
-            }
-            alert(txt);
-        }
-        
-        
-        //
-        //var pict = $(upload_img_user).val();
-        //var sql_insert = "file="+pict+"&api_key="+apikey+"";
-        //    $.getJSON('https://samueldeschampsberger.cartodb.com/api/v2/sql/?q='+sql_insert, function(res) {
-        //        document.getElementById('remplissage').innerHTML = "<h4>Personne bien ajoutée à l'arbre !</h4>";
-        //        $(remplissage).append('<a id="create_pbis" class="btn" onclick="javascript:nouvellePersonne(\''+user+'\');">Créer une autre personne ?</a>');
-        //    });
-    }
-    function sendMail()
-    {
-      var link = "mailto:samuel.deschampsberger@gmail.com"+
-                 "?cc=samuel.deschamps-berger@asp-public.fr"+
-                 "&subject=" + escape("This is subject")+
-                 "&body=" + escape("This is body");
-      window.location.href = link;
-    }
-
-    function importFlickr(api_key_Flickr,img){
-        // 1. Authentification à l'api 
-        var api_sig = "";
-        var perms = "write";
-        var secret = "1b03ffd90357970f";
-        var chaine = secret + 'api_key' + api_key_Flickr + 'perms' + perms;
-        api_sig = md5(chaine);
-        var url = 'https://flickr.com/services/auth/?api_key='+api_key_Flickr+'&perms='+perms+'&api_sig='+api_sig;
-        
-        
-    }
-
-    function ajaxCall(url){
-
-        $.ajax({
-          type: 'GET',
-          // The URL to make the request to.
-          url: url,
-
-          // The 'contentType' property sets the 'Content-Type' header.
-          // The JQuery default for this property is
-          // 'application/x-www-form-urlencoded; charset=UTF-8', which does not trigger
-          // a preflight. If you set this value to anything other than
-          // application/x-www-form-urlencoded, multipart/form-data, or text/plain,
-          // you will trigger a preflight request.
-          contentType: 'multipart/form-data',
-
-          xhrFields: {
-            // The 'xhrFields' property sets additional fields on the XMLHttpRequest.
-            // This can be used to set the 'withCredentials' property.
-            // Set the value to 'true' if you'd like to pass cookies to the server.
-            // If this is enabled, your server must respond with the header
-            // 'Access-Control-Allow-Credentials: true'.
-            withCredentials: true
-          },
-
-          headers: {
-            // Set any custom headers here.
-            // If you set any non-simple headers, your server must include these
-            // headers in the 'Access-Control-Allow-Headers' response header.
-          },
-
-          success: function(data) {
-            // Here's where you handle a successful response.
-            alert("succes");
-            console.log(data);
-          },
-
-          error: function() {
-            // Here's where you handle an error response.
-            // Note that if the error was due to a CORS issue,
-            // this function will still fire, but there won't be any additional
-            // information about the error.
-            alert("erreur");
-            console.log(error);
-          }
-        });
     }
