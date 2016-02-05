@@ -3,9 +3,39 @@ var map;
     var user = 'samuel';
     var noeudsExistants;
     var aNames;
+    var user = "geneadb";
+    var pass = "dbgenea123";
     //
     //      Attention : pb lors de la mise en base d'une date non renseignée
     //
+    function validate(){
+        var username = document.getElementById("loglog").value;
+        var password = document.getElementById("pdm").value;
+        if ( username == user && password == pass){
+            $(msg_alerte_co).text("Vous êtes bien connecté");
+            //$(msg_alerte_co).css('color','green');
+            setCookie('username',username);
+            setCookie('userpass',password);
+        }
+        else {
+            $(msg_alerte_co).text("Erreur lors du login");
+            $(msg_alerte_co).css('color','red');
+        }
+    }
+    function setCookie(sName, sValue) {
+        var today = new Date(), expires = new Date();
+        expires.setTime(today.getTime() + (1*24*60*60*1000));
+        document.cookie = sName + "=" + encodeURIComponent(sValue) + ";expires=" + expires.toGMTString();
+    }
+    function getCookie(sName) {
+        var oRegex = new RegExp("(?:; )?" + sName + "=([^;]*);?");
+ 
+        if (oRegex.test(document.cookie)) {
+                return decodeURIComponent(RegExp["$1"]);
+        } else {
+                return null;
+        }
+    }
     function init() {
         var testMap;
         var editor;
@@ -64,93 +94,101 @@ var map;
     }
      
     function nouvellePersonne(user){
-        $('#remplissage_new_personne').length > 0 ? $(remplissage_new_personne).remove():true;
-        $('#remplissage_old_personne').length > 0 ? $(remplissage_old_personne).remove():true;
-        $('#btn_create_pers').length > 0 ? $(btn_create_pers).remove():true;
-        $('#btn_maj_pers').length > 0 ? $(btn_maj_pers).remove():true;
-        $('#mod_pbis').length > 0 ? $(mod_pbis).remove():true;
-        $('#recherche').length > 0 ? $(recherche).remove():true;
-        $('#create_pbis').length > 0 ? $(create_pbis).remove():true;
-        $('#cocher').length > 0 ? $(chkbAdr).remove():true;
-        $('#fs_img').length > 0 ? hideObject('#fs_img'):true;
-        showObject(remplissage);
+    
+        if (getCookie('userpass') == pass){
+            $('#Avertissement_connexion_requise').length > 0 ? hideObject('#Avertissement_connexion_requise'):true;
         
-        
-        //$(remplissage).prepend('<div id=\'remplissage_new_personne\'>');
-        if (document.getElementById('remplissage_new_personne') == null){
-            $(remplissage).append('<div id=\'remplissage_new_personne\'>');
+            $('#remplissage_new_personne').length > 0 ? $(remplissage_new_personne).remove():true;
+            $('#remplissage_old_personne').length > 0 ? $(remplissage_old_personne).remove():true;
+            $('#btn_create_pers').length > 0 ? $(btn_create_pers).remove():true;
+            $('#btn_maj_pers').length > 0 ? $(btn_maj_pers).remove():true;
+            $('#mod_pbis').length > 0 ? $(mod_pbis).remove():true;
+            $('#recherche').length > 0 ? $(recherche).remove():true;
+            $('#create_pbis').length > 0 ? $(create_pbis).remove():true;
+            $('#cocher').length > 0 ? $(chkbAdr).remove():true;
+            $('#fs_img').length > 0 ? hideObject('#fs_img'):true;
+            showObject(remplissage);
+            
+            
+            //$(remplissage).prepend('<div id=\'remplissage_new_personne\'>');
+            if (document.getElementById('remplissage_new_personne') == null){
+                $(remplissage).append('<div id=\'remplissage_new_personne\'>');
+            }
+            $(remplissage_new_personne).empty();
+            $(remplissage_new_personne).append('<fieldset style="border:solid 1px black;width:420px"><legend>Etat civil</legend><p>Nom : <input type="text" class="txt_ajt" name="txt_new_nom" id="id_txt_new_nom" value="" onblur="searchPeres(value);searchMeres(value);searchEnfants(value);searchCouple(value);"></p><p>Prénom : <input type="text" class="txt_ajt" name="txt_new_prenom" id="id_txt_new_prenom" value=""> <FORM NAME="Choix_genre" style="display: initial;margin-left: 10px;"><SELECT id="genres" NAME="genre"><option value="M">Homme</option><option value="F">Femme</option></SELECT></FORM></p></fieldset>');
+            $( "#id_txt_new_nom" ).autocomplete({
+              source: aNames,
+              minChars: 1,
+              select: function (event, ui) {
+                    var value = ui.item.value;
+                    searchPeres(value);searchMeres(value);searchEnfants(value);searchCouple(value);
+            }
+            });
+            
+            $(remplissage_new_personne).append('</p>');
+            $(remplissage_new_personne).append('<fieldset style="border:solid 1px black;width:420px"><legend>Adresse</legend><div id="nouv_adr" style="background-color:aliceblue;width:420px"><p style="margin-left:40px;"><input type="text" class="txt_ajt" name="txt_new_adr" id="id_txt_new_adr" value="adresse"></p>'+
+                                                '<p style="margin-left:40px;"><input type="text" class="txt_ajt" name="txt_new_cp" id="id_txt_new_cp" value="code postal"><input type="text" class="txt_ajt" name="txt_new_ville" id="id_txt_new_ville" value="ville"></p>'+
+                                                '<p style="margin-left:40px;"><input type="text" class="txt_ajt" name="txt_new_pays" id="id_txt_new_pays" value="pays"></p></div></fieldset>');
+            
+            $(remplissage_new_personne).append('</p><fieldset style="border:solid 1px black;width:420px"><legend>Liens familiaux</legend><div id="nouv_lien" style="margin-left: 40px;">Prénom du père : <FORM NAME="Choix_père" style="display: initial;margin-left: 10px;"><SELECT id="liste_pères" NAME="liste_pères" style="display:none;"></SELECT></FORM></p>'+
+                                                'Prénom de la mère : <FORM NAME="Choix_mère" style="display: initial;margin-left: 10px;"><SELECT id="liste_mères" NAME="liste_mères" style="display:none;"></SELECT></FORM></p>'+
+                                                'Prénom d\'un enfant : <FORM NAME="Choix_enfant" style="display: initial;margin-left: 10px;"><SELECT id="liste_enfants" NAME="liste_enfants" style="display:none;"></SELECT></FORM></p>'+
+                                                'En couple ? : <FORM NAME="Choix_couple" style="display: initial;margin-left: 10px;"><SELECT id="liste_couple" NAME="liste_couple" style="display:none;"></SELECT></FORM></p></div></fieldset></p>');
+            
+            $(remplissage_new_personne).append('</p><fieldset style="border:solid 1px black;width:420px"><legend>Info diverses</legend><p style="margin-left:40px;">profession : <input type="text" class="txt_ajt" name="txt_new_job" id="id_txt_new_job" value=""></p>'+
+                                                '<p style="margin-left:40px;">Date de naissance : <input type="text" id="datepicker_new_dn" style="width:100px;margin-left:20px;"></p>'+
+                                                '<p style="margin-left:40px;">Date de décès : <input type="text" id="datepicker_new_dd" style="width:100px;margin-left:20px;"></p>'+
+                                                '<p style="margin-left:40px;">Commentaires : <input type="text" id="id_txt_new_com" style="width:200px;margin-left:20px;height:70px;word-break:break-word;"></p></fieldset>');
+            $( "#datepicker_new_dn" ).datepicker();
+            $( "#datepicker_new_dd" ).datepicker();
+            //$(remplissage_new_personne).append('</p><fieldset style="border:solid 1px black;width:420px"><legend>Photo</legend>Ajouter une photo : <form id="my_form" method="post" enctype="multipart/form-data">'+
+            //                                                                                                                                        '<input type="file" id="input_img" accept="image/*">'+
+            //                                                                                                                                        '<button type="submit" onclick="javascript:add_Pict()">Ajouter</button>'+
+            //                                                                                                                                        '</form></fieldset>');       
+            $(remplissage_new_personne).append('</p><fieldset style="border:solid 1px black;width:420px"><legend>Photo</legend>Pour ajouter une photo, insérez la grâce à l\outil à droite.\nCliquer sur "Ajouter" afin quelle soit prise en compte.</form></fieldset>');                                                                                                                                 
+            $('#fs_img').length > 0 ? showObject('#fs_img'):true;
+            $(remplissage_new_personne).append('');
+            
+            
+            var new_id = noeudsExistants.length + 1;
+            //$(remplissage_new_personne).append('<a style="margin-left: 200px;" id="btn_create_pict" class="btn" style="width:100px;height:10px;" onclick="javascript:add_pict();">importer la photo</a>');
+            $(remplissage_new_personne).append('<a style="margin-left: 200px;margin-top:2px;" id="create_carnet" class="button" onclick="javascript:add_Personne(\''+user+'\','+new_id+');">Valider les informations</a>');
+            $(remplissage).append("</div></div>");
         }
-        $(remplissage_new_personne).empty();
-        $(remplissage_new_personne).append('<fieldset style="border:solid 1px black;width:420px"><legend>Etat civil</legend><p>Nom : <input type="text" class="txt_ajt" name="txt_new_nom" id="id_txt_new_nom" value="" onblur="searchPeres(value);searchMeres(value);searchEnfants(value);searchCouple(value);"></p><p>Prénom : <input type="text" class="txt_ajt" name="txt_new_prenom" id="id_txt_new_prenom" value=""> <FORM NAME="Choix_genre" style="display: initial;margin-left: 10px;"><SELECT id="genres" NAME="genre"><option value="M">Homme</option><option value="F">Femme</option></SELECT></FORM></p></fieldset>');
-        $( "#id_txt_new_nom" ).autocomplete({
-          source: aNames,
-          minChars: 1,
-          select: function (event, ui) {
-                var value = ui.item.value;
-                searchPeres(value);searchMeres(value);searchEnfants(value);searchCouple(value);
-        }
-        });
-        
-        $(remplissage_new_personne).append('</p>');
-        $(remplissage_new_personne).append('<fieldset style="border:solid 1px black;width:420px"><legend>Adresse</legend><div id="nouv_adr" style="background-color:aliceblue;width:420px"><p style="margin-left:40px;"><input type="text" class="txt_ajt" name="txt_new_adr" id="id_txt_new_adr" value="adresse"></p>'+
-                                            '<p style="margin-left:40px;"><input type="text" class="txt_ajt" name="txt_new_cp" id="id_txt_new_cp" value="code postal"><input type="text" class="txt_ajt" name="txt_new_ville" id="id_txt_new_ville" value="ville"></p>'+
-                                            '<p style="margin-left:40px;"><input type="text" class="txt_ajt" name="txt_new_pays" id="id_txt_new_pays" value="pays"></p></div></fieldset>');
-        
-        $(remplissage_new_personne).append('</p><fieldset style="border:solid 1px black;width:420px"><legend>Liens familiaux</legend><div id="nouv_lien" style="margin-left: 40px;">Prénom du père : <FORM NAME="Choix_père" style="display: initial;margin-left: 10px;"><SELECT id="liste_pères" NAME="liste_pères" style="display:none;"></SELECT></FORM></p>'+
-                                            'Prénom de la mère : <FORM NAME="Choix_mère" style="display: initial;margin-left: 10px;"><SELECT id="liste_mères" NAME="liste_mères" style="display:none;"></SELECT></FORM></p>'+
-                                            'Prénom d\'un enfant : <FORM NAME="Choix_enfant" style="display: initial;margin-left: 10px;"><SELECT id="liste_enfants" NAME="liste_enfants" style="display:none;"></SELECT></FORM></p>'+
-                                            'En couple ? : <FORM NAME="Choix_couple" style="display: initial;margin-left: 10px;"><SELECT id="liste_couple" NAME="liste_couple" style="display:none;"></SELECT></FORM></p></div></fieldset></p>');
-        
-        $(remplissage_new_personne).append('</p><fieldset style="border:solid 1px black;width:420px"><legend>Info diverses</legend><p style="margin-left:40px;">profession : <input type="text" class="txt_ajt" name="txt_new_job" id="id_txt_new_job" value=""></p>'+
-                                            '<p style="margin-left:40px;">Date de naissance : <input type="text" id="datepicker_new_dn" style="width:100px;margin-left:20px;"></p>'+
-                                            '<p style="margin-left:40px;">Date de décès : <input type="text" id="datepicker_new_dd" style="width:100px;margin-left:20px;"></p>'+
-                                            '<p style="margin-left:40px;">Commentaires : <input type="text" id="id_txt_new_com" style="width:200px;margin-left:20px;height:70px;word-break:break-word;"></p></fieldset>');
-        $( "#datepicker_new_dn" ).datepicker();
-        $( "#datepicker_new_dd" ).datepicker();
-        //$(remplissage_new_personne).append('</p><fieldset style="border:solid 1px black;width:420px"><legend>Photo</legend>Ajouter une photo : <form id="my_form" method="post" enctype="multipart/form-data">'+
-        //                                                                                                                                        '<input type="file" id="input_img" accept="image/*">'+
-        //                                                                                                                                        '<button type="submit" onclick="javascript:add_Pict()">Ajouter</button>'+
-        //                                                                                                                                        '</form></fieldset>');       
-        $(remplissage_new_personne).append('</p><fieldset style="border:solid 1px black;width:420px"><legend>Photo</legend>Pour ajouter une photo, insérez la grâce à l\outil à droite.\nCliquer sur "Ajouter" afin quelle soit prise en compte.</form></fieldset>');                                                                                                                                 
-        $('#fs_img').length > 0 ? showObject('#fs_img'):true;
-        $(remplissage_new_personne).append('');
-        
-        
-        var new_id = noeudsExistants.length + 1;
-        //$(remplissage_new_personne).append('<a style="margin-left: 200px;" id="btn_create_pict" class="btn" style="width:100px;height:10px;" onclick="javascript:add_pict();">importer la photo</a>');
-        $(remplissage_new_personne).append('<a style="margin-left: 200px;margin-top:2px;" id="create_carnet" class="button" onclick="javascript:add_Personne(\''+user+'\','+new_id+');">Valider les informations</a>');
-        $(remplissage).append("</div></div>");
     }
 
     function ModifierPersonne(user){
-        showObject(remplissage);
-        $('#remplissage_new_personne').length > 0 ? $(remplissage_new_personne).remove():true;
-        $('#remplissage_old_personne').length ? $(remplissage_old_personne).remove():true;
-        $('#btn_create_pers').length > 0 ? $(btn_create_pers).remove():true;
-        $('#btn_maj_pers').length > 0 ? $(btn_maj_pers).remove():true;
-        $('#mod_pbis').length > 0 ? $(mod_pbis).remove():true;
-        $('#recherche').length > 0 ? $(recherche).remove():true;
-        $('#create_pbis').length > 0 ? $(create_pbis).remove():true;
-        $('#cocher').length > 0 ? $(cocher).remove():true;
-        $('#fsA').length > 0 ? $(fsA).remove():true;
-        $('#fsR').length > 0 ? $(fsR).remove():true;
-        $('#fsI').length > 0 ? $(fsI).remove():true;
-        $('#fs_img').length > 0 ? hideObject('#fs_img'):true;
-        var aNames = trouverNodes()[1];
-        if (document.getElementById('remplissage_old_personne') == null){
-            $(remplissage).append('<div id=\'remplissage_old_personne\'>');
+        if (getCookie('userpass') == pass){
+            $('#Avertissement_connexion_requise').length > 0 ? hideObject('#Avertissement_connexion_requise'):true;
+            showObject(remplissage);
+            $('#remplissage_new_personne').length > 0 ? $(remplissage_new_personne).remove():true;
+            $('#remplissage_old_personne').length ? $(remplissage_old_personne).remove():true;
+            $('#btn_create_pers').length > 0 ? $(btn_create_pers).remove():true;
+            $('#btn_maj_pers').length > 0 ? $(btn_maj_pers).remove():true;
+            $('#mod_pbis').length > 0 ? $(mod_pbis).remove():true;
+            $('#recherche').length > 0 ? $(recherche).remove():true;
+            $('#create_pbis').length > 0 ? $(create_pbis).remove():true;
+            $('#cocher').length > 0 ? $(cocher).remove():true;
+            $('#fsA').length > 0 ? $(fsA).remove():true;
+            $('#fsR').length > 0 ? $(fsR).remove():true;
+            $('#fsI').length > 0 ? $(fsI).remove():true;
+            $('#fs_img').length > 0 ? hideObject('#fs_img'):true;
+            var aNames = trouverNodes()[1];
+            if (document.getElementById('remplissage_old_personne') == null){
+                $(remplissage).append('<div id=\'remplissage_old_personne\'>');
+            }
+            $(remplissage_old_personne).append('<fieldset style="border:solid 1px black;width:420px"><legend>Recherche</legend><div id="recherche" style="margin:10px;">Nom de la personne : <input type="text" class="txt_ajt" name="txt_old_nom" id="txt_old_nom" value="" onblur="remplirFamille(value);"><FORM NAME="Choix_genre_search" style="display: initial;margin-left: 10px;"><SELECT id="genres_search" NAME="genre" onchange="remplirFamille($(txt_old_nom).val())"><option value="M">Homme</option><option value="F">Femme</option></SELECT></FORM><FORM NAME="Choix_old_prenom" style="display: initial;margin-left: 10px;"><SELECT id="liste_old_prenom" NAME="liste_old_prenom" style="display:none;margin-top:20px;margin-left:120px;" onchange="visualiserPersonne(value)"></SELECT></FORM></div></fieldset>');
+            $(remplissage_old_personne).append('</p>');
+            
+            $( "#txt_old_nom" ).autocomplete({
+              source: aNames,
+              minChars: 1,
+              select: function (event, ui) {
+                    var value = ui.item.value;
+                    remplirFamille(value);
+            }
+            });
         }
-        $(remplissage_old_personne).append('<fieldset style="border:solid 1px black;width:420px"><legend>Recherche</legend><div id="recherche" style="margin:10px;">Nom de la personne : <input type="text" class="txt_ajt" name="txt_old_nom" id="txt_old_nom" value="" onblur="remplirFamille(value);"><FORM NAME="Choix_genre_search" style="display: initial;margin-left: 10px;"><SELECT id="genres_search" NAME="genre" onchange="remplirFamille($(txt_old_nom).val())"><option value="M">Homme</option><option value="F">Femme</option></SELECT></FORM><FORM NAME="Choix_old_prenom" style="display: initial;margin-left: 10px;"><SELECT id="liste_old_prenom" NAME="liste_old_prenom" style="display:none;margin-top:20px;margin-left:120px;" onchange="visualiserPersonne(value)"></SELECT></FORM></div></fieldset>');
-        $(remplissage_old_personne).append('</p>');
-        
-        $( "#txt_old_nom" ).autocomplete({
-          source: aNames,
-          minChars: 1,
-          select: function (event, ui) {
-                var value = ui.item.value;
-                remplirFamille(value);
-        }
-        });
     }
 
     function add_Personne(user,new_id){
@@ -317,7 +355,7 @@ var map;
         for (var p of noeudsMasc.filter(function (a){return a.nom == nomFamille})){
             var select = document.getElementById("liste_pères"); 
             var el = document.createElement("option");
-            el.textContent = p.prenom;
+            el.textContent = p.prenom + ' ' + p.nom[0] + ' - ' + p.date_birth;
             el.value = p.id;
             select.appendChild(el);
         }
@@ -334,7 +372,7 @@ var map;
         for (var p of noeudsFem.filter(function (a){return a.nom == nomFamille})){
             var select = document.getElementById("liste_mères"); 
             var el = document.createElement("option");
-            el.textContent = p.prenom;
+            el.textContent = p.prenom + ' ' + p.nom[0] + ' - ' + p.date_birth;
             el.value = p.id;
             select.appendChild(el);
         }
@@ -350,7 +388,7 @@ var map;
         for (var p of noeudsExistants.filter(function (a){return a.nom == nomFamille})){
             var select = document.getElementById("liste_enfants"); 
             var el = document.createElement("option");
-            el.textContent = p.prenom;
+            el.textContent = p.prenom + ' ' + p.nom[0] + ' - ' + p.date_birth;
             el.value = p.id;
             select.appendChild(el);
         }
@@ -366,7 +404,7 @@ var map;
         for (var p of noeudsExistants.filter(function (a){return a.couple == null})){
             var select = document.getElementById("liste_couple"); 
             var el = document.createElement("option");
-            el.textContent = p.prenom;
+            el.textContent = p.prenom + ' ' + p.nom[0] + ' - ' + p.date_birth;
             el.value = p.id;
             select.appendChild(el);
         }
@@ -383,7 +421,7 @@ var map;
         for (var p of noeudsExistants.filter(function (a){return a.nom == nomFamille && a.genre == genre_sel})){
             var select = document.getElementById("liste_old_prenom"); 
             var el = document.createElement("option");
-            el.textContent = p.prenom;
+            el.textContent = p.prenom + ' ' + p.nom[0] + ' - ' + p.date_birth;
             el.value = p.id;
             select.appendChild(el);
         }
@@ -499,7 +537,7 @@ var map;
             for (var p of noeudsMasc.filter(function (a){return a.nom == nomFamille})){
                 var select = document.getElementById("m_liste_pères"); 
                 var el = document.createElement("option");
-                el.textContent = p.prenom;
+                el.textContent = p.prenom + ' ' + p.nom[0] + ' - ' + p.date_birth;
                 el.value = p.id;
                 select.appendChild(el);
             }
@@ -523,7 +561,7 @@ var map;
             for (var p of noeudsFem){
                 var select = document.getElementById("m_liste_mères"); 
                 var el = document.createElement("option");
-                el.textContent = p.prenom;
+                el.textContent = p.prenom + ' ' + p.nom[0] + ' - ' + p.date_birth;
                 el.value = p.id;
                 select.appendChild(el);
             }
@@ -546,7 +584,7 @@ var map;
             for (var p of noeudsExistants.filter(function (a){return a.couple == null})){
                 var select = document.getElementById("m_liste_couple"); 
                 var el = document.createElement("option");
-                el.textContent = p.prenom;
+                el.textContent = p.prenom + ' ' + p.nom[0] + ' - ' + p.date_birth;
                 el.value = p.id;
                 select.appendChild(el);
             }
@@ -568,7 +606,7 @@ var map;
             for (var p of noeudsExistants.filter(function (a){return a.mere == null || a.mere == "null" || a.pere == null || a.pere == "null"})){
                 var select = document.getElementById("m_liste_enfants"); 
                 var el = document.createElement("option");
-                el.textContent = p.prenom;
+                el.textContent = p.prenom + ' ' + p.nom[0] + ' - ' + p.date_birth;
                 el.value = p.id;
                 select.appendChild(el);
             }

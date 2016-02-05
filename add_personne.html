@@ -27,7 +27,7 @@
       <div class="inner">
         <h1>Généalogie</h1>
         <h2 style="text-align:right;">de la famille Deschamps Berger</h2>
-        <a class="WIP" style="width:250px;height: 140px;"><div style="margin-left:25px;">Work In Progress </div><div style="margin-left:25px;"> <small> à venir : <p>réorga des familles</p></small> </div></a>
+        <a class="WIP_auth" style="width:250px;height: 200px;"><div style="margin-left:25px;margin-bottom:5px;">Authentification</div><div style="margin-left:25px;"> <small>login : <input type="text" id="loglog" style="width:120px;height:25px;margin:0;color:black;"><div>Mdp : <input type="text" id="pdm" style="width:120px;height:25px;margin:0;color:black;"><button id="authentification" class="button_small" onclick="validate(this.form)" style="margin:5px;background: transparent;"><i class="icon-download"></i>Connexion</div></div><div id="msg_alerte_co" style="font-size:15px;"></div></small></div></a>
       </div>
     </header>
     <ul id="nav"><!--
@@ -38,6 +38,7 @@
     <div id="content-wrapper">
       <div class="inner clearfix">
         <section id="main-content">
+        <div id="Avertissement_connexion_requise"><fieldset style="border:solid 1px black;width:500px;background-color:#2E79CA;color:white;"><legend style="color:black;background-color:white;padding:5px;">Avertissement </legend><img src='./images/connexion.png' style="float: left;display: block;"><p style="margin-top:15px;">Pour accéder à ces fonctionnalités, il faut y être autorisé !</p><p style="margin-top:15px;">Contacter moi pour obtenir votre accès : samuel[point]deschampsberger[at]gmail[point]com</p></fieldset></div>
         <div id="remplissage">
         </section>
 
@@ -51,7 +52,7 @@
                  <form id="form_add_pictures" method="POST">
                 <input name="file" type="file" id="file" accept="image/*.jpg">
                 </p>
-                <button type="submit">Ajouter</button>'
+                <button type="submit" class="button_small">Ajouter</button>'
                 </form>
             </fieldset>'      
         </aside>                                 
