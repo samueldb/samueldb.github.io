@@ -1221,7 +1221,7 @@
                     liste_couple = [];
                     for (var r of data_json.rows){
                         // On remplit les personnes
-                        nodes.push({"type":r.genre,"id":r.own_id,"parent":null,"name":r.nom,"prenom":r.prenom,"f_id":r.father_id,"m_id":r.mother_id,"c_id":r.couple_id,"dBirth":r.date_naissance,"dDie":r.date_deces,"job":r.profession,"img":r.image_url});
+                        nodes.push({"type":r.genre,"id":r.own_id,"parent":null,"name":r.nom,"prenom":r.prenom,"f_id":r.father_id,"m_id":r.mother_id,"c_id":r.couple_id,"dBirth":r.date_naissance,"dDie":r.date_deces,"job":r.profession,"comm":r.commentaire});
                         // Si 1 des 2 parents est en couple, on ajoute un noeud
                         if ((r.couple_id != null && r.couple_id != "null")){
                             var isinliste = 0;
@@ -1672,18 +1672,11 @@
               .duration(TRANSITION_DURATION)
               .style("opacity", 1).select(".value")
               .text(function () {
-                var additionalInstructions = g.children.length ? "\n(Double clic pour ouvrir)" : ("\nDate de naissance : " + (g.dBirth ? formatDate(g.dBirth) : "non renseignée") + (g.dDie ? ("\nDate de décès : " + formatDate(g.dDie)) : "") + "\nProfession : " + (g.job ? g.job:"non renseignée") );
+                var additionalInstructions = g.children.length ? "\n(Double clic pour ouvrir)" : ("\nDate de naissance : " + (g.dBirth ? formatDate(g.dBirth) : "non renseignée") + (g.dDie ? ("\nDate de décès : " + formatDate(g.dDie)) : "") + "\nProfession : " + (g.job ? g.job:"non renseignée") + "\n " + (g.comm ? g.comm:" - ") );
                 return g.prenom + " " + g.name + "\n" + additionalInstructions;
               });
-          // S'il y a une photo, on l'ajoute :     
-          if (g.img != "null" && g.img != null && g.img != "" ){
-            tooltip.transition().style("opacity",1).select(".cimg").attr("src",g.img);
-           }
-          //var img = $('<img id="dynamic">');
-          //    img.attr('src',g.img);
-          //    img.appendTo('#id_ptool');
-          //tooltip.style("opacity", 0)
-          //  .append(img);
+          // On ajoute l'image récupérée sur github :     
+            tooltip.transition().style("opacity",1).select(".cimg").attr("src",'https://raw.githubusercontent.com/samueldb/samueldb.github.io/master/images/portraits/'+g.id+'.jpg');
         }
       });
       
