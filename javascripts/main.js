@@ -133,12 +133,13 @@ var map;
             $(remplissage_new_personne).append('</p><fieldset style="border:solid 1px black;width:420px"><legend>Liens familiaux</legend><div id="nouv_lien" style="margin-left: 40px;">Prénom du père : <FORM NAME="Choix_père" style="display: initial;margin-left: 10px;"><SELECT id="liste_pères" NAME="liste_pères" style="display:none;"></SELECT></FORM></p>'+
                                                 'Prénom de la mère : <FORM NAME="Choix_mère" style="display: initial;margin-left: 10px;"><SELECT id="liste_mères" NAME="liste_mères" style="display:none;"></SELECT></FORM></p>'+
                                                 'Prénom d\'un enfant : <FORM NAME="Choix_enfant" style="display: initial;margin-left: 10px;"><SELECT id="liste_enfants" NAME="liste_enfants" style="display:none;"></SELECT></FORM></p>'+
-                                                'En couple ? : <FORM NAME="Choix_couple" style="display: initial;margin-left: 10px;"><SELECT id="liste_couple" NAME="liste_couple" style="display:none;"></SELECT></FORM></p></div></fieldset></p>');
+                                                'En couple ? : <FORM NAME="Choix_couple" style="display: initial;margin-left: 10px;"><SELECT id="liste_couple" NAME="liste_couple" style="display:none;"></SELECT></FORM></p><p style="margin-left:40px;">Date de mariage : <input type="text" id="datepicker_new_dm" style="width:100px;margin-left:20px;"></p></div></fieldset></p>');
             
             $(remplissage_new_personne).append('</p><fieldset style="border:solid 1px black;width:420px"><legend>Info diverses</legend><p style="margin-left:40px;">profession : <input type="text" class="txt_ajt" name="txt_new_job" id="id_txt_new_job" value=""></p>'+
                                                 '<p style="margin-left:40px;">Date de naissance : <input type="text" id="datepicker_new_dn" style="width:100px;margin-left:20px;"></p>'+
                                                 '<p style="margin-left:40px;">Date de décès : <input type="text" id="datepicker_new_dd" style="width:100px;margin-left:20px;"></p>'+
                                                 '<p style="margin-left:40px;">Commentaires : <input type="text" id="id_txt_new_com" style="width:200px;margin-left:20px;height:70px;word-break:break-word;"></p></fieldset>');
+            $( "#datepicker_new_dm" ).datepicker();
             $( "#datepicker_new_dn" ).datepicker();
             $( "#datepicker_new_dd" ).datepicker();
             //$(remplissage_new_personne).append('</p><fieldset style="border:solid 1px black;width:420px"><legend>Photo</legend>Ajouter une photo : <form id="my_form" method="post" enctype="multipart/form-data">'+
@@ -206,14 +207,16 @@ var map;
         var job = checkValiditeInsert($(id_txt_new_job).val(),'string');
         var date_n = checkValiditeInsert($(datepicker_new_dn).val(),'date');
         var date_d = checkValiditeInsert($(datepicker_new_dd).val(),'date');
+        var date_m = checkValiditeInsert($(datepicker_new_dm).val(),'date');
         var com = checkValiditeInsert($(id_txt_new_com).val(),'string');
         
         var new_geom = "";
         new_geom = geocoder(adr,cp,ville);
         if (new_geom != undefined && new_geom != ""){
-            var sql_insert = "INSERT INTO nodes (own_id,nom,prenom,genre,father_id,mother_id,couple_id,profession,date_naissance,date_deces,commentaire,the_geom) VALUES ('"+new_id+"','"+nom+"','"+prenom+"','"+genre+"','"+pere+"','"+mere+"','"+couple+"','"+job+"',to_timestamp('"+date_n+"', 'DD/MM/YYYY'),to_timestamp('"+date_d+"', 'DD/MM/YYYY'),'"+com+"',"+new_geom+")&api_key="+apikey+"";
+            var sql_insert = "INSERT INTO nodes (own_id,nom,prenom,genre,father_id,mother_id,couple_id,profession,date_naissance,date_deces,date_mariage,commentaire,the_geom) VALUES ('"+new_id+"','"+nom+"','"+prenom+"','"+genre+"','"+pere+"','"+mere+"','"+couple+"','"+job+"',to_timestamp('"+date_n+"', 'DD/MM/YYYY'),to_timestamp('"+date_d+"',to_timestamp('"+date_m+"', 'DD/MM/YYYY'),'"+com+"',"+new_geom+")&api_key="+apikey+"";
             $.getJSON('https://samueldeschampsberger.cartodb.com/api/v2/sql/?q='+sql_insert, function(res) {
-                document.getElementById('remplissage').innerHTML = "<h4>Personne bien ajoutée à l'arbre !</h4>";
+                document.getElementById('remplissage').innerHTML = "<h3>Personne bien ajoutée à l'arbre !</h3>";
+                document.getElementById('remplissage').innerHTML = "<h3>Attention, si vous avez ajouté un couple, il est nécessaire de modifier également le/la conjoint(e)</h3>";
                 $(remplissage).append('<a id="create_pbis" class="button" onclick="javascript:nouvellePersonne(\''+user+'\');">Ajouter une personne ?</a>');
             });
         }
@@ -333,7 +336,7 @@ var map;
                     else if (data_json.rows.length > 0){
                             // Pour chaque ligne, on vérifie
                             for (var r of data_json.rows){
-                                noeuds.push({"id":r.own_id,"parent":null,"nom":r.nom,"prenom":r.prenom,"mere":r.mother_id,"pere":r.father_id,"genre":r.genre,"couple":r.couple_id,"job":r.profession,"comm":r.commentaire,"date_birth":formatDate(r.date_naissance),"date_die":formatDate(r.date_deces),"geom":r.the_geom});
+                                noeuds.push({"id":r.own_id,"parent":null,"nom":r.nom,"prenom":r.prenom,"mere":r.mother_id,"pere":r.father_id,"genre":r.genre,"couple":r.couple_id,"job":r.profession,"comm":r.commentaire,"date_birth":formatDate(r.date_naissance),"date_die":formatDate(r.date_deces),"date_mariage":formatDate(r.date_mariage),"geom":r.the_geom});
                                 if (aNames.find(function(a){return a == r.nom;})){}
                                 else {aNames.push(r.nom);}
                             }
@@ -463,6 +466,7 @@ var map;
         var comm = pers.comm;
         var date_naissance = pers.date_birth;
         var date_deces = pers.date_die;
+        var date_mariage = pers.date_mariage;
         var p_prenom, m_prenom, c_prenom,enfants_prenoms;
         var p_nom, m_nom, c_nom,enfants_nom;
         enfants_prenoms = "";
@@ -491,10 +495,11 @@ var map;
         if (comm == "null" || comm == null || comm == ""){comm = " - "}
         if (date_naissance == "null" || date_naissance == null || date_naissance == ""){date_naissance = "non renseignée"}
         if (date_deces == "null" || date_deces == null || date_deces == ""){date_deces = "non renseignée"}
+        if (date_mariage == "null" || date_mariage == null || date_mariage == ""){date_mariage = "non renseignée"}
         
         $(remplissage_old_personne).append('<fieldset id="fsR" style="border:solid 1px black;width:420px"><legend>Relations</legend><div id="id_changt_relation" style="width=100%;"><input type="checkbox" name="chgt_pere" id="checkbox_p" onclick="clickPere(\''+$(txt_old_nom).val()+'\');"/>  Père : '+p_prenom+' <FORM NAME="Choix_père" style="display: initial;margin-left: 10px;"><SELECT id="m_liste_pères" NAME="liste_pères" style="display:none;"></SELECT></FORM></p>'+
                                                                      '<input type="checkbox" name="chgt_mere" id="checkbox_m" onclick="clickMere();"/>  Mère : '+m_prenom+' <FORM NAME="Choix_mère" style="display: initial;margin-left: 10px;"><SELECT id="m_liste_mères" NAME="liste_mères" style="display:none;"></SELECT></FORM></p>'+
-                                                                     '<input type="checkbox" name="chgt_mere" id="checkbox_c" onclick="clickConjoint(\''+c_nom+'\');"/>  Conjoint : '+c_prenom+' <FORM NAME="Choix_couple" style="display: initial;margin-left: 10px;"><SELECT id="m_liste_couple" NAME="liste_couple" style="display:none;"></SELECT></FORM></p>'+
+                                                                     '<input type="checkbox" name="chgt_mere" id="checkbox_c" onclick="clickConjoint(\''+c_nom+'\');"/>  Conjoint : '+c_prenom+' <FORM NAME="Choix_couple" style="display: initial;margin-left: 10px;"><SELECT id="m_liste_couple" NAME="liste_couple" style="display:none;"></SELECT></FORM><p id="m_new_dateM" style="margin-left:40px;display:none;">Date de mariage : <input type="text" id="datepicker_new_dm" style="width:100px;margin-left:20px;"></p></p>'+
                                                                      '<input type="checkbox" name="chgt_mere" id="checkbox_e" onclick="clickEnfants(\''+$(txt_old_nom).val()+'\');"/>  Enfant(s) : '+enfants_prenoms+'<FORM NAME="Choix_enfant" style="display: initial;margin-left: 10px;"><SELECT id="m_liste_enfants" NAME="liste_enfants" style="display:none;"></SELECT></FORM></p></fieldset></p>');
                                                                     
         //$(remplissage).append("</div></div>");
@@ -574,6 +579,8 @@ var map;
     function clickConjoint(){
         if (document.getElementById("checkbox_c").checked){
             showObject(m_liste_couple);
+            showObject(m_new_dateM);
+            $( "#datepicker_new_dm" ).datepicker()
             viderListe(m_liste_couple);
            // On ajoute un prénom vide si la personne n'existe pas
             var select = document.getElementById("m_liste_couple"); 

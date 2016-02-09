@@ -1221,7 +1221,7 @@
                     liste_couple = [];
                     for (var r of data_json.rows){
                         // On remplit les personnes
-                        nodes.push({"type":r.genre,"id":r.own_id,"parent":null,"name":r.nom,"prenom":r.prenom,"f_id":r.father_id,"m_id":r.mother_id,"c_id":r.couple_id,"dBirth":r.date_naissance,"dDie":r.date_deces,"job":r.profession,"comm":r.commentaire});
+                        nodes.push({"type":r.genre,"id":r.own_id,"parent":null,"name":r.nom,"prenom":r.prenom,"f_id":r.father_id,"m_id":r.mother_id,"c_id":r.couple_id,"dBirth":r.date_naissance,"dDie":r.date_deces,"dMar":r.date_mariage,"job":r.profession,"comm":r.commentaire});
                         // Si 1 des 2 parents est en couple, on ajoute un noeud
                         if ((r.couple_id != null && r.couple_id != "null")){
                             var isinliste = 0;
@@ -1236,7 +1236,7 @@
                                 var homme = NoeudsBase.find(function(a){return a.id == r.own_id && r.genre == "M"});
                                 var saFemme;
                                 if (homme){
-                                    nodes.push({"type":"couple","id":"c_"+r.couple_id,"parent":null,"name":homme.nom,"prenom":homme.prenom,"id_homme":r.own_id,"id_femme":r.couple_id});
+                                    nodes.push({"type":"couple","id":"c_"+r.couple_id,"parent":null,"name":homme.nom,"prenom":homme.prenom,"id_homme":r.own_id,"id_femme":r.couple_id,"dMar":r.date_mariage});
                                     liste_couple.push({"id_c":r.couple_id,"id_homme":r.own_id});
                                 }
                             }
@@ -1672,8 +1672,17 @@
               .duration(TRANSITION_DURATION)
               .style("opacity", 1).select(".value")
               .text(function () {
-                var additionalInstructions = g.children.length ? "\n(Double clic pour ouvrir)" : ("\nDate de naissance : " + (g.dBirth ? formatDate(g.dBirth) : "non renseignée") + (g.dDie ? ("\nDate de décès : " + formatDate(g.dDie)) : "") + "\nProfession : " + (g.job ? g.job:"non renseignée") + "\n " + (g.comm ? g.comm:" - ") );
-                return g.prenom + " " + g.name + "\n" + additionalInstructions;
+                var nomsCouples = '';
+                var additionalInstructions = g.children.length ? "\n" +g.dMar ? "\nDate de mariage : "+ formatDate(g.dMar): "" +"(Double clic pour ouvrir)" : ("\nDate de naissance : " + (g.dBirth ? formatDate(g.dBirth) : "non renseignée") + (g.dDie ? ("\nDate de décès : " + formatDate(g.dDie)) : "") + "\nProfession : " + (g.job ? g.job:"non renseignée") + "\n " + (g.comm ? g.comm:" - ") );
+                if (g.children.length){
+                    var nomC1 = g.children[0].name + ' ' + g.children[0].prenom;
+                    var nomC2 = g.children[1].name + ' ' + g.children[1].prenom;
+                    nomsCouples = nomC1 + '\n' + nomC2;
+                }
+                else {
+                    nomsCouples = g.name + ' ' + g.prenom;
+                }
+                return nomsCouples + "\n" + additionalInstructions;
               });
           // On ajoute l'image récupérée sur github :     
             tooltip.transition().style("opacity",1).select(".cimg").attr("src",'https://raw.githubusercontent.com/samueldb/samueldb.github.io/master/images/portraits/'+g.id+'.jpg');
@@ -1682,7 +1691,10 @@
       
       function formatDate(date){
         var dateFormatee = "";
-        dateFormatee = date.substring(8,10) + " " + getMonth(date.substring(5,7)) + " " + date.substring(0,4);
+        if (date != 'undefined' && date != "null" && date !=null){
+            dateFormatee = date.substring(8,10) + " " + getMonth(date.substring(5,7)) + " " + date.substring(0,4);
+        }
+        else {dateFormatee = "non renseignée";}
         return dateFormatee;
       }
       
@@ -1789,7 +1801,16 @@
         if (!isTransitioning) {
           showTooltip().select(".value")
             .text(function () {
-              return g.name + "\n(Double clic pour refermer)";
+                var nomsCouples = '';
+                if (g.children.length){
+                    var nomC1 = g.children[0].name + ' ' + g.children[0].prenom;
+                    var nomC2 = g.children[1].name + ' ' + g.children[1].prenom;
+                    nomsCouples = nomC1 + '\n' + nomC2;
+                }
+                else {
+                    nomsCouples = g.name + ' ' + g.prenom;
+                }
+              return nomsCouples + "\n(Double clic pour refermer)";
             });
 
           var highlightColor = highlightColorScale(g.type.replace(/ .*/, ""));
@@ -1878,7 +1899,7 @@
             else if (data_json.rows.length > 0){
                     // Pour chaque ligne, on vérifie
                     for (var r of data_json.rows){
-                        noeuds.push({"id":r.own_id,"parent":null,"nom":r.nom,"prenom":r.prenom,"mere":r.mother_id,"pere":r.father_id,"genre":r.genre,"couple":r.couple_id,"job":r.profession,"date_birth":formatDate(r.date_naissance),"date_die":formatDate(r.date_deces),"geom":r.the_geom});
+                        noeuds.push({"id":r.own_id,"parent":null,"nom":r.nom,"prenom":r.prenom,"mere":r.mother_id,"pere":r.father_id,"genre":r.genre,"couple":r.couple_id,"job":r.profession,"date_birth":formatDate(r.date_naissance),"date_die":formatDate(r.date_deces),"date_mariage":formatDate(r.date_mariage),"geom":r.the_geom});
                         if (aNames.find(function(a){return a == r.nom;})){}
                         else {aNames.push(r.nom);}
                     }
