@@ -721,7 +721,7 @@ var map;
         }
         if (chgt_c){
             couple = checkValiditeInsert($(m_liste_couple).val(),'id');
-            if (couple != ''){
+            if (couple != '' && couple != 'null' && couple != null){
                 var sql_update = "UPDATE nodes SET couple_id = "+couple+" WHERE own_id = '"+personne+"';&api_key="+apikey+"";
                     $.getJSON('https://samueldeschampsberger.cartodb.com/api/v2/sql/?q='+sql_update, function(res) {
                         $(fsR).append("<div id='mr'>relation modifiée</div>");
@@ -730,7 +730,7 @@ var map;
                 });
             }
             date_dm = checkValiditeInsert($(datepicker_new_dm).val(),'string');
-            if (date_dm != ''){    
+            if (date_dm != '' && date_dm != 'null' && date_dm != null){    
                 var sql_update = "UPDATE nodes SET date_naissance = to_timestamp('"+date_dm+"','DD/MM/YYYY') WHERE own_id = '"+personne+"';&api_key="+apikey+"";
                     $.getJSON('https://samueldeschampsberger.cartodb.com/api/v2/sql/?q='+sql_update, function(res) {
                         $(datepicker_new_dm).val("Attribut modifié");
