@@ -253,6 +253,8 @@ var map;
                 $(remplissage).append('<a id="create_pbis" class="button" onclick="javascript:nouvellePersonne(\''+user+'\');">Créer une autre personne ?</a>');
             });
         }
+        // On met à jour les noeuds existants en prenant en compte le nouvel arrivant. 
+        noeudsExistants = trouverNodes()[0];
     }
 
     function checkValiditeInsert(insert,type){
@@ -404,7 +406,7 @@ var map;
         el.textContent = " ";
         el.value = " ";
         select.appendChild(el);
-        for (var p of noeudsExistants.filter(function (a){return a.couple == null})){
+        for (var p of noeudsExistants.filter(function (a){return a.couple == null || a.couple == "null" || a.couple == ""})){
             var select = document.getElementById("liste_couple"); 
             var el = document.createElement("option");
             el.textContent = p.prenom + ' ' + p.nom[0] + ' - ' + p.date_birth;
