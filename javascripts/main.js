@@ -588,7 +588,7 @@ var map;
             el.textContent = " ";
             el.value = "null";
             select.appendChild(el);
-            for (var p of noeudsExistants.filter(function (a){return a.couple == null})){
+            for (var p of noeudsExistants.filter(function (a){return a.couple == null || a.couple == "null" || a.couple == ""})){
                 var select = document.getElementById("m_liste_couple"); 
                 var el = document.createElement("option");
                 el.textContent = p.prenom + ' ' + p.nom[0] + ' - ' + p.date_birth;
@@ -724,6 +724,9 @@ var map;
             if (couple != '' && couple != 'null' && couple != null){
                 var sql_update = "UPDATE nodes SET couple_id = "+couple+" WHERE own_id = '"+personne+"';&api_key="+apikey+"";
                     $.getJSON('https://samueldeschampsberger.cartodb.com/api/v2/sql/?q='+sql_update, function(res) {
+                });
+                var sql_update = "UPDATE nodes SET couple_id = "+personne+" WHERE own_id = '"+couple+"';&api_key="+apikey+"";
+                    $.getJSON('https://samueldeschampsberger.cartodb.com/api/v2/sql/?q='+sql_update, function(res) {
                         $(fsR).append("<div id='mr'>relation modifiée</div>");
                         $(mr).css("color", "green");
                         $(mr).css("float", "right");
@@ -735,6 +738,12 @@ var map;
                     $.getJSON('https://samueldeschampsberger.cartodb.com/api/v2/sql/?q='+sql_update, function(res) {
                         $(datepicker_new_dm).val("Attribut modifié");
                         $(datepicker_n).css("color", "green");
+                });
+                var sql_update = "UPDATE nodes SET date_mariage = to_timestamp('"+date_dm+"','DD/MM/YYYY') WHERE own_id = '"+couple+"';&api_key="+apikey+"";
+                    $.getJSON('https://samueldeschampsberger.cartodb.com/api/v2/sql/?q='+sql_update, function(res) {
+                        $(fsR).append("<div id='mr'>relation modifiée</div>");
+                        $(mr).css("color", "green");
+                        $(mr).css("float", "right");
                 });
             }
         }
