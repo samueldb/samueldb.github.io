@@ -213,7 +213,7 @@ var map;
         var new_geom = "";
         new_geom = geocoder(adr,cp,ville);
         if (new_geom != undefined && new_geom != ""){
-            var sql_insert = "INSERT INTO nodes (own_id,nom,prenom,genre,father_id,mother_id,couple_id,profession,date_naissance,date_deces,date_mariage,commentaire,the_geom) VALUES ('"+new_id+"','"+nom+"','"+prenom+"','"+genre+"','"+pere+"','"+mere+"','"+couple+"','"+job+"',to_timestamp('"+date_n+"', 'DD/MM/YYYY'),to_timestamp('"+date_d+"',to_timestamp('"+date_m+"', 'DD/MM/YYYY'),'"+com+"',"+new_geom+")&api_key="+apikey+"";
+            var sql_insert = "INSERT INTO nodes (own_id,nom,prenom,genre,father_id,mother_id,couple_id,profession,date_naissance,date_deces,date_mariage,commentaire,the_geom) VALUES ('"+new_id+"','"+nom+"','"+prenom+"','"+genre+"','"+pere+"','"+mere+"','"+couple+"','"+job+"',to_timestamp('"+date_n+"', 'DD/MM/YYYY'),to_timestamp('"+date_d+"', 'DD/MM/YYYY'),to_timestamp('"+date_m+"', 'DD/MM/YYYY'),'"+com+"',"+new_geom+")&api_key="+apikey+"";
             $.getJSON('https://samueldeschampsberger.cartodb.com/api/v2/sql/?q='+sql_insert, function(res) {
                 document.getElementById('remplissage').innerHTML = "<h3>Personne bien ajoutée à l'arbre !</h3>";
                 document.getElementById('remplissage').innerHTML = "<h3>Attention, si vous avez ajouté un couple, il est nécessaire de modifier également le/la conjoint(e)</h3>";
