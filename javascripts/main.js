@@ -374,7 +374,7 @@ var map;
         el.value = " ";
         select.appendChild(el);
        noeudsFem = noeudsExistants.filter(function (a){return a.genre == "F"});
-        for (var p of noeudsFem.filter(function (a){return a.nom == nomFamille})){
+        for (var p of noeudsFem){
             var select = document.getElementById("liste_mères"); 
             var el = document.createElement("option");
             el.textContent = p.prenom + ' ' + p.nom[0] + ' - ' + p.date_birth;
