@@ -213,7 +213,7 @@ var map;
         var new_geom = "";
         new_geom = geocoder(adr,cp,ville);
         if (new_geom != undefined && new_geom != ""){
-            var sql_insert = "INSERT INTO nodes (own_id,nom,prenom,genre,father_id,mother_id,couple_id,profession,date_naissance,date_deces,date_mariage,commentaire,the_geom) VALUES ('"+new_id+"','"+nom+"','"+prenom+"','"+genre+"','"+pere+"','"+mere+"','"+couple+"','"+job+"',to_timestamp('"+date_n+"', 'DD/MM/YYYY'),to_timestamp('"+date_d+"', 'DD/MM/YYYY'),to_timestamp('"+date_m+"', 'DD/MM/YYYY'),'"+com+"',"+new_geom+")&api_key="+apikey+"";
+            var sql_insert = "INSERT INTO nodes (own_id,nom,prenom,genre,father_id,mother_id,couple_id,profession,date_naissance,date_deces,date_mariage,commentaire,the_geom) VALUES ('"+new_id+"','"+nom+"','"+prenom+"','"+genre+"','"+pere+"','"+mere+"','"+couple+"','"+job+"',"+formatInsertTimeStamp(date_n)+","+formatInsertTimeStamp(date_d)+","+formatInsertTimeStamp(date_m)+",'"+com+"',"+new_geom+")&api_key="+apikey+"";
             $.getJSON('https://samueldeschampsberger.cartodb.com/api/v2/sql/?q='+sql_insert, function(res) {
                 document.getElementById('remplissage').innerHTML = "<h3>Personne bien ajoutée à l'arbre !</h3>";
                 document.getElementById('remplissage').innerHTML = "<h3>Attention, si vous avez ajouté un couple, il est nécessaire de modifier également le/la conjoint(e)</h3>";
@@ -736,12 +736,12 @@ var map;
             }
             date_dm = checkValiditeInsert($(datepicker_new_dm).val(),'string');
             if (date_dm != '' && date_dm != 'null' && date_dm != null){    
-                var sql_update = "UPDATE nodes SET date_mariage = to_timestamp('"+date_dm+"','DD/MM/YYYY') WHERE own_id = '"+personne+"';&api_key="+apikey+"";
+                var sql_update = "UPDATE nodes SET date_mariage = "+formatInsertTimeStamp(date_dm)+" WHERE own_id = '"+personne+"';&api_key="+apikey+"";
                     $.getJSON('https://samueldeschampsberger.cartodb.com/api/v2/sql/?q='+sql_update, function(res) {
                         $(datepicker_new_dm).val("Attribut modifié");
                         $(datepicker_n).css("color", "green");
                 });
-                var sql_update = "UPDATE nodes SET date_mariage = to_timestamp('"+date_dm+"','DD/MM/YYYY') WHERE own_id = '"+couple+"';&api_key="+apikey+"";
+                var sql_update = "UPDATE nodes SET date_mariage = "+formatInsertTimeStamp(date_dm)+" WHERE own_id = '"+couple+"';&api_key="+apikey+"";
                     $.getJSON('https://samueldeschampsberger.cartodb.com/api/v2/sql/?q='+sql_update, function(res) {
                         $(fsR).append("<div id='mr'>relation modifiée</div>");
                         $(mr).css("color", "green");
@@ -781,7 +781,7 @@ var map;
         }
         if (chgt_dn){
             date_dn = checkValiditeInsert($(datepicker_n).val(),'string');
-            var sql_update = "UPDATE nodes SET date_naissance = to_timestamp('"+date_dn+"','DD/MM/YYYY') WHERE own_id = '"+personne+"';&api_key="+apikey+"";
+            var sql_update = "UPDATE nodes SET date_naissance = "+formatInsertTimeStamp(date_dn)+" WHERE own_id = '"+personne+"';&api_key="+apikey+"";
                 $.getJSON('https://samueldeschampsberger.cartodb.com/api/v2/sql/?q='+sql_update, function(res) {
                     $(datepicker_n).val("Attribut modifié");
                     $(datepicker_n).css("color", "green");
@@ -789,7 +789,7 @@ var map;
         }
         if (chgt_dd){
             date_dd = checkValiditeInsert($(datepicker_d).val(),'string');
-            var sql_update = "UPDATE nodes SET date_deces = to_timestamp('"+date_dd+"','DD/MM/YYYY') WHERE own_id = '"+personne+"';&api_key="+apikey+"";
+            var sql_update = "UPDATE nodes SET date_deces = "+formatInsertTimeStamp(date_dd)+" WHERE own_id = '"+personne+"';&api_key="+apikey+"";
                 $.getJSON('https://samueldeschampsberger.cartodb.com/api/v2/sql/?q='+sql_update, function(res) {
                     $(datepicker_d).val("Attribut modifié");
                     $(datepicker_d).css("color", "green");
@@ -833,4 +833,11 @@ var map;
             case "11":return "Novembre";
             case "12":return "Decembre";
         }
+    }
+    
+    function formatInsertTimeStamp(date){
+        if (date != "" || date != "null" || date != null){
+            return "to_timestamp('"+date+"', 'DD/MM/YYYY')";
+        }
+        else {return "null";}
     }
