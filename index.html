@@ -54,7 +54,20 @@
     function ascendingYPosition(a, b) {
         return a.y - b.y;
       }
-              
+    
+    Array.prototype.max = function() {
+        var max = 0;
+        for (var el of this){
+            if (el == 'undefined' || el == NaN){
+            }
+            else {
+                if (el > max){
+                    max = el;
+                }
+            }
+        }
+      return max;
+    };          
     d3.biHiSankey = function () {
       "use strict";
 
@@ -453,7 +466,10 @@
             return uniques;
         }
 
-        
+        function ascendingNodeXPosition(a, b) {
+            return a[0].x - b[0].x;
+          }
+          
           
         nodesByXPosition.forEach(function (nodes) {
                nodes.forEach(function (node, i) {
@@ -469,78 +485,180 @@
                 });
             });
             var generation = 0;
-            //nodesByXPosition contient un tableau par X, soit un tableau par génération
+            //nodesByXPosition contient un tableau par X, soit un tableau par génération en commençant par les plus jeunes (donc on inverse le tableau pour partir des plus vieux)
             // Il faut qu'on trie les descendants en fonction du y de leur ancetre
-            for (var tabGeneration of nodesByXPosition){
+            var nodesGenerationXclasses = nodesByXPosition.sort(ascendingNodeXPosition);
+            for (var tabGeneration of nodesGenerationXclasses){
                 if(generation > 0){
-                    var tabYancestors = [];
-                    for (var node of tabGeneration){
-                        if (node.y == 0 && !node.type.includes("couple")){
-                            // on remplit le tableau avec l'id, le y de l'ancetre et le y que l'on calculera
-                            for (var cn of node.connectedNodes){
-                                // On vérifie qu'il s'agit bien d'un ancetre :
-                                if (cn.x < node.x && !cn.type.includes("couple")){
-                                    // On check si le y est déjà dans la liste
-                                    var isinliste = 0;
-                                    for (var anc of tabYancestors){
-                                        if (anc.yAnc == cn.y){
-                                            // Si l'id est déjà dans cette liste, on ne l'ajoute pas
-                                            isinliste = 0;
-                                        }
-                                    }
-                                    if (isinliste == 0){
-                                        var yAncetre = cn.y;
-                                        tabYancestors.push({"id":node.id,"ancetre":cn.prenom,"yAnc":yAncetre,"yVoulu":0,"generation":generation,"type":node.type});
-                                    }
-                                }
-                            }
-                        }
-                        //node.x = generation;
-                    }
-                    var tabTrieparYAnc = tabYancestors.sort(ascendingYancPosition);
-                    //tabTrieparYAnc = multiDimensionalUnique(tabTrieparYAnc);
-                    var i = 0;
-                    for (var t of tabTrieparYAnc){
-                        t.yVoulu = i;
+                    // DEPLACEMENT
+                    
+                    // On récupère les ancêtres :
+                   var tabYancestors = [];
+                   for (var node of tabGeneration){
+                       if (node.y == 0 && !node.type.includes("couple")){
+                           // on remplit le tableau avec l'id, le y de l'ancetre et le y que l'on calculera
+                           // connectedAncetres contient tous les ancetres du noeuds node
+                           var connectedAncetres = node.connectedNodes.filter(function (bn){return bn.x < node.x;});
+                           if (connectedAncetres.length > 1){
+                                // on a donc 2 grands parents : 
+                                node.y = (connectedAncetres[0].y + connectedAncetres[1].y)/2;
+                           }
+                           else if (connectedAncetres.length == 1){
+                            // on a qu'un seul grand parent : 
+                                node.y = connectedAncetres[0].y;
+                           }
+                           else {
+                            // on a a priori aucun grand parent : 
+                                node.y = 'undefined';
+                           }
+                         //  for (var cn of node.connectedNodes){
+                                
+                        //       // On vérifie qu'il s'agit bien d'un ancetre :
+                        //       if (cn.x < node.x && !cn.type.includes("couple")){
+                        //           // On check si le y est déjà dans la liste
+                        //           var isinliste = 0;
+                        //           for (var anc of tabYancestors){
+                        //               if (anc.yAnc == cn.y){
+                        //                   // Si l'id est déjà dans cette liste, on ne l'ajoute pas                             // ATTENTION AU Y POUR CEUX QUI ONT 2 ANCETRES !!
+                        //                   isinliste = 0;
+                        //               }
+                        //           }
+                        //           if (isinliste == 0){
+                        //               var yAncetre = cn.y;
+                        //               node.y = yAncetre;
+                        //               tabYancestors.push({"id":node.id,"ancetre":cn.prenom,"yAnc":yAncetre,"yVoulu":0,"generation":generation,"type":node.type});
+                        //           }
+                        //       }
+                        //       else if (!cn.type.includes("couple")) {
+                        //           // C'est qu'on n'a pas trouvé d'ancêtre : 
+                        //           node.y = 'undefined';
+                        //       }
+                        //   }
+                       }
+                   }
+                // Pour tous ceux qui ont des ancêtres, on leur donne le yVoulu
+                var tabTrieparYAnc = tabYancestors.sort(ascendingYancPosition);
+                var i = tabGeneration.max()=='undefined' ? 0:tabGeneration.max()+1;
+                for (var node of tabGeneration){
+                    if (node.y == 'undefined'){
+                        node.y = i;
                         i++;
                     }
-                    
-                    for (var pers of tabTrieparYAnc){
-                        // On réassigne le y à nos noeuds
-                        nodesByXPosition.forEach(function (nodes) {
-                            nodes.forEach(function (node) {
-                                if (node.id == pers.id && pers.generation == generation){
-                                    node.y = pers.yVoulu;
-                                }
-                            });
-                        });
-                    }
-                    
-                    // On rassemble les couples 
-                    var tabHomme = tabGeneration.filter(function (a){return a.type == "M" && !a.id.includes("c_")});
-                    var tabFemme = tabGeneration.filter(function (a){return a.type == "F" && !a.id.includes("c_")});
-                    tabHomme.forEach(function (nodeH, h) {
-                        //nodeH.y = h;
-                        if ((nodeH.c_id != null && nodeH.c_id != "null")){
+                }
+                
+                //  var tabTrieparYAnc = tabYancestors.sort(ascendingYancPosition);
+                 //  //tabTrieparYAnc = multiDimensionalUnique(tabTrieparYAnc);
+                 //  var i = 0;
+                 //  for (var t of tabTrieparYAnc){
+                 //      t.yVoulu = i;
+                 //      i++;
+                 //  }
+                 //  
+                 //  for (var pers of tabTrieparYAnc){
+                 //      // On réassigne le y à nos noeuds
+                 //      nodesGenerationXclasses.forEach(function (nodes) {
+                 //          nodes.forEach(function (node) {
+                 //              if (node.id == pers.id && pers.generation == generation){
+                 //                  node.y = pers.yVoulu;
+                 //              }
+                 //          });
+                 //      });
+                 //  }
+                 //  
+                 //  // On s'occupe des y undefined : 
+                 //      var j = tabGeneration.max()=='undefined' ? 1:tabGeneration.max()+1;
+                 //  for (var node of tabGeneration){
+                 //      if (node.y == 'undefined'){
+                 //          node.y = j;
+                 //          j++;
+                 //      }
+                 //  }
+                 //  
+                 //  
+                 //  // AJOUT 
+                 //  // On assigne un y différent à chaque personne s'il y en a qui ont le même : 
+                 //  //var iPourMemeY = 0;
+                 //  var dejaTraite = tabTrieparYAnc;
+                 //  tabGeneration.forEach(function(node){
+                 //      if (dejaTraite.find(function(a){return a.id == node.id})){
+                 //              //Si la personne a déjà été traité, on ne la retraite pas
+                 //      }
+                 //      else {
+                 //          var tabMemeY = tabGeneration.filter(function (a){return a.y == node.y;});
+                 //          var k= dejaTraite.max()=='undefined' ? 0:dejaTraite.max();
+                 //          tabMemeY.forEach(function (nodeMemeY){
+                 //                  nodeMemeY.y = k;
+                 //                  k++;
+                 //                  dejaTraite.push(nodeMemeY);
+                 //           });
+                 //      }
+                 //  });
+                 //  // FIN AJOUT
+                 
+                 //  // On rassemble les couples 
+                   var tabHomme = tabGeneration.filter(function (a){return (a.type == "M" && !a.id.includes("c_")) || (a.type == "F" && (a.c_id == "" || a.c_id == "null" ||a.c_id == null))});
+                   var tabFemme = tabGeneration.filter(function (a){return a.type == "F" && !a.id.includes("c_")});
+                   var tabFinalYClasse = tabHomme.sort(ascendingYPosition);
+                   // On va ajouter les femmes au tableau des hommes :
+                   for (var nodeH of tabFinalYClasse){
+                        if ((nodeH.c_id != null && nodeH.c_id != "null" && nodeH.c_id != "")){
                             var saFemme = tabFemme.find(function(a){return a.c_id == nodeH.id});
-                            var memeYHomme = tabHomme.filter(function(a){return a.y == (nodeH.y + 1) && a.id != nodeH.id})
-                            // Si un homme a déjà le même y, on le change
-                            for (var mYh of memeYHomme){
-                                mYh.y = mYh.y + 1;
+                            // fonctionne, mais on a des élements en double
+                            //var pivot = tabFinalYClasse[tabFinalYClasse.indexOf(nodeH)+1];
+                            //tabFinalYClasse[tabFinalYClasse.indexOf(nodeH)+1] = saFemme;
+                            //tabFinalYClasse[tabFinalYClasse.length] = pivot;
+                            // on ajoute à l'index voulu :
+                            if (saFemme != 'undefined' && saFemme != undefined){
+                                tabFinalYClasse.splice(tabFinalYClasse.indexOf(nodeH)+1, 0, saFemme);
                             }
-                            saFemme.y = nodeH.y + 1;
-                            h ++;
                         }
-                    });
-                    
-                    // Il faut itérer sur les couples pour moyenner leurs Y afin qu'ils se trouvent à la même place
-                    var tabCouple = tabGeneration.filter(function (a){return a.id.includes("c_")});
-                    for (var c of tabCouple){
-                        var homme = tabGeneration.find(function (a){return a.id == c.id_homme});
-                        var femme = tabGeneration.find(function (a){return a.id == c.id_femme});
-                        c.y = (homme.y + femme.y) / 2;
-                        c.x = homme.x;
-                    }
+                   }
+                   // Maintenant qu'on a un tableau trié, on réassigne les y suivant la position du tableau : 
+                   var ajout = 0;
+                   for (var n of tabFinalYClasse){
+                        //n.y = tabFinalYClasse.indexOf(n);
+                        n.y = ajout;
+                        ajout++;
+                   }
+                   // On vérifie qu'on a oublié personne :
+                   for (var node of tabGeneration){
+                        if(tabFinalYClasse.find(function (a){return a === node;})){
+                            // Pas besoin de l'ajouter à nouveau
+                        }
+                        else {tabFinalYClasse.push(node);}
+                   }
+                    tabGeneration = tabFinalYClasse;
+                   //tabHomme.forEach(function (nodeH, h) {
+                   //    //nodeH.y = h;
+                   //    if ((nodeH.c_id != null && nodeH.c_id != "null" && nodeH.c_id != "")){
+                   //        var saFemme = tabFemme.find(function(a){return a.c_id == nodeH.id});
+                   //        var ajout = nodeH.y + 1;
+                   //        var memeYHomme = tabHomme.filter(function(a){return a.y == ajout && a.id != nodeH.id})
+                   //        // Si un homme a déjà le même y, on le change
+                   //        for (var mYh of memeYHomme){
+                   //            mYh.y = ajout;
+                   //            ajout++;
+                   //        }
+                   //        var memeYFemme = tabFemme.filter(function(a){return a.y == ajout && a.id != nodeH.id})
+                   //        // Si une femme a déjà le même y, on le change
+                   //        for (var mYf of memeYFemme){
+                   //            mYf.y = ajout;
+                   //            ajout++;
+                   //        }
+                   //        saFemme.y = nodeH.y + 1;
+                   //        h ++;
+                   //    }
+                   //});
+                 //  
+                 //  
+                 // Il faut itérer sur les couples pour moyenner leurs Y afin qu'ils se trouvent à la même place
+                   var tabCouple = tabGeneration.filter(function (a){return a.id.includes("c_")});
+                   for (var c of tabCouple){
+                       var homme = tabGeneration.find(function (a){return a.id == c.id_homme});
+                       var femme = tabGeneration.find(function (a){return a.id == c.id_femme});
+                       c.y = (homme.y + femme.y) / 2;
+                       c.x = homme.x;
+                   }
                 }
                 if (generation == 0){
                     // On rassemble les couples pour la 1ère génération
@@ -567,12 +685,12 @@
                 }
                 
                 // Maintenant que tous les y ont été distribués, il faut les réarranger pour qu'ils aient le même écartement
-                var tabRange = tabGeneration.sort(ascendingYPosition);
-                var i = 0;
-                for (var ligne of tabRange){
-                    ligne.y = i;
-                    i++
-                }
+                //var tabRange = tabGeneration.sort(ascendingYPosition);
+                //var i = 0;
+                //for (var ligne of tabRange){
+                //    ligne.y = i;
+                //    i++
+                //}
                 generation = generation + 1;
             }
         }
@@ -645,7 +763,7 @@
             if (dy > 0) {
               node.y -= dy;
               y0 = node.y;
-
+         
               // Push any overlapping nodes back up.
               for (i = n - 2; i >= 0; --i) {
                 node = nodes[i];
@@ -665,13 +783,13 @@
         resolveCollisions();
 
         // Je ne sais pas à quoi ça sert d'itérer la dessus... 
-       //for (alpha = 1; iterations > 0; --iterations) {
-       //  alpha *= 0.99;
-       //  relaxRightToLeft(alpha);
-       //  resolveCollisions();
-       //  //relaxLeftToRight(alpha);
-       //  //resolveCollisions();
-       //}
+       for (alpha = 1; iterations > 0; --iterations) {
+         alpha *= 0.2;
+         relaxRightToLeft(alpha);
+         resolveCollisions();
+         relaxLeftToRight(alpha);
+         resolveCollisions();
+       }
 
         minY = d3.min(nodes, function (node) { return node.y; });
         adjustTop(minY);
@@ -808,9 +926,9 @@
             for (var node of nodes){
                 // Si le noeuds n'a pas de parent, on cherche si son conjoint en a 
                 if (node.targetLinks.length == 0){
-                    if (node.c_id != null && node.c_id != "null" && node.c_id != 0){
+                    if (node.c_id != null && node.c_id != "null" && node.c_id != 0 && node.c_id != 'undefined'){
                         var sonCouple = nodes.find(function (a){return a.id == node.c_id});
-                        if (sonCouple.targetLinks.length > 0){
+                        if (typeof(sonCouple) != 'undefined' && sonCouple.targetLinks.length > 0){
                             // ça veut dire que le conjoint a des parents
                             node.x = sonCouple.x;
                         }
