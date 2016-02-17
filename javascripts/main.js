@@ -836,7 +836,7 @@ var map;
     }
     
     function formatInsertTimeStamp(date){
-        if (date != "" || date != "null" || date != null){
+        if (date != "" && date != "null" && date != null){
             return "to_timestamp('"+date+"', 'DD/MM/YYYY')";
         }
         else {return "null";}
