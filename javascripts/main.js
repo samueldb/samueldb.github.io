@@ -173,7 +173,7 @@ var map;
      
     function nouvellePersonne(user){
     
-        if (getCookie('userpass') == pass){
+        if (getCookie('userpass') != ""){
             $('#Avertissement_connexion_requise').length > 0 ? hideObject('#Avertissement_connexion_requise'):true;
         
             $('#remplissage_new_personne').length > 0 ? $(remplissage_new_personne).remove():true;
@@ -237,7 +237,7 @@ var map;
     }
 
     function ModifierPersonne(user){
-        if (getCookie('userpass') == pass){
+        if (getCookie('userpass') != ""){
             $('#Avertissement_connexion_requise').length > 0 ? hideObject('#Avertissement_connexion_requise'):true;
             showObject(remplissage);
             $('#remplissage_new_personne').length > 0 ? $(remplissage_new_personne).remove():true;
