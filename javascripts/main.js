@@ -3,25 +3,103 @@ var map;
     var user = 'samuel';
     var noeudsExistants;
     var aNames;
-    var user = "geneadb";
-    var pass = "dbgenea123";
     //
     //      Attention : pb lors de la mise en base d'une date non renseignée
     //
     function validate(){
         var username = document.getElementById("loglog").value;
         var password = document.getElementById("pdm").value;
-        if ( username == user && password == pass){
-            $(msg_alerte_co).text("Vous êtes bien connecté");
-            //$(msg_alerte_co).css('color','green');
-            setCookie('username',username);
-            setCookie('userpass',password);
-        }
-        else {
-            $(msg_alerte_co).text("Erreur lors du login");
-            $(msg_alerte_co).css('color','red');
+        var users = [];
+        var sql_statement = "SELECT * FROM auth_globale WHERE application = 'geneadb';";
+                $.getJSON('https://samueldeschampsberger.cartodb.com/api/v2/sql/?q='+sql_statement, function(data_json) {
+                    if (data_json.rows.length == 0){
+                        // Il n'y a personne dans la table
+                        alert("erreur technique");
+                    }
+                    else if (data_json.rows.length > 0){
+                            // Pour chaque ligne, on ajoute les utilisateurs
+                            for (var r of data_json.rows){
+                                users.push({"id":r.cartodb_id,"user":r.utilisateur,"passe":r.passe});
+                            }
+                    }
+                    if ( users.find(function(a){return (a.user == username && a.passe == password);})){
+                        $(msg_alerte_co).text("Vous êtes bien connecté");
+                        $(msg_alerte_co).css('margin-top','5px');
+                        setCookie('username',username);
+                        setCookie('userpass',password);
+                    }
+                    else {
+                        $(msg_alerte_co).text("Erreur lors du login");
+                        $(msg_alerte_co).css('color','red');
+                        $(msg_alerte_co).css('margin-top','5px');
+                    }
+                });
+    }
+    function nouvel_user(){
+        $(fs_inscription).empty();
+        $(fs_inscription).css('background-color','rgb(55, 127, 211)');
+        $(fs_inscription).css('color','black');
+        $('#fs_inscription').append('<legend style="color:black;background-color:white;padding:5px;">Inscription </legend><img src=\'./images/connexion.png\' style="float: left;display: block;"><p style="margin-top:15px;"><h2>Module d\'inscription</h2></p>');
+        $('#fs_inscription').append('<div style="margin-left:10px;margin-top:3px;">pseudo : <input type="text" class="insc" name="insc_pseudo" id="insc_pseudo" </div><div id="alert_pseudo"/>');
+        $('#fs_inscription').append('<div style="margin-left:10px;margin-top:3px;">mail : <input type="text" class="insc" name="insc_mail" id="insc_mail" style="margin-left:22px;"</div><div id="alert_mail"/>');
+        $('#fs_inscription').append('<div style="margin-left:10px;margin-top:3px;">mot de passe : <input type="text" class="insc" name="insc_mdp" id="insc_mdp" </div><div id="alert_mdp"/>');
+        $('#fs_inscription').append('<div style="margin-left:20px;float:right;"><button id="insc_btn" class="button_small" onclick="creer_nouveau_user(this)" style="margin-left:-40px;margin-top:5px;background: transparent;"><i class="icon-download"></i>Valider les info</div>');
+    }
+    
+    function creer_nouveau_user(){
+        var new_user = checkValid('pseudo',document.getElementById("insc_pseudo").value);
+        var new_mail = checkValid('mail',document.getElementById("insc_mail").value);
+        var new_mdp = checkValid('mdp',document.getElementById("insc_mdp").value);
+        
+        if (new_user != "alerte" && new_mail != "alerte" && new_mdp != "alerte"){
+            var sql_insert = "INSERT INTO auth_globale (utilisateur,passe,mel,application) VALUES ('"+new_user+"','"+new_mdp+"','"+new_mail+"','geneadb')&api_key="+apikey+"";
+                $.getJSON('https://samueldeschampsberger.cartodb.com/api/v2/sql/?q='+sql_insert, function(res) {
+                    $('#fs_inscription').append('<div><h3>Votre inscription a bien été prise en compte</h3></div>');
+                });
         }
     }
+    
+    function checkValid(type,val){
+        var alerte = "";
+        if (type=='pseudo'){
+            if (val != "" && val.length > 0){
+                return val;
+            }
+            else {
+                $(alert_pseudo).css('color','rgb(134, 5, 5)');
+                $(alert_pseudo).css('float','right');
+                $(alert_pseudo).append ('pseudo obligatoire');
+                $(fs_inscription).css ('width','565px');
+                alerte = "alerte";
+            }
+        }
+        if (type=='mail'){
+            if (val != "" && val.length > 0 && val.includes("@")){
+                return val;
+            }
+            else {
+                $(alert_mail).append('mauvais format de mail');
+                $(alert_mail).css('color','rgb(134, 5, 5)');
+                $(alert_mail).css('float','right');
+                $(fs_inscription).css ('width','565px');
+                alerte = "alerte";
+            }
+        }
+        if (type=='mdp'){
+            if (val != "" && val.length > 5){
+                return val;
+            }
+            else {
+                $(alert_mdp).css('color','rgb(134, 5, 5)');
+                $(alert_mdp).css('float','right');
+                $(alert_mdp).append('votre mot de passe doit contenir 5 caractères');
+                $(fs_inscription).css ('width','565px');
+                alerte = "alerte";
+            }
+        }
+        return alerte;
+    }
+    
     function setCookie(sName, sValue) {
         var today = new Date(), expires = new Date();
         expires.setTime(today.getTime() + (1*24*60*60*1000));
