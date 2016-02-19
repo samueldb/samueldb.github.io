@@ -72,11 +72,11 @@
       "use strict";
 
       var biHiSankey = {},
-        nodeWidth = 18,
+        nodeWidth = 50,
         nodeSpacing = 5,
         linkSpacing = 15,
         arrowheadScaleFactor = 0.5, // Specifies the proportion of a link's stroke width to be allowed for the marker at the end of the link.
-        size = [3, 3], // default to one pixel by one pixel
+        size = [10, 100], // default to one pixel by one pixel
         nodes = [],
         nodeMap = {},
         parentNodes = [],
@@ -1525,18 +1525,20 @@
        node.y = Math.max(0, Math.min(HEIGHT - node.height, d3.event.y));
        d3.select(this).attr("transform", "translate(" + node.x + "," + node.y + ")");
        biHiSankey.relayout();
-       svg.selectAll(".node").selectAll("rect").attr("height", function (d) { return d.height; });
+       svg.selectAll(".node").selectAll("circle").attr("height", function (d) { return d.height; });
        link.attr("d", path);
      }
 
       function containChildren(node) {
-        node.children.forEach(function (child) {
-          child.state = "contained";
-          child.parent = this;
-          child._parent = null;
-          containChildren(child);
-        }, node);
-      }
+        if (node.children){
+            node.children.forEach(function (child) {
+              child.state = "contained";
+              child.parent = this;
+              child._parent = null;
+              containChildren(child);
+            }, node);
+        }
+    }
 
       function expand(node) {
         node.state = "expanded";
@@ -1584,6 +1586,26 @@
         if (node.state === "collapsed") { expand(node); }
         else { collapse(node); }
 
+        biHiSankey.relayout();
+        update();
+        link.attr("d", path);
+        restoreLinksAndNodes();
+      }
+      
+      function hide(node) {
+        disableUserInterractions(2 * TRANSITION_DURATION);
+        hideTooltip();
+        if (typeof(node.state) != 'undefined'){
+            if (node.state === "collapsed") {expand(node); }
+            else if (node.state === "contained") { 
+                expand(node); 
+                var him = noeudsExistants.find(function(a){a.id == node.id});
+                var her = noeudsExistants.find(function(a){a.c_id == node.id});
+                //collapse(him);
+                //expand(her);
+            }
+            else { /*collapse(node);*/ }
+        }
         biHiSankey.relayout();
         update();
         link.attr("d", path);
@@ -1691,7 +1713,7 @@
         .duration(TRANSITION_DURATION)
         .attr("transform", function (d) { return "translate(" + d.x + "," + d.y + ")"; })
         .style("opacity", OPACITY.NODE_DEFAULT)
-        .select("rect")
+        .select("circle")
           .style("fill", function (d) {
             d.color = colorScale(d.type.replace(/ .*/, ""));
             return d.color;
@@ -1758,14 +1780,28 @@
             })
             .attr("r", function (d) {
                 //return Math.sqrt(d.height);
-                return 2;
+                return 6;
             })
         .style("stroke", function (d) {
           return d3.rgb(colorScale(d.type.replace(/ .*/, ""))).darker(0.1);
         })
-        .style("stroke-WIDTH", "5px")
+        .style("stroke-WIDTH", "10px")
         .attr("height", function (d) { return d.height; })
-        .attr("width", biHiSankey.nodeWidth());
+        .attr("width", biHiSankey.nodeWidth()*2);
+    
+    node.append("rect")
+            .attr("x", biHiSankey.nodeWidth()/2+5)
+            .attr("y", function (d) {
+                return d.height/6;
+            })
+            .attr("height", 5)
+            .attr("width", 5)
+        .style("stroke", function (d) {
+          return d3.rgb(colorScale(d.type.replace(/ .*/, ""))).darker(0.1);
+        })
+        .style("stroke-WIDTH", "10px")
+        //.attr("height", function (d) { return d.height; })
+        //.attr("width", biHiSankey.nodeWidth()*2);
 
       node.on("mouseenter", function (g) {
         if (!isTransitioning) {
@@ -1803,9 +1839,41 @@
                 return nomsCouples + "\n" + additionalInstructions;
               });
           // On ajoute l'image récupérée sur github :     
-            tooltip.transition().style("opacity",1).select(".cimg").attr("src",'https://raw.githubusercontent.com/samueldb/samueldb.github.io/master/images/portraits/'+g.id+'.jpg');
+          var img = 'https://raw.githubusercontent.com/samueldb/samueldb.github.io/master/images/portraits/'+g.id+'.jpg';
+            tooltip.transition().style("opacity",1).select(".cimg").attr("src",'img');
         }
       });
+      
+      node.on("click", function(g){
+          if (!isTransitioning){
+            alert('on vient de cliquer !');
+            // On récupère tous les enfants : 
+            var Noeuds =biHiSankey.nodes();
+            var nodeD = Noeuds.find(function(a){return a.id == g.id || 'c_'+a.id == g.id});
+            var e1 = getEnfants(nodeD,Noeuds);
+            for (var e of e1){
+                if (e.c_id != "null" && e.c_id != "" && e.c_id != null){
+                    // Si l'enfant a un conjoint, on cache le couple
+                    var noeudCouple = Noeuds.find(function(a){return a.id == 'c_'+e.id || a.id == 'c_'+e.c_id;});
+                    //hide(noeudCouple);
+                    var conj = Noeuds.find(function(a){return a.c_id == e.id;});
+                    // Si le conjoint n'a pas d'ancetre, on le cache aussi :
+                    if (conj.nbAncetre == 0){
+                        hide(conj);
+                        // On cherche les enfants de l'enfant :
+                        var e2 = getEnfants(e,Noeuds);
+                        for (var e2e of e2){
+                            e1.push(e2e);
+                        }
+                    }
+                    else {
+                        
+                    }
+                }
+                hide(e);
+            }
+            }
+          });
       
       function formatDate(date){
         var dateFormatee = "";
@@ -1843,6 +1911,8 @@
 
       node.filter(function (d) { return d.children.length; })
         .on("dblclick", showHideChildren);
+     
+     
 
       // allow nodes to be dragged to new positions
       node.call(d3.behavior.drag()
@@ -2236,8 +2306,13 @@
     }    
     function getEnfants(val,Noeuds){
         try{
+            var idParent = val.id;
+            // On doit traiter également les couples : donc 
+            if (val.id.includes('c_')){
+                idParent = val.id.substring(2);
+            }
             var enfants = Noeuds.filter(function(a){
-                return a.f_id == val.id || a.m_id == val.id;
+                    return a.f_id == idParent || a.m_id == idParent;
                 });
                 return enfants;
             }
