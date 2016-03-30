@@ -19,6 +19,23 @@ html {
 body {
   margin: 0;
 }
+svg {
+  font: 12px sans-serif;
+}
+path { 
+    stroke: steelblue;
+    stroke-width: 2;
+    fill: none;
+}
+
+.axis path,
+.axis line {
+    fill: none;
+    stroke: grey;
+    stroke-width: 2;
+    shape-rendering: crispEdges;
+}
+
 
 /* HTML5 display definitions
    ========================================================================== */

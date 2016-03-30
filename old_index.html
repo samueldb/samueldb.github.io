@@ -2,15 +2,16 @@
 <html>
   <head>
     <meta charset='utf-8'>
+    <meta http-equiv="X-UA-Compatible" content="chrome=1">
     <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
     <link href='https://fonts.googleapis.com/css?family=Architects+Daughter' rel='stylesheet' type='text/css'>
     <link rel="stylesheet" type="text/css" href="stylesheets/stylesheet.css" media="screen">
     <link rel="stylesheet" type="text/css" href="stylesheets/github-light.css" media="screen">
-    <link href="http://code.jquery.com/ui/1.11.4/themes/ui-lightness/jquery-ui.css" rel="stylesheet">
+    <link href="http://code.jquery.com/ui/1.10.4/themes/ui-lightness/jquery-ui.css" rel="stylesheet">
     <link rel="stylesheet" type="text/css" href="stylesheets/print.css" media="print">
-    <script src="http://libs.cartocdn.com/cartodb.js/v3/3.15/cartodb.js" type="text/javascript"></script>
+    <script src="http://libs.cartocdn.com/cartodb.js/v3/3.15/cartodb.js"></script>
     <script src="http://d3js.org/d3.v3.min.js"></script>
-    <script src="https://code.jquery.com/ui/1.11.4/jquery-ui.js" type="text/javascript"></script>
+    <script src="https://code.jquery.com/ui/1.11.4/jquery-ui.js"></script>
     
     <!--[if lt IE 9]>
     <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
@@ -24,7 +25,7 @@
       <div class="inner">
         <h1>Généalogie</h1>
         <h2 style="text-align:right;">de la famille Deschamps Berger</h2>
-        <a class="WIP" style="width:250px;height: 140px;"><div style="margin-left:25px;">Work In Progress </div><div style="margin-left:25px;"> <small> ajouté : <p>compatible Firefox</p></small> </div></a>
+        <a class="WIP" style="width:250px;height: 140px;"><div style="margin-left:25px;">Work In Progress </div><div style="margin-left:25px;"> <small> à venir : <p>réorga des familles</p></small> </div></a>
       </div>
     </header>
     <ul id="nav"><!--
@@ -45,29 +46,7 @@
       </div>
     </div>
 
-    <script type="text/javascript">     // Compatibilité FF
-    if (!Array.prototype.find) {
-        Array.prototype.find = function (callback, thisArg) {
-            "use strict";
-            var arr = this,
-            arrLen = arr.length,
-            i;
-            for (i = 0; i < arrLen; i += 1) {
-                if (callback.call(thisArg, arr[i], i, arr)) {
-                    return arr[i];
-                }
-            }
-            return undefined;
-        };
-    }
-    if (!String.prototype.includes) {
-        String.prototype.includes = function() {
-            'use strict';
-            return String.prototype.indexOf.apply(this, arguments) !== -1;
-        };
-    }
-    </script>
-    <script type="text/javascript">
+    <script>
     function ascendingXPosition(a, b) {
                 return a.x - b.x;
               }
@@ -90,7 +69,7 @@
       return max;
     };          
     d3.biHiSankey = function () {
-      //"use strict";
+      "use strict";
 
       var biHiSankey = {},
         nodeWidth = 18,
@@ -1255,7 +1234,7 @@
         };
         
     </script>
-    <script type="text/javascript">
+    <script>
     'use strict';
 
     var svg, tooltip, biHiSankey, path, defs, colorScale, highlightColorScale, isTransitioning;
@@ -1281,16 +1260,16 @@
       },
       OUTER_MARGIN = 10,
       MARGIN = {
-        TOP: 25,
-        RIGHT: 25,
-        BOTTOM: 25,
-        LEFT: 25
+        TOP: 2 * (COLLAPSER.RADIUS + OUTER_MARGIN),
+        RIGHT: OUTER_MARGIN,
+        BOTTOM: OUTER_MARGIN,
+        LEFT: OUTER_MARGIN
       },
       TRANSITION_DURATION = 800,
-      HEIGHT = 650 - MARGIN.TOP - MARGIN.BOTTOM,
-      WIDTH =  1250 - MARGIN.LEFT - MARGIN.RIGHT,
-      LAYOUT_INTERATIONS = 10,
-      REFRESH_INTERVAL = 3500;
+      HEIGHT = 600 - MARGIN.TOP - MARGIN.BOTTOM,
+      WIDTH =  1200 - MARGIN.LEFT - MARGIN.RIGHT,
+      LAYOUT_INTERATIONS = 100,
+      REFRESH_INTERVAL = 7000;
       
     var map;
     var apikey = "261bbc94c8266573016ba9454127b905b931b0a6";
@@ -1299,10 +1278,10 @@
 
     function trouverNodes(flagRecherche,elementsRecherches){
         var noeuds = [];
-        var sql_statement = "SELECT * FROM nodes WHERE arbre = '1'";
+        var sql_statement = "SELECT * FROM nodes";
         if (flagRecherche == 1){
             // Dans ce cas, on ajoute une clause WHERE à la recherche
-            sql_statement += " AND WHERE ";
+            sql_statement += " WHERE ";
             for (var el of elementsRecherches){
                 sql_statement += "own_id = '" + el.id + "' OR ";
             }
@@ -1317,7 +1296,7 @@
             else if (data_json.rows.length > 0){
                     // Pour chaque ligne, on vérifie
                     for (var r of data_json.rows){
-                        noeuds.push({"id":r.own_id,"parent":null,"nom":r.nom,"prenom":r.prenom,"mere":r.mother_id,"pere":r.father_id,"genre":r.genre,"arbre":r.arbre});
+                        noeuds.push({"id":r.own_id,"parent":null,"nom":r.nom,"prenom":r.prenom,"mere":r.mother_id,"pere":r.father_id,"genre":r.genre});
                     }
             }
         });
@@ -1327,10 +1306,10 @@
     // Get the nodes from cartodb table
     // flagRecherche = 0 : pas de choix de personne à rechercher, 1 : on recherche l'arbre d'une personne en particulier
     function populateNode(flagRecherche,elementsRecherches){
-        var sql_statement = "SELECT * FROM nodes WHERE arbre = '1'";
+        var sql_statement = "SELECT * FROM nodes";
         if (flagRecherche == 1 && elementsRecherches.length > 0){
             // Dans ce cas, on ajoute une clause WHERE à la recherche
-            sql_statement += " AND WHERE ";
+            sql_statement += " WHERE ";
             for (var el of elementsRecherches){
                 sql_statement += "own_id = '" + el.id + "' OR ";
             }
@@ -1360,7 +1339,7 @@
                     liste_couple = [];
                     for (var r of data_json.rows){
                         // On remplit les personnes
-                        nodes.push({"type":r.genre,"id":r.own_id,"parent":null,"name":r.nom,"prenom":r.prenom,"f_id":r.father_id,"m_id":r.mother_id,"c_id":r.couple_id,"dBirth":r.date_naissance,"dDie":r.date_deces,"dMar":r.date_mariage,"job":r.profession,"comm":r.commentaire,"arbre":r.arbre});
+                        nodes.push({"type":r.genre,"id":r.own_id,"parent":null,"name":r.nom,"prenom":r.prenom,"f_id":r.father_id,"m_id":r.mother_id,"c_id":r.couple_id,"dBirth":r.date_naissance,"dDie":r.date_deces,"dMar":r.date_mariage,"job":r.profession,"comm":r.commentaire});
                         // Si 1 des 2 parents est en couple, on ajoute un noeud
                         if ((r.couple_id != null && r.couple_id != "null")){
                             var isinliste = 0;
@@ -1375,19 +1354,17 @@
                                 var homme = NoeudsBase.find(function(a){return a.id == r.own_id && r.genre == "M"});
                                 var saFemme;
                                 if (homme){
-                                    nodes.push({"type":"couple","id":"c_"+r.couple_id,"parent":null,"name":homme.nom,"prenom":homme.prenom,"id_homme":r.own_id,"id_femme":r.couple_id,"dMar":r.date_mariage,"arbre":r.arbre});
+                                    nodes.push({"type":"couple","id":"c_"+r.couple_id,"parent":null,"name":homme.nom,"prenom":homme.prenom,"id_homme":r.own_id,"id_femme":r.couple_id,"dMar":r.date_mariage});
                                     liste_couple.push({"id_c":r.couple_id,"id_homme":r.own_id});
                                 }
                             }
                         }
-                        // On calcul les liens 
-                        var pereExiste = NoeudsBase.find(function(a){return a.id == r.father_id});
-                        var mereExiste = NoeudsBase.find(function(a){return a.id == r.mother_id});
-                        if (r.father_id == null || r.father_id == " " || r.father_id == "null" || typeof(pereExiste) == 'undefined'){}
+                        // On calcul les noeuds 
+                        if (r.father_id == null || r.father_id == " " || r.father_id == "null"){}
                         else {
-                            links.push({"source":r.father_id,"target":r.own_id,"value":1});
+                            links.push({"source":r.father_id,"target":r.own_id,"value":2});
                             }
-                        if (r.mother_id == null || r.mother_id == " " || r.mother_id == "null"  || typeof(mereExiste) == 'undefined'){}
+                        if (r.mother_id == null || r.mother_id == " " || r.mother_id == "null"){}
                         else {
                             links.push({"source":r.mother_id,"target":r.own_id,"value":1});
                         }
@@ -1411,7 +1388,7 @@
             }
             
             if (flagRecherche != 0){
-                return [nodes,links];
+                return {nodes,links};
             }
             });
     }
@@ -1458,7 +1435,6 @@
             .attr("height", HEIGHT + MARGIN.TOP + MARGIN.BOTTOM)
           .append("g")
             .attr("transform", "translate(" + MARGIN.LEFT + "," + MARGIN.TOP + ")");
-    svg.append("g").attr("id", "path_time");
     svg.append("g").attr("id", "links");
     svg.append("g").attr("id", "nodes");
     svg.append("g").attr("id", "collapsers");
@@ -1710,10 +1686,7 @@
 
       node = svg.select("#nodes").selectAll(".node")
           .data(biHiSankey.collapsedNodes(), function (d) { return d.id; });
-          
-      //var sous_nodes = svg.select("#sous_nodes").selectAll(".node").data(biHiSankey.nodes().filter(function(a){return a.id == noeudFocus.id;}))
 
-      
       node.transition()
         .duration(TRANSITION_DURATION)
         .attr("transform", function (d) { return "translate(" + d.x + "," + d.y + ")"; })
@@ -1773,7 +1746,11 @@
           .attr("transform", function (d) { return "translate(" + d.x + "," + d.y + ")"; });
 
       nodeEnter.append("text");
-      
+      //nodeEnter.append("rect")
+      //  .style("fill", function (d) {
+      //    d.color = colorScale(d.type.replace(/ .*/, ""));
+      //    return d.color;
+      //  })
       node.append("circle")
             .attr("cx", biHiSankey.nodeWidth()/2)
             .attr("cy", function (d) {
@@ -1789,14 +1766,8 @@
         .style("stroke-WIDTH", "5px")
         .attr("height", function (d) { return d.height; })
         .attr("width", biHiSankey.nodeWidth());
-        
 
-        node.on("click",function(g){
-            console.log("click sur "+g.prenom);
-                //alert('on a tiré sur : '+g.prenom);
-        })
-      node.on("mouseover", function (g) {
-        console.log("mouseoever");
+      node.on("mouseenter", function (g) {
         if (!isTransitioning) {
           restoreLinksAndNodes();
           highlightConnected(g);
@@ -1835,39 +1806,6 @@
             tooltip.transition().style("opacity",1).select(".cimg").attr("src",'https://raw.githubusercontent.com/samueldb/samueldb.github.io/master/images/portraits/'+g.id+'.jpg');
         }
       });
-      var minYear = 2000;
-      for (var n of biHiSankey.nodes()){
-        if (typeof(n.dBirth) != 'undefined' && n.dBirth != 'null' && n.dBirth != null){
-            if (minYear > parseInt(n.dBirth.substring(0,4))){
-                minYear = parseInt(n.dBirth.substring(0,4));
-            }
-        }
-      }
-        var x = d3.scale.linear()
-            .domain([0, 2015])
-            .range([minYear, WIDTH]);
-        //var x =d3.time.scale().range([0, WIDTH]);
-        var xAxis = d3.svg.axis().scale(x)
-            .orient("bottom").ticks(5);
-        
-        var valueline = d3.svg.line()
-            .x(function(d) { 
-                if (typeof(d.dBirth) != 'undefined' && d.dBirth != 'null' && d.dBirth != null){
-                    return x(parseInt(d.dBirth.substring(0,4))); 
-                }
-                else return 2000;
-            })
-            .y(function(d) { return 0; });
-        
-        svg.append("g")
-            .attr("class", "x axis")  // two classes, one for css formatting, one for selection below
-            .attr("transform", "translate(0," + (HEIGHT-25) + ")")  // HEIGHT-10
-            .attr("d", valueline(biHiSankey.nodes()))
-            .call(xAxis);
-        svg.append("text")                                                              // ajout du titre du graph
-        .attr("transform", "translate(" + (WIDTH / 2) + " ," + (HEIGHT + 25) + ")")
-        .style("text-anchor", "middle")
-        .text("Date");
       
       function formatDate(date){
         var dateFormatee = "";
@@ -1906,8 +1844,8 @@
       node.filter(function (d) { return d.children.length; })
         .on("dblclick", showHideChildren);
 
-//    var textes = svg.select("#nodes").selectAll(".node.text")});
-//        textes.on("dblclick",alert('greet tests'));
+    var textes = svg.select("#nodes").selectAll(".node.text")});
+        textes.on("dblclick",alert('greet tests'));
         
         
       // allow nodes to be dragged to new positions
@@ -2009,12 +1947,6 @@
         }).style("opacity", OPACITY.NODE_HIGHLIGHT)
             .select("rect")
               .style("fill", highlightColor);
-              
-          node.filter(function (d) {
-              return (d.arbre != '1')
-            }).style("opacity", 0)
-                .select("rect")
-                  .style("fill", "white");
         }
       });
 
@@ -2080,7 +2012,7 @@
     function trouverNodesAll(){
         var noeuds = [];
         var aNames = [];
-        var sql_statement = "SELECT * FROM nodes WHERE arbre = '1'";
+        var sql_statement = "SELECT * FROM nodes";
         $.getJSON('https://samueldeschampsberger.cartodb.com/api/v2/sql/?q='+sql_statement, function(data_json) {
             if (data_json.rows.length == 0){
                 // Il n'y a personne dans la table
@@ -2089,8 +2021,8 @@
             else if (data_json.rows.length > 0){
                     // Pour chaque ligne, on vérifie
                     for (var r of data_json.rows){
-                        noeuds.push({"id":r.own_id,"parent":null,"nom":r.nom,"prenom":r.prenom,"mere":r.mother_id,"pere":r.father_id,"genre":r.genre,"couple":r.couple_id,"job":r.profession,"date_birth":formatDate(r.date_naissance),"date_die":formatDate(r.date_deces),"date_mariage":formatDate(r.date_mariage),"geom":r.the_geom, "arbre":r.arbre});
-                        if ($(aNames).find(function(a){return a == r.nom;})){}
+                        noeuds.push({"id":r.own_id,"parent":null,"nom":r.nom,"prenom":r.prenom,"mere":r.mother_id,"pere":r.father_id,"genre":r.genre,"couple":r.couple_id,"job":r.profession,"date_birth":formatDate(r.date_naissance),"date_die":formatDate(r.date_deces),"date_mariage":formatDate(r.date_mariage),"geom":r.the_geom});
+                        if (aNames.find(function(a){return a == r.nom;})){}
                         else {aNames.push(r.nom);}
                     }
             }
