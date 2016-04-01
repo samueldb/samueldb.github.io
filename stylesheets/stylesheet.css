@@ -904,6 +904,13 @@ footer a:hover {
       shape-rendering: crispEdges;
     }
 
+    .node rect {
+      fill-opacity: 0;
+    }
+    .node:hover {
+        stroke-opacity: .2;
+    }
+    
     .node text {
       pointer-events: none;
       text-shadow: 1px 1px 2px #fff;

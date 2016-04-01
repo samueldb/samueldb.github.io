@@ -1844,7 +1844,7 @@
         }
       }
         var x = d3.scale.linear()
-            .domain([0, 2015])
+            .domain([minYear, 2015])
             .range([minYear, WIDTH]);
         //var x =d3.time.scale().range([0, WIDTH]);
         var xAxis = d3.svg.axis().scale(x)
@@ -1855,7 +1855,7 @@
                 if (typeof(d.dBirth) != 'undefined' && d.dBirth != 'null' && d.dBirth != null){
                     return x(parseInt(d.dBirth.substring(0,4))); 
                 }
-                else return 2000;
+                else return 1800;
             })
             .y(function(d) { return 0; });
         
