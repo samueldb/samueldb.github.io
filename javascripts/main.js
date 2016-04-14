@@ -27,11 +27,13 @@ var map;
                         $(msg_alerte_co).css('margin-top','5px');
                         setCookie('username',username);
                         setCookie('userpass',password);
+                        setCookie('identifie','ok');
                     }
                     else {
                         $(msg_alerte_co).text("Erreur lors du login");
                         $(msg_alerte_co).css('color','red');
                         $(msg_alerte_co).css('margin-top','5px');
+                        setCookie('identifie','ko');
                     }
                 });
     }
@@ -101,10 +103,15 @@ var map;
     }
     
     function setCookie(sName, sValue) {
-        var today = new Date(), expires = new Date();
-        expires.setTime(today.getTime() + (1*24*60*60*1000));
-        document.cookie = sName + "=" + encodeURIComponent(sValue) + ";expires=" + expires.toGMTString();
+        var today = new Date();
+        var expires = "";
+        today.setTime(today.getTime() + (1*24*60*60*1000));
+        expires = "; expires="+today.toGMTString();
+        document.cookie = sName + "=" + sValue + expires+ "path=/";
+        this[sName] = sValue;
     }
+    
+    
     function getCookie(sName) {
         var oRegex = new RegExp("(?:; )?" + sName + "=([^;]*);?");
  
@@ -173,7 +180,7 @@ var map;
      
     function nouvellePersonne(user){
     
-        if (getCookie('userpass') != ""){
+        if (getCookie('identifie') != 'ok'){
             $('#Avertissement_connexion_requise').length > 0 ? hideObject('#Avertissement_connexion_requise'):true;
         
             $('#remplissage_new_personne').length > 0 ? $(remplissage_new_personne).remove():true;
@@ -237,7 +244,7 @@ var map;
     }
 
     function ModifierPersonne(user){
-        if (getCookie('userpass') != ""){
+        if (getCookie('identifie') != 'ok'){
             $('#Avertissement_connexion_requise').length > 0 ? hideObject('#Avertissement_connexion_requise'):true;
             showObject(remplissage);
             $('#remplissage_new_personne').length > 0 ? $(remplissage_new_personne).remove():true;

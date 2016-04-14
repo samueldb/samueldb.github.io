@@ -16,7 +16,6 @@
     <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
     <![endif]-->
 
-
     <title>Généalogie en ligne</title>
   </head>
 
@@ -515,6 +514,7 @@
             var nodesGenerationXclasses = nodesByXPosition.sort(ascendingNodeXPosition);
             for (var tabGeneration of nodesGenerationXclasses){
                 if(generation > 0){
+                    
                     // On récupère les ancêtres :
                    var tabYancestors = [];
                    for (var node of tabGeneration){
@@ -545,7 +545,7 @@
                         i++;
                     }
                 }
-                
+                 
                  //  // On rassemble les couples 
                    var tabHomme = tabGeneration.filter(function (a){return (a.type == "M" && !a.id.includes("c_")) || (a.type == "F" && (a.c_id == "" || a.c_id == "null" ||a.c_id == null))});
                    var tabFemme = tabGeneration.filter(function (a){return a.type == "F" && !a.id.includes("c_")});
@@ -578,7 +578,8 @@
                         }
                         else {tabFinalYClasse.push(node);}
                    }
-                    tabGeneration = tabFinalYClasse
+                    tabGeneration = tabFinalYClasse;
+                 //  
                  // Il faut itérer sur les couples pour moyenner leurs Y afin qu'ils se trouvent à la même place
                    var tabCouple = tabGeneration.filter(function (a){return a.id.includes("c_")});
                    for (var c of tabCouple){
@@ -852,18 +853,6 @@
                         if (sonCouple.nbAncetre > node.nbAncetre){
                             // ça veut dire que le conjoint a plus de parents
                             node.x = sonCouple.x;
-                            //
-                            //  Attention, il faut maintenant tiré également les parents du conjoints
-                            //
-                            //
-                            //var sonCoupleSonPere = nodes.find(function (a){return a.id == sonCouple.f_id});
-                            //var sonCoupleSaMere = nodes.find(function (a){return a.id == sonCouple.m_id});
-                            //if (typeof(sonCoupleSonPere) != "undefined"){
-                            //    sonCoupleSonPere.x = node.x - 1;
-                            //}
-                            //if (typeof(sonCoupleSaMere) != "undefined"){
-                            //    sonCoupleSaMere.x = node.x - 1;
-                            //}
                        }
                     }
                 }
@@ -1189,7 +1178,7 @@
 
     function trouverNodes(flagRecherche,elementsRecherches){
         var noeuds = [];
-        var sql_statement = "SELECT * FROM nodes WHERE arbre = '1' OR arbre = '2'";
+        var sql_statement = "SELECT * FROM nodes WHERE arbre = '2' OR arbre = '3'";
         if (flagRecherche == 1){
             // Dans ce cas, on ajoute une clause WHERE à la recherche
             sql_statement += " AND WHERE ";
@@ -1217,7 +1206,7 @@
     // Get the nodes from cartodb table
     // flagRecherche = 0 : pas de choix de personne à rechercher, 1 : on recherche l'arbre d'une personne en particulier
     function populateNode(flagRecherche,elementsRecherches){
-        var sql_statement = "SELECT * FROM nodes WHERE arbre = '1' OR arbre = '2'";
+        var sql_statement = "SELECT * FROM nodes WHERE arbre = '2' OR arbre = '3'";
         if (flagRecherche == 1 && elementsRecherches.length > 0){
             // Dans ce cas, on ajoute une clause WHERE à la recherche
             sql_statement += " AND WHERE ";
@@ -1496,21 +1485,19 @@
             .style("fill-opacity", OPACITY.NODE_DEFAULT);
 
         node.filter(function (n) { return n.state === "collapsed"; })
-        .transition()
-          .duration(TRANSITION_DURATION)
-          .style("opacity", OPACITY.NODE_DEFAULT);
+          .transition()
+            .duration(TRANSITION_DURATION)
+            .style("opacity", OPACITY.NODE_DEFAULT);
       }
 
       function showHideChildren(node) {
         disableUserInterractions(2 * TRANSITION_DURATION);
         hideTooltip();
-        if (node.state === "collapsed") { expand(node); }
-        else { collapse(node); }
-        //if (node.type == "couple"){ // C'est qu'on a un couple, on peut donc a) rendre les noeuds enfants sans liens, b) rendre les liens du couple visible
-        //    console.log("node couple : " + node.prenom + " - id : " + node.id + " - state : "+ node.state);
-        //    if (node.state === "collapsed") { expand(node); }
-        //    else { collapse(node); }
-        //}
+        if (node.type == "couple"){ // C'est qu'on a un couple, on peut donc a) rendre les noeuds enfants sans liens, b) rendre les liens du couple visible
+            console.log("node couple : " + node.prenom + " - id : " + node.id + " - state : "+ node.state);
+            if (node.state === "collapsed") { expand(node); }
+            else { collapse(node); }
+        }
         
 
         biHiSankey.relayout();
@@ -1697,7 +1684,7 @@
         .attr("width", biHiSankey.nodeWidth());
       
         node.on("click",function(g){
-            console.log("click sur "+g.prenom+" state :" + g.state);
+            console.log("click sur "+g.prenom);
                 //alert('on a tiré sur : '+g.prenom);
         })
       node.on("mouseover", function (g) {
@@ -1857,22 +1844,22 @@
 
       collapserEnter = collapser.enter().append("g").attr("class", "collapser");
 
-      collapserEnter.append("circle")                                   // Modification de l'apparence des couples en mode "éclaté"
-        .attr("r", COLLAPSER.RADIUS)
-        .style("fill", function (d) {
-          d.color = colorScale(d.type.replace(/ .*/, ""));
-          return d.color;
-        });
-      //collapserEnter.append("rect")
-      //  .attr("width",2)
-      //  .attr("height",function(d){
-      //      // On prends la hauteur entre les 2 children
-      //      return Math.abs(d.children[0].y - d.children[1].y);
-      //  })
+      //collapserEnter.append("circle")                                   // Modification de l'apparence des couples en mode "éclaté"
+      //  .attr("r", COLLAPSER.RADIUS)
       //  .style("fill", function (d) {
       //    d.color = colorScale(d.type.replace(/ .*/, ""));
       //    return d.color;
       //  });
+      collapserEnter.append("rect")
+        .attr("width",2)
+        .attr("height",function(d){
+            // On prends la hauteur entre les 2 children
+            return Math.abs(d.children[0].y - d.children[1].y);
+        })
+        .style("fill", function (d) {
+          d.color = colorScale(d.type.replace(/ .*/, ""));
+          return d.color;
+        });
         
       collapserEnter
         .style("opacity", OPACITY.NODE_DEFAULT)
@@ -1880,8 +1867,7 @@
             var Cx = d.children[0].x > d.children[1].x ? d.children[0].x: d.children[1].x;
             Cx = Cx + d.width / 2;
             var Cy = d.children[0].y < d.children[1].y ? d.children[0].y: d.children[1].y;
-          //return "translate(" + (Cx) + "," + (Cy) + ")";
-          return "translate(" + (d.x + d.width / 2) + "," + (d.y + COLLAPSER.RADIUS) + ")";
+          return "translate(" + (Cx) + "," + (Cy) + ")";
         });
 
       collapserEnter.on("dblclick", showHideChildren);
@@ -1898,12 +1884,12 @@
         .delay(TRANSITION_DURATION)
         .duration(TRANSITION_DURATION)
         .attr("transform", function (d, i) {
-          return "translate("
-            + (COLLAPSER.RADIUS + i * 2 * (COLLAPSER.RADIUS + COLLAPSER.SPACING))
-            + ","
-            + (-COLLAPSER.RADIUS - OUTER_MARGIN)
-            + ")";
-          //return "translate(" + (d.children[0].x  + d.children[0].width) + "," + (d.children[0].y + d.children[1].y)/2 + ")";
+          //return "translate("
+          //  + (COLLAPSER.RADIUS + i * 2 * (COLLAPSER.RADIUS + COLLAPSER.SPACING))
+          //  + ","
+          //  + (-COLLAPSER.RADIUS - OUTER_MARGIN)
+          //  + ")";
+          return "translate(" + (d.children[0].x  + d.children[0].width) + "," + (d.children[0].y) + ")";
         });
 
       collapser.on("mouseenter", function (g) {
@@ -2005,7 +1991,7 @@
     function trouverNodesAll(){
         var noeuds = [];
         var aNames = [];
-        var sql_statement = "SELECT * FROM nodes WHERE arbre = '1' OR arbre = '2'";
+        var sql_statement = "SELECT * FROM nodes WHERE arbre = '2' OR arbre = '3'";
         $.getJSON('https://samueldeschampsberger.cartodb.com/api/v2/sql/?q='+sql_statement, function(data_json) {
             if (data_json.rows.length == 0){
                 // Il n'y a personne dans la table
