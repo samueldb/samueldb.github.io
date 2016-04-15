@@ -311,7 +311,7 @@ var map;
             var new_geom = "";
             new_geom = geocoder(adr,cp,ville);
             if (new_geom != undefined && new_geom != ""){
-                var sql_insert = "INSERT INTO nodes (own_id,nom,prenom,genre,father_id,mother_id,couple_id,profession,date_naissance,date_deces,date_mariage,commentaire,the_geom) VALUES ('"+new_id+"','"+nom+"','"+prenom+"','"+genre+"','"+pere+"','"+mere+"','"+couple+"','"+job+"',"+formatInsertTimeStamp(date_n)+","+formatInsertTimeStamp(date_d)+","+formatInsertTimeStamp(date_m)+",'"+com+"',"+new_geom+")&api_key="+apikey+"";
+                var sql_insert = "INSERT INTO nodes (own_id,nom,prenom,genre,father_id,mother_id,couple_id,profession,date_naissance,date_deces,date_mariage,commentaire,the_geom,arbre) VALUES ('"+new_id+"','"+nom+"','"+prenom+"','"+genre+"','"+pere+"','"+mere+"','"+couple+"','"+job+"',"+formatInsertTimeStamp(date_n)+","+formatInsertTimeStamp(date_d)+","+formatInsertTimeStamp(date_m)+",'"+com+"',"+new_geom+","+arbre+")&api_key="+apikey+"";
                 $.getJSON('https://samueldeschampsberger.cartodb.com/api/v2/sql/?q='+sql_insert, function(res) {
                     document.getElementById('remplissage').innerHTML = "<h3>Personne bien ajoutée à l'arbre !</h3>";
                     document.getElementById('remplissage').innerHTML = "<h3>Attention, si vous avez ajouté un couple, il est nécessaire de modifier également le/la conjoint(e)</h3>";
