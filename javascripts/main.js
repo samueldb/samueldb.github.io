@@ -180,7 +180,7 @@ var map;
      
     function nouvellePersonne(user){
     
-        if (getCookie('identifie') != 'ok'){
+        //if (getCookie('identifie') == 'ok'){
             $('#Avertissement_connexion_requise').length > 0 ? hideObject('#Avertissement_connexion_requise'):true;
         
             $('#remplissage_new_personne').length > 0 ? $(remplissage_new_personne).remove():true;
@@ -200,6 +200,11 @@ var map;
                 $(remplissage).append('<div id=\'remplissage_new_personne\'>');
             }
             $(remplissage_new_personne).empty();
+            $(remplissage_new_personne).append('<fieldset style="border:solid 1px black;width:420px"><legend>  A quel arbre appartient cette personne ?  </legend><p style="text-align:center; margin-bottom:10px;margin-top:10px;">Côté papa : <input type="checkbox" name="checkbox" id="chkbox_cotePapa">.-::-.<input type="checkbox" name="checkbox" id="chkbox_coteMaman"> : ou côté maman</fieldset>');
+            $('input[type="checkbox"]').on('change', function() {       // Permet la sélection d'une unique valeur
+               $(this).siblings('input[type="checkbox"]').not(this).prop('checked', false);
+            });
+                        
             $(remplissage_new_personne).append('<fieldset style="border:solid 1px black;width:420px"><legend>Etat civil</legend><p>Nom : <input type="text" class="txt_ajt" name="txt_new_nom" id="id_txt_new_nom" value="" onblur="searchPeres(value);searchMeres(value);searchEnfants(value);searchCouple(value);"></p><p>Prénom : <input type="text" class="txt_ajt" name="txt_new_prenom" id="id_txt_new_prenom" value=""> <FORM NAME="Choix_genre" style="display: initial;margin-left: 10px;"><SELECT id="genres" NAME="genre"><option value="M">Homme</option><option value="F">Femme</option></SELECT></FORM></p></fieldset>');
             $( "#id_txt_new_nom" ).autocomplete({
               source: aNames,
@@ -240,11 +245,11 @@ var map;
             //$(remplissage_new_personne).append('<a style="margin-left: 200px;" id="btn_create_pict" class="btn" style="width:100px;height:10px;" onclick="javascript:add_pict();">importer la photo</a>');
             $(remplissage_new_personne).append('<a style="margin-left: 200px;margin-top:2px;" id="create_carnet" class="button" onclick="javascript:add_Personne(\''+user+'\','+new_id+');">Valider les informations</a>');
             $(remplissage).append("</div></div>");
-        }
+        //}
     }
 
     function ModifierPersonne(user){
-        if (getCookie('identifie') != 'ok'){
+        if (getCookie('identifie') == 'ok'){
             $('#Avertissement_connexion_requise').length > 0 ? hideObject('#Avertissement_connexion_requise'):true;
             showObject(remplissage);
             $('#remplissage_new_personne').length > 0 ? $(remplissage_new_personne).remove():true;
@@ -278,6 +283,8 @@ var map;
     }
 
     function add_Personne(user,new_id){
+        var arbre_papa = document.getElementById('chkbox_cotePapa').checked;
+        var arbre_maman = document.getElementById('chkbox_coteMaman').checked;
         var nom = checkValiditeInsert($(id_txt_new_nom).val(),'string');
         var prenom = checkValiditeInsert($(id_txt_new_prenom).val(),'string');
         var genre = checkValiditeInsert($(genres).val(),'string');
@@ -295,51 +302,58 @@ var map;
         var date_m = checkValiditeInsert($(datepicker_new_dm).val(),'date');
         var com = checkValiditeInsert($(id_txt_new_com).val(),'string');
         
-        var new_geom = "";
-        new_geom = geocoder(adr,cp,ville);
-        if (new_geom != undefined && new_geom != ""){
-            var sql_insert = "INSERT INTO nodes (own_id,nom,prenom,genre,father_id,mother_id,couple_id,profession,date_naissance,date_deces,date_mariage,commentaire,the_geom) VALUES ('"+new_id+"','"+nom+"','"+prenom+"','"+genre+"','"+pere+"','"+mere+"','"+couple+"','"+job+"',"+formatInsertTimeStamp(date_n)+","+formatInsertTimeStamp(date_d)+","+formatInsertTimeStamp(date_m)+",'"+com+"',"+new_geom+")&api_key="+apikey+"";
-            $.getJSON('https://samueldeschampsberger.cartodb.com/api/v2/sql/?q='+sql_insert, function(res) {
-                document.getElementById('remplissage').innerHTML = "<h3>Personne bien ajoutée à l'arbre !</h3>";
-                document.getElementById('remplissage').innerHTML = "<h3>Attention, si vous avez ajouté un couple, il est nécessaire de modifier également le/la conjoint(e)</h3>";
-                $(remplissage).append('<a id="create_pbis" class="button" onclick="javascript:nouvellePersonne(\''+user+'\');">Ajouter une personne ?</a>');
-            });
-        }
-        else {
-            alert('erreur lors de l\'insert en base');
-        }
-        // Gestion des enfants : 
-        //
-        if (enfant != null && enfant != " " && enfant != "null"){
-            // On update l'enfant avec l'id du parent :
-            var sql_update; 
-            if (genre === "M"){
-                sql_update = "UPDATE nodes SET father_id = "+new_id+" WHERE own_id = '"+enfant+"';&api_key="+apikey+"";
-                $.getJSON('https://samueldeschampsberger.cartodb.com/api/v2/sql/?q='+sql_update, function(res) {
-                document.getElementById('remplissage').innerHTML = "<h4>Personne bien ajoutée à l'arbre !</h4>";
-                $(remplissage).append('<a id="create_pbis" class="button" onclick="javascript:nouvellePersonne(\''+user+'\');">Créer une autre personne ?</a>');
-            });
+        var arbre = '0';
+        if (arbre_papa) {arbre = '1'}
+        else if (arbre_maman) {arbre = '3'}
+        else alert('il faut choisir un arbre auquel ajouter la personne !');
+        
+        if (arbre !='0'){
+            var new_geom = "";
+            new_geom = geocoder(adr,cp,ville);
+            if (new_geom != undefined && new_geom != ""){
+                var sql_insert = "INSERT INTO nodes (own_id,nom,prenom,genre,father_id,mother_id,couple_id,profession,date_naissance,date_deces,date_mariage,commentaire,the_geom) VALUES ('"+new_id+"','"+nom+"','"+prenom+"','"+genre+"','"+pere+"','"+mere+"','"+couple+"','"+job+"',"+formatInsertTimeStamp(date_n)+","+formatInsertTimeStamp(date_d)+","+formatInsertTimeStamp(date_m)+",'"+com+"',"+new_geom+")&api_key="+apikey+"";
+                $.getJSON('https://samueldeschampsberger.cartodb.com/api/v2/sql/?q='+sql_insert, function(res) {
+                    document.getElementById('remplissage').innerHTML = "<h3>Personne bien ajoutée à l'arbre !</h3>";
+                    document.getElementById('remplissage').innerHTML = "<h3>Attention, si vous avez ajouté un couple, il est nécessaire de modifier également le/la conjoint(e)</h3>";
+                    $(remplissage).append('<a id="create_pbis" class="button" onclick="javascript:nouvellePersonne(\''+user+'\');">Ajouter une personne ?</a>');
+                });
             }
-            if (genre === "F"){
-                sql_update = "UPDATE nodes SET mother_id = "+new_id+" WHERE own_id = '"+enfant+"';&api_key="+apikey+"";
-                $.getJSON('https://samueldeschampsberger.cartodb.com/api/v2/sql/?q='+sql_update, function(res) {
-                document.getElementById('remplissage').innerHTML = "<h4>Personne bien ajoutée à l'arbre !</h4>";
-                $(remplissage).append('<a id="create_pbis" class="button" onclick="javascript:nouvellePersonne(\''+user+'\');">Créer une autre personne ?</a>');
-            });
+            else {
+                alert('erreur lors de l\'insert en base');
             }
+            // Gestion des enfants : 
+            //
+            if (enfant != null && enfant != " " && enfant != "null"){
+                // On update l'enfant avec l'id du parent :
+                var sql_update; 
+                if (genre === "M"){
+                    sql_update = "UPDATE nodes SET father_id = "+new_id+" WHERE own_id = '"+enfant+"';&api_key="+apikey+"";
+                    $.getJSON('https://samueldeschampsberger.cartodb.com/api/v2/sql/?q='+sql_update, function(res) {
+                    document.getElementById('remplissage').innerHTML = "<h4>Personne bien ajoutée à l'arbre !</h4>";
+                    $(remplissage).append('<a id="create_pbis" class="button" onclick="javascript:nouvellePersonne(\''+user+'\');">Créer une autre personne ?</a>');
+                });
+                }
+                if (genre === "F"){
+                    sql_update = "UPDATE nodes SET mother_id = "+new_id+" WHERE own_id = '"+enfant+"';&api_key="+apikey+"";
+                    $.getJSON('https://samueldeschampsberger.cartodb.com/api/v2/sql/?q='+sql_update, function(res) {
+                    document.getElementById('remplissage').innerHTML = "<h4>Personne bien ajoutée à l'arbre !</h4>";
+                    $(remplissage).append('<a id="create_pbis" class="button" onclick="javascript:nouvellePersonne(\''+user+'\');">Créer une autre personne ?</a>');
+                });
+                }
+            }
+            // Gestion des couples : 
+            //
+            if (couple != null && couple != " " && couple != "null"){
+                var sql_update; 
+                sql_update = "UPDATE nodes SET couple_id = "+new_id+" WHERE own_id = '"+couple+"';&api_key="+apikey+"";
+                $.getJSON('https://samueldeschampsberger.cartodb.com/api/v2/sql/?q='+sql_update, function(res) {
+                    document.getElementById('remplissage').innerHTML = "<h4>Personne bien ajoutée à l'arbre !</h4>";
+                    $(remplissage).append('<a id="create_pbis" class="button" onclick="javascript:nouvellePersonne(\''+user+'\');">Créer une autre personne ?</a>');
+                });
+            }
+            // On met à jour les noeuds existants en prenant en compte le nouvel arrivant. 
+            noeudsExistants = trouverNodes()[0];
         }
-        // Gestion des couples : 
-        //
-        if (couple != null && couple != " " && couple != "null"){
-            var sql_update; 
-            sql_update = "UPDATE nodes SET couple_id = "+new_id+" WHERE own_id = '"+couple+"';&api_key="+apikey+"";
-            $.getJSON('https://samueldeschampsberger.cartodb.com/api/v2/sql/?q='+sql_update, function(res) {
-                document.getElementById('remplissage').innerHTML = "<h4>Personne bien ajoutée à l'arbre !</h4>";
-                $(remplissage).append('<a id="create_pbis" class="button" onclick="javascript:nouvellePersonne(\''+user+'\');">Créer une autre personne ?</a>');
-            });
-        }
-        // On met à jour les noeuds existants en prenant en compte le nouvel arrivant. 
-        noeudsExistants = trouverNodes()[0];
     }
 
     function checkValiditeInsert(insert,type){
