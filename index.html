@@ -1593,7 +1593,7 @@
        node.y = Math.max(0, Math.min(HEIGHT - node.height, d3.event.y));
        d3.select(this).attr("transform", "translate(" + node.x + "," + node.y + ")");
        biHiSankey.relayout();
-       svg.selectAll(".node").selectAll("rect").attr("height", function (d) { return d.height; });
+       svg.selectAll(".node").selectAll("circle").attr("height", function (d) { return d.height; });
        link.attr("d", path);
      }
 
@@ -1796,7 +1796,7 @@
         .duration(TRANSITION_DURATION)
         .attr("transform", function (d) { return "translate(" + d.x + "," + d.y + ")"; })
         .style("opacity", OPACITY.NODE_DEFAULT)
-        .select("rect")
+        .select("circle")
           .style("fill", function (d) {
             d.color = colorScale(d.type.replace(/ .*/, ""));
             return d.color;
@@ -1851,6 +1851,24 @@
           .attr("transform", function (d) { return "translate(" + d.x + "," + d.y + ")"; });
 
       nodeEnter.append("text");
+        
+        nodeEnter.append("image")
+      .attr("xlink:href", function(d) { // Gestion des images affichées sur les noeuds : 
+                var image = 'https://raw.githubusercontent.com/samueldb/samueldb.github.io/master/images/portraits/'+d.id+'.jpg';
+                if (d.type == 'couple'){
+                    image = 
+                }
+                else if (image === 'Not Found'){
+                
+                }
+                else {return image; }
+            })
+      .attr("x", "-24px")
+      .attr("y", "-24px")
+      .attr("width", "48px")
+      .attr("height", "48px");
+      
+      /*
       node.append("circle")
 
             .attr("cx", biHiSankey.nodeWidth()/2)
@@ -1862,12 +1880,12 @@
                 return 2;
             })
         .style("stroke", function (d) {
-          return d3.rgb(colorScale(d.type.replace(/ .*/, ""))).darker(0.1);
-        })
+       *///   return d3.rgb(colorScale(d.type.replace(/ .*/, ""))).darker(0.1);
+      /*  })
         .style("stroke-WIDTH", "5px")
         .attr("height", function (d) { return d.height; })
         .attr("width", biHiSankey.nodeWidth());
-        
+        */
 
 
         node.on("click",function(g){
@@ -1881,7 +1899,7 @@
           highlightConnected(g);
           fadeUnconnected(g);
 
-          d3.select(this).select("rect")
+          d3.select(this).select("circle")
             .style("fill", function (d) {
               d.color = d.netFlow > 0 ? INFLOW_COLOR : OUTFLOW_COLOR;
               return d.color;
@@ -2134,7 +2152,7 @@
 
           d3.select(this)
             .style("opacity", OPACITY.NODE_HIGHLIGHT)
-            .select("circle")
+            .select("rect")
               .style("fill", highlightColor);
 
           node.filter(function (d) {
@@ -2156,7 +2174,7 @@
           hideTooltip();
           d3.select(this)
             .style("opacity", OPACITY.NODE_DEFAULT)
-            .select("circle")
+            .select("rect")
               .style("fill", function (d) { return d.color; });
 
           node.filter(function (d) {
