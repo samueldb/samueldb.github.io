@@ -1856,10 +1856,10 @@
       .attr("xlink:href", function(d) { // Gestion des images affichées sur les noeuds : 
                 var image = 'https://raw.githubusercontent.com/samueldb/samueldb.github.io/master/images/portraits/'+d.id+'.jpg';
                 if (d.type == 'couple'){
-                    image = 
+                    image = 'https://raw.githubusercontent.com/samueldb/samueldb.github.io/master/images/image_couple.png';
                 }
                 else if (image === 'Not Found'){
-                
+                    image = 'https://raw.githubusercontent.com/samueldb/samueldb.github.io/master/images/no_photo.png';
                 }
                 else {return image; }
             })
