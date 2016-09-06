@@ -1,0 +1,46 @@
+<html>
+<head>
+    <meta charset='utf-8'>
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+    <script src="http://libs.cartocdn.com/cartodb.js/v3/3.15/cartodb.js" type="text/javascript"></script>
+    <script src="http://d3js.org/d3.v3.min.js"></script>
+    <script src="https://code.jquery.com/ui/1.11.4/jquery-ui.js" type="text/javascript"></script>
+    <link rel="stylesheet" href="http://openlayers.org/en/v3.18.2/css/ol.css" type="text/css">
+    <!-- The line below is only needed for old environments like Internet Explorer and Android 4.x -->
+    <script src="http://cdn.polyfill.io/v2/polyfill.min.js?features=requestAnimationFrame,Element.prototype.classList,URL"></script>
+    <script src="http://openlayers.org/en/v3.18.2/build/ol.js"></script>
+    <link href="http://code.jquery.com/ui/1.11.4/themes/ui-lightness/jquery-ui.css" rel="stylesheet">
+    <link href='https://fonts.googleapis.com/css?family=Architects+Daughter' rel='stylesheet' type='text/css'>
+    <link rel="stylesheet" type="text/css" href="stylesheets/stylesheet.css" media="screen">
+    <link rel="stylesheet" type="text/css" href="stylesheets/github-light.css" media="screen">
+    <link rel="stylesheet" type="text/css" href="stylesheets/print.css" media="print">
+        <!--[if lt IE 9]>
+    <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+
+    <title>Généalogie en ligne</title>
+    <header('Access-Control-Allow-Origin: *')>
+
+    <script type="text/javascript" src="javascripts/cartographieVillage.js">
+    
+    </script>
+</head>
+
+<body onload="init();">
+    <header>
+      <div class="inner">
+        <h1>Généalogie familiale</h1>
+        <h2 style="text-align:right;">by Samuel Deschamps Berger</h2>
+        <a class="WIP" style="width:250px;height: 140px;"><div style="margin-left:25px;">Work In Progress </div><div style="margin-left:25px;"> <small> ajouté : <p>compatibilité Firefox / IE</p></small> </div></a>
+      </div>
+    </header>
+    <ul id="nav"><!--
+        --><li><a href="deschampsberger.html">Côté papa</a></li><!--
+        --><li><a href="tripard.html">Côté maman</a></li><!--
+        --><li><a href="add_personne.html">Ajout d'une personne</a></li><!--
+        --><li><a href="cartographie.html">Cartographie</a></li><!--
+        --><li><a href="village.html">Montfort</a></li>
+    </ul>
+    <div id="cartodb-map"></div>
+</body>
+</html>
