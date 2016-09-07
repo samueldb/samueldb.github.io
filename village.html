@@ -14,12 +14,15 @@
     <link rel="stylesheet" type="text/css" href="stylesheets/stylesheet.css" media="screen">
     <link rel="stylesheet" type="text/css" href="stylesheets/github-light.css" media="screen">
     <link rel="stylesheet" type="text/css" href="stylesheets/print.css" media="print">
+    	<!-- Control -->
+	<link rel="stylesheet" href="stylesheets/layerswitchercontrol.css" />
+	<script type="text/javascript" src="javascripts/layerswitchercontrol.js"></script>
         <!--[if lt IE 9]>
     <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
     <![endif]-->
 
-    <title>Généalogie en ligne</title>
-    <header('Access-Control-Allow-Origin: *')>
+    <title>Travaux Carto</title>
+    <header('Access-Control-Allow-Origin: *')/>
 
     <script type="text/javascript" src="javascripts/cartographieVillage.js">
     
@@ -29,7 +32,7 @@
 <body onload="init();">
     <header>
       <div class="inner">
-        <h1>Généalogie familiale</h1>
+        <h1>Travaux Carto</h1>
         <h2 style="text-align:right;">by Samuel Deschamps Berger</h2>
         <a class="WIP" style="width:250px;height: 140px;"><div style="margin-left:25px;">Work In Progress </div><div style="margin-left:25px;"> <small> ajouté : <p>compatibilité Firefox / IE</p></small> </div></a>
       </div>
@@ -41,6 +44,19 @@
         --><li><a href="cartographie.html">Cartographie</a></li><!--
         --><li><a href="village.html">Montfort</a></li>
     </ul>
-    <div id="cartodb-map"></div>
+    <div id="content-wrapper">
+        <div class="inner clearfix">
+        <section id="main-content">
+            <div id="titre"></div>
+            <div id="cartodb-map" style="margin-top:0px;margin-left:0px"></div>
+        </section>
+
+        <aside id="sidebar">
+            <div class="layerSwitcher" style="margin-left:35px;width:110%;"><h3>Gestion des couches</h3></div>
+        </aside>
+        </div>
+    </div>
+    
+    
 </body>
 </html>
