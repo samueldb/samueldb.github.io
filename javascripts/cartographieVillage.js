@@ -26,13 +26,23 @@ function init() {
         
         // ----------------------------------------------------------------------------------------------------------------------------------------------
         
-        var mapConfig = {
+        var mapConfig_actuel = {
         'layers': [{
           'type': 'cartodb',
           'options': {
             'cartocss_version': '2.1.1',
             'cartocss': '#layer { polygon-fill: #F00; }',
             'sql': 'SELECT * FROM maisons'
+          }
+        }]
+        };
+        var mapConfig1728 = {
+        'layers': [{
+          'type': 'cartodb',
+          'options': {
+            'cartocss_version': '2.1.1',
+            'cartocss': '#layer { polygon-fill: #F00; }',
+            'sql': 'SELECT * FROM parcelles_1728'
           }
         }]
         };
@@ -67,14 +77,18 @@ function init() {
                 ]
         });
 
-        var cartoDBSource = new ol.source.CartoDB({
+        var cartoDBSourceActuel = new ol.source.CartoDB({
         account: 'samueldeschampsberger',
-        config: mapConfig
+        config: mapConfig_actuel
+        });
+        var cartoDBSource1728 = new ol.source.CartoDB({
+        account: 'samueldeschampsberger',
+        config: mapConfig1728
         });
         
         var mtft_1728Layer = new ol.layer.Tile({
           source: new ol.source.XYZ({
-            url: 'https://api.mapbox.com/v4/samueldb.5ajstwl3/{z}/{x}/{y}.png?access_token=pk.eyJ1Ijoic2FtdWVsZGIiLCJhIjoiY2lzc2t4a3RnMDAwYTJ5bnplNjBiYXg4dyJ9.D9yc49jOivEKLDNmFaqIeg'
+            url: 'https://api.mapbox.com/v4/samueldb.5agbtq27/{z}/{x}/{y}.png?access_token=pk.eyJ1Ijoic2FtdWVsZGIiLCJhIjoiY2lzc2t4a3RnMDAwYTJ5bnplNjBiYXg4dyJ9.D9yc49jOivEKLDNmFaqIeg'
           }),
           title: "mappe Sarde de 1728"
         })
@@ -85,16 +99,21 @@ function init() {
           title: "cadastre de 1888"
         })
         
-        var cartoDBLayer = new ol.layer.Tile({
-            source: cartoDBSource,
+        var cartoDBLayerActuel = new ol.layer.Tile({
+            source: cartoDBSourceActuel,
             title: "batiments actuels"
+          })
+        var cartoDBLayer1728 = new ol.layer.Tile({
+            source: cartoDBSource1728,
+            title: "batiments 1728"
           })
         var map = new ol.Map({
         layers: [
           baseLayers,
           mtft_1728Layer,
           mtft_1888Layer,
-          cartoDBLayer,
+          cartoDBLayerActuel,
+          cartoDBLayer1728
         ],
         target: 'cartodb-map',
         view: new ol.View({
