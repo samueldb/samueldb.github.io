@@ -779,6 +779,24 @@ td {
   color: #474747;
   text-indent: 3px;
 }
+#infoTitre  h3 {
+  margin-top: 24px;
+  margin-bottom: 8px;
+  font-family: 'Architects Daughter', 'Helvetica Neue', Helvetica, Arial, serif;
+  font-size: 18px;
+  font-weight: bold;
+  color: #474747;
+  text-indent: 3px;
+}
+#sidebar  h3 {
+  margin-top: 24px;
+  margin-bottom: 8px;
+  font-family: 'Architects Daughter', 'Helvetica Neue', Helvetica, Arial, serif;
+  font-size: 18px;
+  font-weight: bold;
+  color: #474747;
+  text-indent: 3px;
+}
 
 #main-content h3:before {
   padding-right: 0.3em;
@@ -810,7 +828,21 @@ h4:before {
   color: #474747;
   text-indent: 3px;
 }
-h5:before {
+#info h5 {
+  margin-bottom: 8px;
+  margin-left:25px;
+  font-family: 'Architects Daughter', 'Helvetica Neue', Helvetica, Arial, serif;
+  font-size: 15px;
+  color: #474747;
+  text-indent: 3px;
+}
+#info h5 :before{
+  padding-right: 0.3em;
+  margin-left: -3.2em;
+  content: "//";
+  color: #9ddcff;
+}
+#main-content h5:before {
   padding-right: 0.3em;
   margin-left: -3.2em;
   content: "/////";
