@@ -201,18 +201,38 @@ function init() {
             });
         map.addControl(switcher);
 
+        // Gestion de la recherche d'information : 
         map.on('singleclick', function(evt) {
             var coordinate = evt.coordinate;
-            
             var featureSelected1728 = batiments1728.getSource().getFeaturesAtCoordinate(coordinate)[0];  // On ne récupère qu'une seule feature
-            var featureSelected1888 = batimentsActuels.getSource().getFeaturesAtCoordinate(coordinate)[0];  // On ne récupère qu'une seule feature
+            var featureSelectedActuels = batimentsActuels.getSource().getFeaturesAtCoordinate(coordinate)[0];  // On ne récupère qu'une seule feature
+            var proprio1728, usage1728, proprioActuel, usageActuel;
             if (featureSelected1728 && batiments1728.getProperties().opacity != 0 && batiments1728.getProperties().visible) {
-                document.getElementById('info').innerHTML = '<h5 style:"font-size: 15px;">En 1728 : </h5>'+
-                                                            '<p>' + featureSelected1728.get("proprietaire") + ' - ' + featureSelected1728.get("utilisation") + '</p>'+
-                                                            '<h5 style:"font-size: 15px;>Actuellement : </h5>'+
-                                                            '<p>' + featureSelected1728.get("proprietaire") + ' - ' + featureSelected1728.get("utilisation") + '</p>'
-                                                            ;
+                proprio1728 = featureSelected1728.get("proprietaire");
+                usage1728 = featureSelected1728.get("utilisation");
             }
+            else if (!batiments1728.getProperties().visible) {
+                proprio1728 = "la couche n'est pas visible sur la carte"
+            }
+            else {
+                proprio1728 = "pas d'élément pour cette date"
+            }
+            if (featureSelectedActuels && batimentsActuels.getProperties().opacity != 0 && batimentsActuels.getProperties().visible) {
+                proprioActuel = featureSelectedActuels.get("proprietaire");
+                usageActuel = featureSelectedActuels.get("utilisation");
+            }
+            else if (!batimentsActuels.getProperties().visible) {
+                proprioActuel = "la couche n'est pas visible sur la carte"
+            }
+            else {
+                proprioActuel = "pas d'élément pour cette date"
+            }
+            document.getElementById('info').innerHTML = '<h5 style:"font-size: 15px;">En 1728 : </h5>'+
+                                                        '<p>' + proprio1728 + ' - ' + usage1728 + '</p>'+
+                                                        '<h5 style:"font-size: 15px;>Actuellement : </h5>'+
+                                                        '<p>' + proprioActuel + ' - ' + usageActuel + '</p>'
+                                                        ;
+            
           });
         
 }
