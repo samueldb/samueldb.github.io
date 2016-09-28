@@ -71,6 +71,12 @@
     </script>
     
     <script type="text/javascript">
+
+
+
+
+
+
     function ascendingXPosition(a, b) {
                 return a.x - b.x;
               }
@@ -100,13 +106,13 @@
         nodeSpacing = 24,
         linkSpacing = 15,
         arrowheadScaleFactor = 0.5, // Specifies the proportion of a link's stroke width to be allowed for the marker at the end of the link.
-        size = [1, 1], // default to one pixel by one pixel
+        size = [3, 3], // default to one pixel by one pixel
         nodes = [],
         nodeMap = {},
         parentNodes = [],
         leafNodes = [],
         links = [],
-        xScaleFactor = 0.5,
+        xScaleFactor = 1,
         yScaleFactor = 1,
         defaultLinkCurvature = 0.5;
 
@@ -128,26 +134,6 @@
         node.children = [];
         node.ancestors = [];
       }
-      
-      
-    function isParentCelib(node){
-        // var nodes = biHiSankey.nodes();
-        var isInCouple = 0;
-        var isParent = 0;
-        nodes.forEach(function (n) {
-            if (n.c_id == node.source.id){
-                isInCouple += 1; // Si la personne est en couple avec le noeud, c'est mort
-            }    
-        });
-        nodes.forEach(function(n){
-            if (n.f_id == node.source.id || n.m_id == node.source.id){
-                isParent += 1;    
-            }
-        });
-        if (isInCouple == 0&& isParent>0){return true;}
-        else {return false;}
-    }
-    
       // generates the nodeMap {"1": <node1>, "2": <node2>}
       // and initializes the array properties of each node
       function initializeNodeMap() {
@@ -175,7 +161,7 @@
           addAncestorsToChildren(child);
         }, node);
       }
-      
+
       // generate hierarchical connections between parent and child nodes
       function computeNodeHierarchy() {
         var parent,
@@ -203,31 +189,20 @@
       // Populate the sourceLinks and targetLinks for each node.
       function computeNodeLinks() {
         var sourceNode, targetNode;
-        // links.filter(function(link){ // Ajouter pour ne pas pousser les liens sur une même génération
-                // return (link.source.state === "collapsed" || link.target.state === "expanded")       // Gestion de l'affichage des liens pour ne pas voir les liens parents->enfants autre que ceux passant par le couple
-                // && ((!link.source.id.includes("c_") && link.target.id.includes("c_") && link.source.x == link.target.x) 
-                    // || (link.source.id.includes("c_") && !link.target.id.includes("c_"))
-                    // || (isParentCelib(link) && !link.target.id.includes("c_"))      // Cas des parents célibataires
-                    // );
-            // })
-            links.forEach(function (link) {                         // Gérer le cas des liens entre personnes d'un couple
-              sourceNode = nodeMap[link.source] || link.source;
-              targetNode = nodeMap[link.target] || link.target;
-              link.id = link.source + '-' + link.target;
-              link.source = sourceNode;
-              link.target = targetNode;
-              sourceNode.sourceLinks.push(link);
-              targetNode.targetLinks.push(link);
-            });
+        links.forEach(function (link) {
+          sourceNode = nodeMap[link.source] || link.source;
+          targetNode = nodeMap[link.target] || link.target;
+          link.id = link.source + '-' + link.target;
+          link.source = sourceNode;
+          link.target = targetNode;
+          sourceNode.sourceLinks.push(link);
+          targetNode.targetLinks.push(link);
+        });
       }
 
       function visible(linkCollection) {
         return linkCollection.filter(function (link) {
-          return (link.source.state === "collapsed" || link.target.state === "expanded")       // Gestion de l'affichage des liens pour ne pas voir les liens parents->enfants autre que ceux passant par le couple
-                && ((!link.source.id.includes("c_") && link.target.id.includes("c_") && link.source.x == link.target.x) 
-                    || (link.source.id.includes("c_") && !link.target.id.includes("c_"))
-                    || (isParentCelib(link) && !link.target.id.includes("c_"))      // Cas des parents célibataires
-                    );
+          return link.source.state === "collapsed" && link.target.state === "collapsed";
         });
       }
 
@@ -310,17 +285,17 @@
           .entries(links)                                                                
           .map(function (object) { return object.values; });                             
                                                                                          
-        // links = linkGroups.map(function (linkGroup) {                                    
-          // return linkGroup.reduce(function (previousLink, currentLink) {                 
-            // return {                                                                     
-              // "source": previousLink.source,                                             
-              // "target": previousLink.target,                                             
-              // "id": d3.min([previousLink.id, currentLink.id]),                           
-              // "value": previousLink.value + currentLink.value                            
-              // "value": 1 
-            // };                                                                           
-          // });
-        // });
+        links = linkGroups.map(function (linkGroup) {                                    
+          return linkGroup.reduce(function (previousLink, currentLink) {                 
+            return {                                                                     
+              "source": previousLink.source,                                             
+              "target": previousLink.target,                                             
+              "id": d3.min([previousLink.id, currentLink.id]),                           
+              //"value": previousLink.value + currentLink.value                            
+              "value": 1 
+            };                                                                           
+          });
+        });
       }
 
       // Calcul la hauteur de chaque noeuds
@@ -350,12 +325,12 @@
         links.forEach(function (link) {
           sourceNode = link.source;
           targetNode = link.target;
-          // if (sourceNode.connectedNodes && sourceNode.connectedNodes.indexOf(targetNode) < 0) {     // on test l'existence de sourceNode par rapport aux ajout du filtre ligne 212
+          if (sourceNode.connectedNodes.indexOf(targetNode) < 0) {
             sourceNode.connectedNodes.push(targetNode);
-          // }
-          // if (targetNode.connectedNodes && targetNode.connectedNodes.indexOf(sourceNode) < 0) {     // on test l'existence de sourceNode par rapport aux ajout du filtre ligne 212
+          }
+          if (targetNode.connectedNodes.indexOf(sourceNode) < 0) {
             targetNode.connectedNodes.push(sourceNode);
-          // }
+          }
         });
       }
 
@@ -416,11 +391,9 @@
               }
             },
             setValues = function (node) {
-                node.x = x;
-                node.width = nodeWidth;
-                if (node.sourceLinks){          // on test l'existence de sourceNode par rapport aux ajout du filtre ligne 212
-                    node.sourceLinks.forEach(addToNextNodes, node);
-                }
+              node.x = x;
+              node.width = nodeWidth;
+              node.sourceLinks.forEach(addToNextNodes, node);
             };
 
         while (remainingNodes.length) {
@@ -686,9 +659,31 @@
                         else {tabFinalYClasse.push(node);}
                    }
                     tabGeneration = tabFinalYClasse;
-                    
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
                  // Il faut itérer sur les couples pour moyenner leurs Y afin qu'ils se trouvent à la même place
-                   var tabCouple = tabGeneration.filter(function (a){return a.id.includes("c_")}); // On ne gère que les points "Couple"
+                   var tabCouple = tabGeneration.filter(function (a){return a.id.includes("c_")});
                    for (var c of tabCouple){
                        var homme = tabGeneration.find(function (a){return a.id == c.id_homme});
                        var femme = tabGeneration.find(function (a){return a.id == c.id_femme});
@@ -741,7 +736,7 @@
 
         function relaxLeftToRight(alpha) {
           function weightedSource(link) {
-            return center(link.source) * link.value;
+            return center(link.source) * link.value / 6;
           }
 
           nodesByXPosition.forEach(function (nodes) {
@@ -896,15 +891,13 @@
         nextNodes = [];
         var pers = [];
         remainingNodes.forEach(function (node) {
-            node.x = x;
-            node.dx = nodeWidth;
-            node.sourceLinks.forEach(function (link) {
-                if (link.target.type != "couple"){
-                    nextNodes.push(link.target);
-                }
-            });
+        node.x = x;
+        node.dx = nodeWidth;
+        node.sourceLinks.forEach(function (link) {
+            nextNodes.push(link.target);
+        });
 
-            pers.push({"id":node.id,"x":node.x});
+        pers.push({"id":node.id,"x=":node.x});
         });
         remainingNodes = nextNodes;
         x = x + 1;
@@ -915,7 +908,7 @@
         checkGenerationDistance();
         modelCoupleX();
         checkNegativeX();
-        // moveSinksRight(x);
+        //moveSinksRight(x);
         scaleNodeBreadths((size[0] - nodeWidth) / (x - 1));
         
         };
@@ -967,14 +960,14 @@
                             //  Attention, il faut maintenant tiré également les parents du conjoints
                             //
                             //
-                            // var sonCoupleSonPere = nodes.find(function (a){return a.id == sonCouple.f_id});
-                            // var sonCoupleSaMere = nodes.find(function (a){return a.id == sonCouple.m_id});
-                            // if (typeof(sonCoupleSonPere) != "undefined"){
-                               // sonCoupleSonPere.x = node.x - 1;
-                            // }
-                            // if (typeof(sonCoupleSaMere) != "undefined"){
-                               // sonCoupleSaMere.x = node.x - 1;
-                            // }
+                            //var sonCoupleSonPere = nodes.find(function (a){return a.id == sonCouple.f_id});
+                            //var sonCoupleSaMere = nodes.find(function (a){return a.id == sonCouple.m_id});
+                            //if (typeof(sonCoupleSonPere) != "undefined"){
+                            //    sonCoupleSonPere.x = node.x - 1;
+                            //}
+                            //if (typeof(sonCoupleSaMere) != "undefined"){
+                            //    sonCoupleSaMere.x = node.x - 1;
+                            //}
                        }
                     }
                 }
@@ -1031,20 +1024,20 @@
                 }
                 
                 // 2. Pour chacun, on vérifie son x 
-                // if (pere != "null"){
-                    // if (node.x == pere.x + 1){ // Tout est ok 
-                    // }
-                    // else {
-                        // pere.x = node.x - 1;
-                    // }
-                // }
-                // if (mere != "null"){
-                    // if (node.x == mere.x + 1){ // Tout est ok 
-                    // }
-                    // else {
-                        // mere.x = node.x - 1;
-                    // }
-                // }
+                if (pere != "null"){
+                    if (node.x == pere.x + 1){ // Tout est ok 
+                    }
+                    else {
+                        pere.x = node.x - 1;
+                    }
+                }
+                if (mere != "null"){
+                    if (node.x == mere.x + 1){ // Tout est ok 
+                    }
+                    else {
+                        mere.x = node.x - 1;
+                    }
+                }
             }
         }
         
@@ -1081,10 +1074,6 @@
                 var p2 = tabCouples.filter(function(a){return a.parent.id == c.id})[1];
                 if (p1.x == p2.x){
                     c.x = p1.x;
-                }
-                else if (p1.x > p2.x){
-                    p1.x = p2.x;
-                    c.x = p2.x;
                 }
                 else {
                     p2.x = p1.x;
@@ -1142,8 +1131,8 @@
             var curvature = defaultLinkCurvature;
 
 
-            function leftToRightLink(link) {
-                if (link.source.c_id == null || link.source.c_id == "null"){   // On ne rend visible que les liens entre couples et enfants, ou entre parent seul et enfants
+                        function leftToRightLink(link) {
+                if (link.source.id.includes("c_") || link.source.c_id == null || link.source.c_id == "null"){   // On ne rend visible que les liens entre couples et enfants, ou entre parent seul et enfants
                   var arrowHeadLength = link.thickness * arrowheadScaleFactor,
                       straightSectionLength = (3 * link.thickness / 4) - arrowHeadLength,
                       x0 = link.source.x + link.source.width,
@@ -1152,8 +1141,8 @@
                       xi = d3.interpolateNumber(x0, x4),
                       x2 = xi(curvature),
                       x3 = xi(1 - curvature),
-                      y0 = link.source.y; // + link.sourceY + link.thickness / 2,
-                      y1 = link.target.y; // + link.targetY + link.thickness / 2;
+                      y0 = link.source.y + link.sourceY + link.thickness / 2,
+                      y1 = link.target.y + link.targetY + link.thickness / 2;
                   return "M" + x0 + "," + y0
                        + "L" + x1 + "," + y0
                        + "C" + x2 + "," + y0
@@ -1170,14 +1159,18 @@
                       xi = d3.interpolateNumber(x0, x4),
                       x2 = xi(curvature),
                       x3 = xi(1 - curvature),
-                      y0 = link.source.y; // + link.sourceY + link.thickness / 2,
-                      y1 = link.target.y; // + link.targetY + link.thickness / 2;
+                      y0 = link.source.y + link.sourceY + link.thickness / 2,
+                      y1 = link.target.y + link.targetY + link.thickness / 2;
                       // link.thickness = 0;
                   return "M" + x0 + "," + y0
                        + "L" + x1 + "," + y0
                        + "C" + x2 + "," + y0
                        + " " + x3 + "," + y1
                        + " " + x4 + "," + y1
+
+
+
+
                        + "L" + (x4 + straightSectionLength) + "," + y1;
                }
             }
@@ -1191,8 +1184,8 @@
                   xi = d3.interpolateNumber(x0, x4),
                   x2 = xi(curvature),
                   x3 = xi(1 - curvature),
-                  y0 = link.source.y; // + link.sourceY + link.thickness / 2,
-                  y1 = link.target.y;// + link.targetY + link.thickness / 2;
+                  y0 = link.source.y + link.sourceY + link.thickness / 2,
+                  y1 = link.target.y + link.targetY + link.thickness / 2;
               return "M" + x0 + "," + y0
                    + "L" + x1 + "," + y0
                    + "C" + x2 + "," + y0
@@ -1312,6 +1305,7 @@
       OUTER_MARGIN = 50,
       MARGIN = {
         TOP: 25,
+
         RIGHT: 25,
         BOTTOM: 25,
         LEFT: 25
@@ -1408,8 +1402,6 @@
                                 if (homme){
                                     nodes.push({"type":"couple","id":"c_"+r.couple_id,"parent":null,"name":homme.nom,"prenom":homme.prenom,"id_homme":r.own_id,"id_femme":r.couple_id,"dMar":r.date_mariage,"arbre":r.arbre});
                                     liste_couple.push({"id_c":r.couple_id,"id_homme":r.own_id});
-                                    links.push({"source":homme.id,"target":"c_"+r.couple_id,"value":1});
-                                    links.push({"source":r.couple_id,"target":"c_"+r.couple_id,"value":1});
                                 }
                             }
                         }
@@ -1434,7 +1426,6 @@
                             }
                         }
                     }
-                    
             }
             
             //return nodes;
@@ -1470,7 +1461,7 @@
     },
 
     hideTooltip = function () {
-    tooltip.transition().style("opacity",0).select(".cimg").attr("src","");
+    tooltip.transition().style("opacity",1).select(".cimg").attr("src","");
       return tooltip.transition()
         .duration(TRANSITION_DURATION)
         .style("opacity", 0);
@@ -1478,28 +1469,19 @@
 
     showTooltip = function () {
       return tooltip
-        // .style("left", d3.event.layerX + "px")
-        // .style("left", "0 px")
-        // .style("top", d3.event.layerY + 15 + "px")
-        // .style("float", "15 px")
+        .style("left", d3.event.layerX + "px")
+        .style("top", d3.event.layerY + 15 + "px")
         .transition()
           .duration(TRANSITION_DURATION)
           .style("opacity", 1);
     };
-    
-    
+
     colorScale = d3.scale.ordinal().domain(TYPES).range(TYPE_COLORS),
     highlightColorScale = d3.scale.ordinal().domain(TYPES).range(TYPE_HIGHLIGHT_COLORS),
-    
+
     svg = d3.select("#chart").append("svg")
             .attr("width", WIDTH + MARGIN.LEFT + MARGIN.RIGHT)
             .attr("height", HEIGHT + MARGIN.TOP + MARGIN.BOTTOM)
-            // .on('mousedown', disableRightClick)
-            // .call(zoom)
-            .call(d3.behavior.zoom().on("zoom", function () {       // Permet de gérer le zoom et le déplacement
-                console.log("on zoom !");
-                svg.attr("transform", "translate(" + d3.event.translate + ")" + " scale(" + d3.event.scale + ")")
-              }))
           .append("g")
             .attr("transform", "translate(" + MARGIN.LEFT + "," + MARGIN.TOP + ")");
     svg.append("g").attr("id", "path_time");
@@ -1507,27 +1489,17 @@
     svg.append("g").attr("id", "nodes");
     svg.append("g").attr("id", "collapsers");
 
-    // Barre de recherche de personne : 
-    $(RecherchePersonne).append('<fieldset style="border:solid 1px black;width:390px"><legend>Recherche</legend><div id="recherche" style="margin:10px;">Nom de la personne : <input type="text" class="txt_ajt" name="txt_old_nom" id="txt_old_nom" value="" onblur="remplirFamille(value);"><FORM NAME="Choix_genre_search" style="display: initial;margin-left: 10px;"><SELECT id="genres_search" NAME="genre" onchange="remplirFamille($(txt_old_nom).val())"><option value="M">Homme</option><option value="F">Femme</option></SELECT></FORM><FORM NAME="Choix_old_prenom" style="display: initial;margin-left: 10px;"><SELECT id="liste_old_prenom" NAME="liste_old_prenom" style="margin-top:20px;margin-left:120px;"></SELECT></FORM><a id="focus_p" class="button_small" onclick="focusPersonne($(liste_old_prenom).val());";>Centrer</a><a id="reinit" class="button_small" style="display:none;" onclick="hideObject(reinit);showObject(focus_p);populateNode();";>Réinitialiser</a></div></fieldset>');
-        
-    tooltip = d3.select("#RecherchePersonne").append("div").attr("id", "tooltip");
-    tooltip.style("width", "390px");
-    tooltip.style("margin-left", "0px");
-    tooltip.style("margin", "20px");
+    tooltip = d3.select("#chart").append("div").attr("id", "tooltip");
+
+    
     tooltip.style("opacity", 0)
         .append("img")
           .attr("src", "")
           .attr("alt","")
-          // .attr("height","60px")
-          // .attr("width","45px")
+          .attr("height","60px")
+          .attr("width","45px")
           .attr("class","cimg")
           .attr("style","float:right")
-          ;
-    tooltip.style("opacity", 0)
-        .append("div")
-          .attr("class", "titre_nom")
-          .attr("id","id_ptool")
-          .attr("style","float:left")
           ;
     tooltip.style("opacity", 0)
         .append("div")
@@ -1542,7 +1514,7 @@
     biHiSankey
       .nodeWidth(NODE_WIDTH)
       .nodeSpacing(24)
-      .linkSpacing(1)
+      .linkSpacing(-1)
       .arrowheadScaleFactor(0.5) // Specifies that 0.5 of the link's stroke WIDTH should be allowed for the marker at the end of the link.
       .size([WIDTH, HEIGHT]);
 
@@ -1593,7 +1565,8 @@
       .attr("orient", "auto")
       .append("path")
         .attr("d", "M 0 0 L 1 0 L 6 5 L 1 10 L 0 10 z");
-        
+    
+    
     function update () {
       var link, linkEnter, node, nodeEnter, collapser, collapserEnter;
 
@@ -1637,9 +1610,7 @@
           .style("marker-end", function () { return 'url(#arrowHead)'; })
           .transition()
             .duration(TRANSITION_DURATION)
-            .style("opacity", function(d){
-                return d.id.includes("c_") || isParentCelib(d) ? 1:0
-                });
+            .style("opacity", OPACITY.LINK_DEFAULT);
 
         //node
           //.selectAll("circle")
@@ -1653,10 +1624,10 @@
             //})
             //.style("fill-opacity", OPACITY.NODE_DEFAULT);
 
-        node.filter(function (n) { return !n.id.includes("c_"); })
+        node.filter(function (n) { return n.state === "collapsed"; })
           .transition()
             .duration(TRANSITION_DURATION)
-            .style("opacity", 1);
+            .style("opacity", OPACITY.NODE_DEFAULT);
       }
 
       function showHideChildren(node) {
@@ -1691,85 +1662,33 @@
         restoreLinksAndNodes();
       }
       
-      function highlightConnected(g) {      // TODO Il manque ici la gestion du fils du couple du père. Parent -> Couple ..> Enfant ou Parent ..> Couple -> Enfant
-        link.filter(function (d) {
-            // return ((d.source === g && !d.source.id.includes("c_")) || (d.source.parent == "null" ? d.source.parent.id.includes("c_"):false));
-            // if (d.source === g || d.source.parent == "null" ? false:d.source.parent.id == g.id) {console.log("source : " + d.source.id + " - " + d.source.parent.id);}
-            if (d.source ===g){
-                console.log("source : " + d.source.id); 
-                return true;}
-            if ((d.source != null || d.target != null)){           // On récupère les enfants et le conjoint
-                if (!isParentCelib(d) && g.parent !=null){
-                    if (d.target.id == g.parent.id || d.source.id == g.parent.id){
-                        console.log("source : " + d.source.id + " - " + d.target.id);
-                        return true;
-                    }
-                    else if (g.parent == null){
-                        return (d.target === g || d.target.id == g.id)
-                    }
-                }
-                else {
-                    return false;
-                }
-            }
-            return false;
-        })        
-          .style("marker-end", function () { return 'url(#arrowHeadInflow)'; })
-          .style("stroke", OUTFLOW_COLOR) // rouge
-          .style("opacity", 1);
-
+      function highlightConnected(g) {
         link.filter(function (d) { 
-            if (d.target != null){
-                if (!isParentCelib(d) && g.parent !=null){
-                    if (d.target === g || d.target.id == g.parent.id) {console.log ("target : " + d.target === g + " - " + d.target.id + " - " + d.target.id);}
-                    return (d.target === g || d.target.id == "c_"+g.f_id || d.target.id == "c_"+g.m_id || d.target.id == g.parent.id) ;
-                }
-                else if (g.parent == null){
-                    return (d.target === g || d.target.id == g.id || d.target.id == "c_"+g.f_id || d.target.id == "c_"+g.m_id)
-                }
-            }
-        })     // On récupère les parents
+            return d.source === g; 
+        })
+          .style("marker-end", function () { return 'url(#arrowHeadInflow)'; })
+          .style("stroke", OUTFLOW_COLOR)
+          .style("opacity", OPACITY.LINK_DEFAULT);
+
+        link.filter(function (d) { return d.target === g; })
           .style("marker-end", function () { return 'url(#arrowHeadOutlow)'; })
           .style("stroke", INFLOW_COLOR)
-          .style("opacity", 1);
+          .style("opacity", OPACITY.LINK_DEFAULT);
       }
 
       function fadeUnconnected(g) {
-        link.filter(function (d) {
-            if (d.source != null && d.target != null && g.parent != null){
-                return d.source !== g && d.source.id != g.parent.id && d.target !== g && d.target.id != g.parent.id && d.target.id != "c_"+g.f_id && d.target.id != "c_"+g.m_id; 
-            }
-        })  
+        link.filter(function (d) { return d.source !== g && d.target !== g; })
           .style("marker-end", function () { return 'url(#arrowHead)'; })
           .transition()
             .duration(TRANSITION_DURATION)
             .style("opacity", OPACITY.LINK_FADED);
 
-        node.filter(function (d) {return !biHiSankey.connected(d, g) && !d.id.includes("c_") && d !== g;    // On fade les non-reliés
+        node.filter(function (d) {
+          return (d.source === g) ? false : !biHiSankey.connected(d, g);
         }).transition()
           .duration(TRANSITION_DURATION)
           .style("opacity", OPACITY.NODE_FADED);
       }
-      
-    function isParentCelib(link){
-        var nodes = biHiSankey.nodes();
-        var isInCouple = 0;
-        var isParent = 0;
-        if (link.source != null){
-            nodes.forEach(function (n) {
-                if (n.c_id == link.source.id){
-                    isInCouple += 1; // Si la personne est en couple avec le noeud, c'est mort
-                }    
-            });
-            nodes.forEach(function(n){
-                if (n.f_id == link.source.id || n.m_id == link.source.id){
-                    isParent += 1;    
-                }
-            });
-        }
-        if (isInCouple == 0&& isParent>0){return true;}
-        else {return false;}
-    }
 
       link = svg.select("#links").selectAll("path.link")
         .data(biHiSankey.visibleLinks(), function (d) { return d.id; });
@@ -1779,7 +1698,7 @@
         .duration(TRANSITION_DURATION)
         .style("stroke-WIDTH", function (d) { return Math.max(1, d.thickness); })
         .attr("d", path)
-        .style("opacity", function(d){return d.id.includes("c_") || isParentCelib(d) ? 1:0});
+        .style("opacity", OPACITY.LINK_DEFAULT);
 
 
 
@@ -1805,18 +1724,16 @@
         if (!isTransitioning) {
           showTooltip().select(".value").text(function () {
             if (d.direction > 0) {
-              // return d.source.id + "--" + d.source.prenom + " -> " + d.target.prenom + " " + d.target.name + "\n";
-              return "direction " + d.direction + "-" + d.source.id + "--> " + d.target.id + "\n";
+              return d.source.prenom + " -> " + d.target.prenom + " " + d.target.name + "\n";
             }
-            // return d.target.id + "--" + d.target.name + " <- " + d.source.name + d.source.prenom + "\n";
-            return "direction " + d.direction + "-" + d.source.id + "--> " + d.target.id + "\n";
-            });
+            return d.target.name + " <- " + d.source.name + d.source.prenom + "\n";
+          });
 
           d3.select(this)
             .style("stroke", LINK_COLOR)
             .transition()
               .duration(TRANSITION_DURATION / 2)
-              .style("opacity", function(d){return d.id.includes("c_") || isParentCelib(d) ? 1:0});
+              .style("opacity", OPACITY.LINK_HIGHLIGHT);
         }
       });
 
@@ -1828,7 +1745,7 @@
             .style("stroke", LINK_COLOR)
             .transition()
               .duration(TRANSITION_DURATION / 2)
-              .style("opacity", function(d){return d.id.includes("c_") || isParentCelib(d) ? 1:0});
+              .style("opacity", OPACITY.LINK_DEFAULT);
         }
       });
 
@@ -1849,7 +1766,7 @@
           .duration(TRANSITION_DURATION)
           .attr("d", path)
           .style("stroke-WIDTH", function (d) { return Math.max(1, d.thickness); })
-          .style("opacity", function(d){return d.id.includes("c_") || isParentCelib(d) ? 1:0});
+          .style("opacity", OPACITY.LINK_DEFAULT);
 
 
       node = svg.select("#nodes").selectAll(".node")
@@ -1861,7 +1778,7 @@
       node.transition()
         .duration(TRANSITION_DURATION)
         .attr("transform", function (d) { return "translate(" + d.x + "," + d.y + ")"; })
-        .style("opacity", function(d){return d.id.includes("c_") ? 1:0})
+        .style("opacity", OPACITY.NODE_DEFAULT)
         //.select("circle")
           //.style("fill", function (d) {
           //  d.color = colorScale(d.type.replace(/ .*/, ""));
@@ -1909,10 +1826,10 @@
         }
           return "translate(" + sX + "," + sY + ")";
         })
-        .style("opacity", function(d){return d.id.includes("c_") ? 0:1})
+        .style("opacity", 1e-6)
         .transition()
           .duration(TRANSITION_DURATION)
-          .style("opacity", function(d){return d.id.includes("c_") ? 0:1})
+          .style("opacity", OPACITY.NODE_DEFAULT)
           .attr("transform", function (d) { return "translate(" + d.x + "," + d.y + ")"; });
 
           //
@@ -1979,56 +1896,48 @@
             console.log("click sur "+g.prenom);
                 //alert('on a tiré sur : '+g.prenom);
         })
-     node.on("mouseover", function (g) { 
-       console.log("mouseoever");
-       if (!isTransitioning) {
-         // restoreLinksAndNodes();
-         highlightConnected(g);
-         fadeUnconnected(g);
-         
-         tooltip
-           .transition()
-             .duration(TRANSITION_DURATION)
-             .style("opacity", 1).select(".titre_nom")
-             .text(function () {
-               // var nomsCouples = '';
-               // if (g.children.length){
-                   // var nomC1 = g.children[0].name + "\n" + g.children[0].prenom;
-                   // var nomC2 = g.children[1].name + "\n" + g.children[1].prenom;
-                   // nomsCouples = nomC1 + "\n" + nomC2;
-               // }
-               // else {
-                   // nomsCouples = ;
-               // }
-               var info = g.name + "\n " + g.prenom;
-               return info;
-             });
-         // On ajoute l'image récupérée sur github :     
-           tooltip.transition().style("opacity",1).select(".cimg").attr("src",'https://raw.githubusercontent.com/samueldb/samueldb.github.io/master/images/portraits/'+g.id+'.jpg');
-    
-    
-         tooltip
-           .transition()
-             .duration(TRANSITION_DURATION)
-             .style("opacity", 1).select(".value")
-             .text(function () {
-               var nomsCouples = '';
-               var additionalInstructions = g.children.length ? "\n " +g.dMar ? "\n Date de mariage : "+ formatDate(g.dMar): "" +"(Double clic pour ouvrir)" : ("\n Date de naissance : " + (g.dBirth ? formatDate(g.dBirth) : "non renseignée") + (g.dDie ? ("\n Date de décès : " + formatDate(g.dDie)) : "") + "\n Profession : " + (g.job ? g.job:"non renseignée") + "\n " + (g.comm ? g.comm:" - ") );
-               if (g.children.length){
-                   var nomC1 = g.children[0].name + ' ' + g.children[0].prenom;
-                   var nomC2 = g.children[1].name + ' ' + g.children[1].prenom;
-                   nomsCouples = nomC1 + '\n' + nomC2;
-               }
-               else {
-                   nomsCouples = g.name + ' ' + g.prenom;
-               }
-               return additionalInstructions;
-             });
-         // On ajoute l'image récupérée sur github :     
-           // tooltip.transition().style("opacity",1).select(".cimg").attr("src",'https://raw.githubusercontent.com/samueldb/samueldb.github.io/master/images/portraits/'+g.id+'.jpg');
-    
-       }
-     });
+      node.on("mouseover", function (g) {
+        console.log("mouseoever");
+        if (!isTransitioning) {
+          restoreLinksAndNodes();
+          highlightConnected(g);
+          fadeUnconnected(g);
+
+          //d3.select(this).select("circle")
+            //.style("fill", function (d) {
+            //  d.color = d.netFlow > 0 ? INFLOW_COLOR : OUTFLOW_COLOR;
+            //  return d.color;
+            //})
+            //.style("fill","url(#mImg)")
+            //.style("stroke", function (d) {
+            //  return d3.rgb(d.color).darker(0.1);
+            //})
+            //.style("fill-opacity", OPACITY.LINK_DEFAULT);
+
+          tooltip
+            .style("left", g.x + MARGIN.LEFT + "px")
+            .style("top", g.y + g.height + MARGIN.TOP + 15 + "px")
+            .transition()
+              .duration(TRANSITION_DURATION)
+              .style("opacity", 1).select(".value")
+              .text(function () {
+                var nomsCouples = '';
+                var additionalInstructions = g.children.length ? "\n" +g.dMar ? "\nDate de mariage : "+ formatDate(g.dMar): "" +"(Double clic pour ouvrir)" : ("\nDate de naissance : " + (g.dBirth ? formatDate(g.dBirth) : "non renseignée") + (g.dDie ? ("\nDate de décès : " + formatDate(g.dDie)) : "") + "\nProfession : " + (g.job ? g.job:"non renseignée") + "\n " + (g.comm ? g.comm:" - ") );
+                if (g.children.length){
+                    var nomC1 = g.children[0].name + ' ' + g.children[0].prenom;
+                    var nomC2 = g.children[1].name + ' ' + g.children[1].prenom;
+                    nomsCouples = nomC1 + '\n' + nomC2;
+                }
+                else {
+                    nomsCouples = g.name + ' ' + g.prenom;
+                }
+                return nomsCouples + "\n" + additionalInstructions;
+              });
+          // On ajoute l'image récupérée sur github :     
+            tooltip.transition().style("opacity",1).select(".cimg").attr("src",'https://raw.githubusercontent.com/samueldb/samueldb.github.io/master/images/portraits/'+g.id+'.jpg');
+
+        }
+      });
       var minYear = 2000;
       for (var n of biHiSankey.nodes()){
         if (typeof(n.dBirth) != 'undefined' && n.dBirth != 'null' && n.dBirth != null){
@@ -2045,9 +1954,35 @@
             .orient("bottom").ticks(5);
         
         var valueline = d3.svg.line()
+
+
+
+
+
+
+
+
+
+
+
+
+
+
             .x(function(d) { 
                 if (typeof(d.dBirth) != 'undefined' && d.dBirth != 'null' && d.dBirth != null){
                     return x(parseInt(d.dBirth.substring(0,4))); 
+
+
+
+
+
+
+
+
+
+
+
+
                 }
                 else return 1800;
             })
@@ -2090,15 +2025,15 @@
         }
       }
 
-     node.on("mouseleave", function () {
-       if (!isTransitioning) {
-         hideTooltip();
-         restoreLinksAndNodes();
-       }
-     });
+      node.on("mouseleave", function () {
+        if (!isTransitioning) {
+          hideTooltip();
+          restoreLinksAndNodes();
+        }
+      });
 
-      //node.filter(function (d) { return d.children.length; })
-      //  .on("dblclick", showHideChildren);
+      node.filter(function (d) { return d.children.length; })
+        .on("dblclick", showHideChildren);
 
 
 
@@ -2134,7 +2069,16 @@
                 }
 
                 else {
+
+
+
+
+
                     txt = d.prenom + " " + d.name[0]+ "." ;
+
+
+
+
                 }
                 return txt;
             })
@@ -2159,13 +2103,13 @@
        // });
 
       collapserEnter
-        .style("opacity", function(d){return d.id.includes("c_") ? 0:1})
+        .style("opacity", OPACITY.NODE_DEFAULT)
         .attr("transform", function (d) {
           return "translate(" + (d.x + d.width / 2) + "," + (d.y + COLLAPSER.RADIUS) + ")";
 
         });
 
-      //collapserEnter.on("dblclick", showHideChildren);
+      collapserEnter.on("dblclick", showHideChildren);
 
       collapser.select("circle")
         .attr("r", COLLAPSER.RADIUS);
@@ -2212,7 +2156,7 @@
               
           node.filter(function (d) {
               return (d.arbre != '1' || d.arbre != '2')
-            }).style("opacity", function(d){return d.id.includes("c_") ? 0:1})
+            }).style("opacity", 0)
                 .select("rect")
                   .style("fill", "url(#mImg)");
         }
@@ -2222,13 +2166,13 @@
         if (!isTransitioning) {
           hideTooltip();
           d3.select(this)
-            .style("opacity", function(d){return d.id.includes("c_") ? 0:1})
+            .style("opacity", OPACITY.NODE_DEFAULT)
             .select("rect")
               .style("fill","url(#mImg)");
 
           node.filter(function (d) {
           return (d.source === g) ? false : !biHiSankey.connected(d, g);
-        }).style("opacity", function(d){return d.id.includes("c_") ? 0:1})
+        }).style("opacity", OPACITY.NODE_DEFAULT)
             .select("rect")
               .style("fill", "url(#mImg)");
         }
@@ -2284,8 +2228,7 @@
           .nodes(nodesTree)
           .links(linksTree)
           .initializeNodes(function (node) {
-            //node.state = node.parent ? "contained" : "collapsed";
-            node.state = "collapsed";
+            node.state = node.parent ? "contained" : "collapsed";
             //node.id = "g_" + node.id;
           })
           .layout(LAYOUT_INTERATIONS);
@@ -2294,9 +2237,13 @@
 
         update();
     }
+    </script>
+    <script>
     
     var globalNodes = trouverNodesAll();
     var noeudsExistants = globalNodes[0];
+    // Barre de recherche de personne : 
+    $(RecherchePersonne).append('<fieldset style="border:solid 1px black;width:390px"><legend>Recherche</legend><div id="recherche" style="margin:10px;">Nom de la personne : <input type="text" class="txt_ajt" name="txt_old_nom" id="txt_old_nom" value="" onblur="remplirFamille(value);"><FORM NAME="Choix_genre_search" style="display: initial;margin-left: 10px;"><SELECT id="genres_search" NAME="genre" onchange="remplirFamille($(txt_old_nom).val())"><option value="M">Homme</option><option value="F">Femme</option></SELECT></FORM><FORM NAME="Choix_old_prenom" style="display: initial;margin-left: 10px;"><SELECT id="liste_old_prenom" NAME="liste_old_prenom" style="margin-top:20px;margin-left:120px;"></SELECT></FORM><a id="focus_p" class="button_small" onclick="focusPersonne($(liste_old_prenom).val());";>Centrer</a><a id="reinit" class="button_small" style="display:none;" onclick="hideObject(reinit);showObject(focus_p);populateNode();";>Réinitialiser</a></div></fieldset>');
     
     var availableNames = globalNodes[1];
     //if (noeudsExistants.length > 0){
