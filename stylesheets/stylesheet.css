@@ -28,6 +28,10 @@ path {
     fill: none;
 }
 
+RecherchePersonne{
+    display:block;
+}
+
 .axis path,
 .axis line {
     fill: none;
@@ -964,7 +968,7 @@ footer a:hover {
       pointer-events: none;
       font-size: 0.7em;
       font-family: sans-serif;
-      padding: 3px;
+      /*padding: 3px;*/
       width: auto;
       height: auto;
       background-color: #F2F2F2;
@@ -977,7 +981,34 @@ footer a:hover {
     .value {
       white-space: pre-line;
       margin: 0;
+      margin-left:3px;
+      font-family: 'Architects Daughter', 'Helvetica Neue', Helvetica, Arial, serif;
+      font-size: 14px;
+      color: #474747;
+      text-indent: 3px;
+      word-wrap: wrap-word;
+      display:block;
     }
+    
+    .titre_nom{
+      white-space: pre-line;
+      margin: 0;
+      margin-top: 24px;
+      margin-bottom: 8px;
+      margin-left:3px;
+      font-family: 'Architects Daughter', 'Helvetica Neue', Helvetica, Arial, serif;
+      font-size: 18px;
+      font-weight: bold;
+      color: #474747;
+      text-indent: 3px;
+      display:block;
+    }
+    
+    .cimg{
+        max-width:120px;
+    
+    }
+    
     .btn{
         display: inline-block;
         padding: 1px  2px;
