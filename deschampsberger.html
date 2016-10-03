@@ -23,8 +23,8 @@
     <header>
       <div class="inner">
         <h1>Travaux Carto</h1>
-        <h2 style="text-align:right;">by Samuel Deschamps Berger</h2>
-        <a class="WIP" style="width:250px;height: 140px;"><div style="margin-left:25px;">Work In Progress </div><div style="margin-left:25px;"> <small> ajouté : <p>compatibilité Firefox / IE</p></small> </div></a>
+        <h2 style="text-align:right;">et un peu de généalogie</h2>
+        <a class="WIP" style="width:250px;height: 140px;"><div style="margin-left:25px;">Work In Progress </div><div style="margin-left:25px;"> <small> ajouté : <p>carto historique</p></small> </div></a>
       </div>
     </header>
     <ul id="nav"><!--
@@ -71,6 +71,11 @@
     </script>
     
     <script type="text/javascript">
+    /**
+        BUG CONNUS : 
+            -( quand on survole un noeud, l'image disparait et ne revient plus
+    */
+    
     function ascendingXPosition(a, b) {
                 return a.x - b.x;
               }
@@ -100,7 +105,7 @@
         nodeSpacing = 24,
         linkSpacing = 15,
         arrowheadScaleFactor = 0.5, // Specifies the proportion of a link's stroke width to be allowed for the marker at the end of the link.
-        size = [1, 1], // default to one pixel by one pixel
+        size = [250, 1000], // default to one pixel by one pixel
         nodes = [],
         nodeMap = {},
         parentNodes = [],
@@ -480,9 +485,7 @@
             linkSpacesCount = d3.sum(nodes, function (node) {
               return node.linkSpaceCount;
             });
-            nodeValueSum = d3.sum(nodes, function (node) {
-              return node.value;
-            });
+            nodeValueSum = d3.sum(nodes, function (node) {return node.value;});
             discretionaryY = (size[1]
                             - (nodes.length - 1) * nodeSpacing
                             - linkSpacesCount * linkSpacing);
@@ -569,29 +572,6 @@
                             // on a a priori aucun grand parent : 
                                 node.y = 'undefined';
                            }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
                        }
                    }
                 // Pour tous ceux qui ont des ancêtres, on leur donne le yVoulu
@@ -604,55 +584,6 @@
                     }
                 }
                 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
                  //  // On rassemble les couples 
                    var tabHomme = tabGeneration.filter(function (a){return (a.type == "M" && !a.id.includes("c_")) || (a.type == "F" && (a.c_id == "" || a.c_id == "null" ||a.c_id == null))});
                    var tabFemme = tabGeneration.filter(function (a){return a.type == "F" && !a.id.includes("c_")});
@@ -661,10 +592,6 @@
                    for (var nodeH of tabFinalYClasse){
                         if ((nodeH.c_id != null && nodeH.c_id != "null" && nodeH.c_id != "")){
                             var saFemme = tabFemme.find(function(a){return a.c_id == nodeH.id});
-                            // fonctionne, mais on a des élements en double
-                            //var pivot = tabFinalYClasse[tabFinalYClasse.indexOf(nodeH)+1];
-                            //tabFinalYClasse[tabFinalYClasse.indexOf(nodeH)+1] = saFemme;
-                            //tabFinalYClasse[tabFinalYClasse.length] = pivot;
                             // on ajoute à l'index voulu :
                             if (saFemme != 'undefined' && saFemme != undefined){
                                 tabFinalYClasse.splice(tabFinalYClasse.indexOf(nodeH)+1, 0, saFemme);
@@ -769,13 +696,10 @@
           });
         }
 
-        function resolveCollisions() {
+        function resolveCollisions() {              // Il y a qqch à faire ici pour que les y se répartissent mieux entre frères/soeurs/couples d'une même génération
           function ascendingYPosition(a, b) {
             return a.y - b.y;
           }
-          
-          
-
           nodesByXPosition.forEach(function (nodes) {
             var node,
                 dy,
@@ -793,7 +717,7 @@
                 node.y += dy;
               }
               y0 = node.y + node.heightAllowance + 2*nodeSpacing;
-            }
+          }
 
             // If the bottommost node goes outside the bounds, push it back up.
             dy = y0 - nodeSpacing - size[1];
@@ -802,14 +726,14 @@
               y0 = node.y;
          
               // Push any overlapping nodes back up.
-              for (i = n - 2; i >= 0; --i) {
-                node = nodes[i];
-                dy = node.y + node.heightAllowance + nodeSpacing - y0;
-                if (dy > 0) {
-                  node.y -= dy;
-                }
-                y0 = node.y;
-              }
+              //for (i = n - 2; i >= 0; --i) {
+              //  node = nodes[i];
+              //  dy = node.y + node.heightAllowance + nodeSpacing - y0;
+              //  if (dy > 0) {
+              //    node.y -= dy;
+              //  }
+              //  y0 = node.y;
+              //}
             }
           });
         }
@@ -1307,7 +1231,7 @@
       NODE_WIDTH = 20,
       COLLAPSER = {
         RADIUS: NODE_WIDTH / 2,
-        SPACING: 10
+        SPACING: 1
       },
       OUTER_MARGIN = 50,
       MARGIN = {
@@ -1318,8 +1242,8 @@
 
       },
       TRANSITION_DURATION = 800,
-      HEIGHT = 800 - MARGIN.TOP - MARGIN.BOTTOM,
-      WIDTH =  1300 - MARGIN.LEFT - MARGIN.RIGHT,
+      HEIGHT = 1600 - MARGIN.TOP - MARGIN.BOTTOM,
+      WIDTH =  1600 - MARGIN.LEFT - MARGIN.RIGHT,
       LAYOUT_INTERATIONS = 100,
       REFRESH_INTERVAL = 3500;
       
@@ -1691,10 +1615,8 @@
         restoreLinksAndNodes();
       }
       
-      function highlightConnected(g) {      // TODO Il manque ici la gestion du fils du couple du père. Parent -> Couple ..> Enfant ou Parent ..> Couple -> Enfant
+      function highlightConnected(g) {
         link.filter(function (d) {
-            // return ((d.source === g && !d.source.id.includes("c_")) || (d.source.parent == "null" ? d.source.parent.id.includes("c_"):false));
-            // if (d.source === g || d.source.parent == "null" ? false:d.source.parent.id == g.id) {console.log("source : " + d.source.id + " - " + d.source.parent.id);}
             if (d.source ===g){
                 console.log("source : " + d.source.id); 
                 return true;}
