@@ -1693,6 +1693,39 @@
         else {return false;}
     }
 
+    function addImage(node){
+    //
+    // Gestion des images affichées sur les noeuds : 
+        var pat = node.append("pattern")
+        .attr("id","mImg")
+        .attr("x","0")
+        .attr("y","0")
+        .attr("width", "48px")
+        .attr("height", "48px")
+        .style("fill","transparent")
+        .style("stroke","back")
+        .style("stroke-width","0.25");
+
+        pat.append("image")
+        .attr("xlink:href", function(d) { 
+                var image = 'https://raw.githubusercontent.com/samueldb/samueldb.github.io/master/images/portraits/'+d.id+'.jpg';
+                if (d.type == 'couple'){
+                    image = 'https://raw.githubusercontent.com/samueldb/samueldb.github.io/master/images/image_couple.png';
+                    if (d.adr_photo != null){
+                        image = d.adr_photo;
+                    }
+                }
+                else if (d.adr_photo == null){
+                    image = 'https://raw.githubusercontent.com/samueldb/samueldb.github.io/master/images/no_photo.png';
+                    }
+                return image;
+            })
+        .attr("x", "-0")
+        .attr("y", "-0")
+        .attr("width", "48px")
+        .attr("height", "48px");
+    
+    }
       link = svg.select("#links").selectAll("path.link")
         .data(biHiSankey.visibleLinks(), function (d) { return d.id; });
 
@@ -1837,36 +1870,7 @@
           .style("opacity", function(d){return d.id.includes("c_") ? 0:1})
           .attr("transform", function (d) { return "translate(" + d.x + "," + d.y + ")"; });
 
-          //
-         // Gestion des images affichées sur les noeuds : 
-        var pat = nodeEnter.append("pattern")
-            .attr("id","mImg")
-            .attr("x","0")
-            .attr("y","0")
-            .attr("width", "48px")
-            .attr("height", "48px")
-            .style("fill","transparent")
-            .style("stroke","back")
-            .style("stroke-width","0.25");
-            
-        pat.append("image")
-            .attr("xlink:href", function(d) { 
-                    var image = 'https://raw.githubusercontent.com/samueldb/samueldb.github.io/master/images/portraits/'+d.id+'.jpg';
-                    if (d.type == 'couple'){
-                        image = 'https://raw.githubusercontent.com/samueldb/samueldb.github.io/master/images/image_couple.png';
-                        if (d.adr_photo != null){
-                            image = d.adr_photo;
-                        }
-                    }
-                    else if (d.adr_photo == null){
-                        image = 'https://raw.githubusercontent.com/samueldb/samueldb.github.io/master/images/no_photo.png';
-                        }
-                    return image;
-                })
-            .attr("x", "-0")
-            .attr("y", "-0")
-            .attr("width", "48px")
-            .attr("height", "48px");
+        addImage(nodeEnter);
         
         var circle = nodeEnter.append("circle")
             .attr("cx", 0)
@@ -1907,26 +1911,18 @@
          // restoreLinksAndNodes();
          highlightConnected(g);
          fadeUnconnected(g);
-         
+         addImage(node);
+       
          tooltip
            .transition()
              .duration(TRANSITION_DURATION)
              .style("opacity", 1).select(".titre_nom")
              .text(function () {
-               // var nomsCouples = '';
-               // if (g.children.length){
-                   // var nomC1 = g.children[0].name + "\n" + g.children[0].prenom;
-                   // var nomC2 = g.children[1].name + "\n" + g.children[1].prenom;
-                   // nomsCouples = nomC1 + "\n" + nomC2;
-               // }
-               // else {
-                   // nomsCouples = ;
-               // }
                var info = g.name + "\n " + g.prenom;
                return info;
              });
          // On ajoute l'image récupérée sur github :     
-           tooltip.transition().style("opacity",1).select(".cimg").attr("src",'https://raw.githubusercontent.com/samueldb/samueldb.github.io/master/images/portraits/'+g.id+'.jpg');
+          tooltip.transition().style("opacity",1).select(".cimg").attr("src",'https://raw.githubusercontent.com/samueldb/samueldb.github.io/master/images/portraits/'+g.id+'.jpg');
     
     
          tooltip
@@ -1948,7 +1944,6 @@
              });
          // On ajoute l'image récupérée sur github :     
            // tooltip.transition().style("opacity",1).select(".cimg").attr("src",'https://raw.githubusercontent.com/samueldb/samueldb.github.io/master/images/portraits/'+g.id+'.jpg');
-    
        }
      });
       var minYear = 2000;
@@ -2016,6 +2011,7 @@
        if (!isTransitioning) {
          hideTooltip();
          restoreLinksAndNodes();
+         addImage(node);
        }
      });
 
@@ -2134,25 +2130,26 @@
               
           node.filter(function (d) {
               return (d.arbre != '1' || d.arbre != '2')
-            }).style("opacity", function(d){return d.id.includes("c_") ? 0:1})
-                .select("rect")
-                  .style("fill", "url(#mImg)");
+            }).style("opacity", function(d){return d.id.includes("c_") ? 0:1});
+//                .select("rect")
+//                  .style("fill", "url(#mImg)");
         }
       });
 
       collapser.on("mouseleave", function (g) {
         if (!isTransitioning) {
           hideTooltip();
-          d3.select(this)
-            .style("opacity", function(d){return d.id.includes("c_") ? 0:1})
-            .select("rect")
-              .style("fill","url(#mImg)");
-
-          node.filter(function (d) {
-          return (d.source === g) ? false : !biHiSankey.connected(d, g);
-        }).style("opacity", function(d){return d.id.includes("c_") ? 0:1})
-            .select("rect")
-              .style("fill", "url(#mImg)");
+          addImage(collapser);
+        //  d3.select(this)
+        //    .style("opacity", function(d){return d.id.includes("c_") ? 0:1})
+        //    .select("rect")
+        //      .style("fill","url(#mImg)");
+        //
+        //  node.filter(function (d) {
+        //      return (d.source === g) ? false : !biHiSankey.connected(d, g);
+        //    }).style("opacity", function(d){return d.id.includes("c_") ? 0:1})
+        //        .select("rect")
+        //          .style("fill", "url(#mImg)");
         }
       });
 
