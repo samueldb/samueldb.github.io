@@ -647,13 +647,15 @@
                     }
                 }
                 
-                // Maintenant que tous les y ont été distribués, il faut les réarranger pour qu'ils aient le même écartement
-                //var tabRange = tabGeneration.sort(ascendingYPosition);
-                //var i = 0;
-                //for (var ligne of tabRange){
-                //    ligne.y = i;
-                //    i++
-                //}
+                // On reparcourt les générations pour écarter les noeuds qui ne sont pas liés dans la même génération : 
+                var tabRange = tabGeneration.sort(ascendingYPosition);
+                var i = 0;
+                for (var ligne of tabRange){
+//                    ligne.y = i;
+  //                  i++
+                    console.log(ligne.prenom +' - ' + ligne.y);
+                }
+                
                 generation = generation + 1;
             }
         }
@@ -1692,11 +1694,16 @@
         if (isInCouple == 0&& isParent>0){return true;}
         else {return false;}
     }
-
-    function addImage(node){
-    //
-    // Gestion des images affichées sur les noeuds : 
-        var pat = node.append("pattern")
+    
+    /**
+    Gestion des images affichées sur les noeuds
+    */
+    function addImage(noeud){
+    if (noeud.length > 1){
+        noeud = noeud.find(function(g){return g.id == noeud.id});
+    }
+    
+        var pat = noeud.append("pattern")
         .attr("id","mImg")
         .attr("x","0")
         .attr("y","0")
@@ -1711,10 +1718,10 @@
                 var image = 'https://raw.githubusercontent.com/samueldb/samueldb.github.io/master/images/portraits/'+d.id+'.jpg';
                 if (d.type == 'couple'){
                     image = 'https://raw.githubusercontent.com/samueldb/samueldb.github.io/master/images/image_couple.png';
-                    if (d.adr_photo != null){
-                        image = d.adr_photo;
-                    }
                 }
+                else if (d.adr_photo != null){
+                    image = d.adr_photo;
+                    }
                 else if (d.adr_photo == null){
                     image = 'https://raw.githubusercontent.com/samueldb/samueldb.github.io/master/images/no_photo.png';
                     }
@@ -1906,7 +1913,7 @@
                 //alert('on a tiré sur : '+g.prenom);
         })
      node.on("mouseover", function (g) { 
-       console.log("mouseoever");
+       console.log("mouseoever sur "+g.id+" : "+g.prenom);
        if (!isTransitioning) {
          // restoreLinksAndNodes();
          highlightConnected(g);
