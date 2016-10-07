@@ -73,7 +73,7 @@
     <script type="text/javascript">
     /**
         BUG CONNUS : 
-            -( quand on survole un noeud, l'image disparait et ne revient plus
+            -
     */
     
     function ascendingXPosition(a, b) {
@@ -103,15 +103,15 @@
       var biHiSankey = {},
         nodeWidth = 18,
         nodeSpacing = 24,
-        linkSpacing = 15,
+        linkSpacing = 1,
         arrowheadScaleFactor = 0.5, // Specifies the proportion of a link's stroke width to be allowed for the marker at the end of the link.
-        size = [250, 1000], // default to one pixel by one pixel
+        size = [1, 1], // default to one pixel by one pixel
         nodes = [],
         nodeMap = {},
         parentNodes = [],
         leafNodes = [],
         links = [],
-        xScaleFactor = 0.5,
+        xScaleFactor = 5,
         yScaleFactor = 1,
         defaultLinkCurvature = 0.5;
 
@@ -346,7 +346,8 @@
           );
           node.netFlow = 1;
           node.height = Math.max(nodeHeight(visible(node.leftLinks)), nodeHeight(visible(node.rightLinks)));
-          node.linkSpaceCount = Math.max(Math.max(node.leftLinks.length, node.rightLinks.length) - 1, 0);
+          //node.linkSpaceCount = Math.max(Math.max(node.leftLinks.length, node.rightLinks.length) - 1, 0);
+          node.linkSpaceCount = 1;
         });
       }
 
@@ -402,7 +403,7 @@
 
       function scaleNodeXPositions() {
         var minX = d3.min(nodes, function (node) { return node.x; }),
-            maxX = d3.max(nodes, function (node) { return node.x; }) - minX;
+            maxX = d3.max(nodes, function (node) { return node.x; }); // - minX;
         xScaleFactor = (size[0] - nodeWidth) / maxX;
 
         nodes.forEach(function (node) {
@@ -540,7 +541,8 @@
                      }
                      else {
                        node.y = 0;
-                        node.heightAllowance = node.value * yScaleFactor + linkSpacing * node.linkSpaceCount;  
+                        //node.heightAllowance = node.value * yScaleFactor + linkSpacing * node.linkSpaceCount;  
+                        node.heightAllowance = node.value * yScaleFactor;// + linkSpacing * node.linkSpaceCount;  
                      }
                        //i++;// calcul de la position verticale
                 });
@@ -649,12 +651,22 @@
                 
                 // On reparcourt les générations pour écarter les noeuds qui ne sont pas liés dans la même génération : 
                 var tabRange = tabGeneration.sort(ascendingYPosition);
-                var i = 0;
-                for (var ligne of tabRange){
+                var i=0;
+//                for (var noeud of tabRange){
 //                    ligne.y = i;
   //                  i++
-                    console.log(ligne.prenom +' - ' + ligne.y);
-                }
+//                    if (noeud.type == 'couple'){
+//                        for (var j=i+2;j<tabRange.length;j++){
+//                            tabRange[j].y += 2;
+//                        }
+//                    }
+//                    else if (noeud.parent == null || noeud.parent == "null"){   // Personne célib
+//                        for (var j=i+2;j<tabRange.length;j++){
+//                            tabRange[j].y += 2;
+//                        }
+//                    }
+//                    i++;
+//                }
                 
                 generation = generation + 1;
             }
@@ -711,31 +723,57 @@
 
             nodes.sort(ascendingYPosition);
 
+            var cn = 0;
             // Push any overlapping nodes down.
+            
+//            for (i=0;i<n;i++){
+//                oldY = nodes[i].y;
+//                nodes[i].y *= 85;
+//            }
+//            for (i=1;i<n;i++){
+//                    dy = nodes[i].y - nodes[i-1].y;
+//                    if (dy < (5*nodeSpacing)){
+//                        nodes[i].y += 2*nodeSpacing;
+//                    }
+//            }
             for (i = 0; i < n; ++i) {
               node = nodes[i];
-              dy = y0 - node.y;
-              if (dy > 0) {
-                node.y += dy;
-              }
-              y0 = node.y + node.heightAllowance + 2*nodeSpacing;
-          }
-
-            // If the bottommost node goes outside the bounds, push it back up.
-            dy = y0 - nodeSpacing - size[1];
-            if (dy > 0) {
-              node.y -= dy;
-              y0 = node.y;
-         
-              // Push any overlapping nodes back up.
-              //for (i = n - 2; i >= 0; --i) {
-              //  node = nodes[i];
-              //  dy = node.y + node.heightAllowance + nodeSpacing - y0;
-              //  if (dy > 0) {
-              //    node.y -= dy;
-              //  }
-              //  y0 = node.y;
+              node.y *= 85;
+              //dy = y0 - node.y;
+              //if (dy > 0) {
+              //  node.y += dy;
               //}
+              //y0 = node.y + node.heightAllowance + 2*nodeSpacing;
+          }
+//
+//            // If the bottommost node goes outside the bounds, push it back up.
+//            dy = y0 - nodeSpacing - size[1];
+//            if (dy > 0) {
+//              node.y -= dy;
+//              y0 = node.y;
+//         
+//              // Push any overlapping nodes back up.
+//              for (i = n - 2; i >= 0; --i) {
+//                node = nodes[i];
+//                dy = node.y + node.heightAllowance + nodeSpacing - y0;
+//                if (dy > 0) {
+//                  node.y -= dy;
+//                }
+//                y0 = node.y;
+//              }
+            
+            for (var node of nodes){
+                if (cn>0 && cn<nodes.length-1 && node.type=='couple'){
+                    ancienY = nodes[cn-1].y;
+                    ecartAvt = node.y - ancienY;
+                    ecartApr = nodes[cn+1].y - node.y;
+                    nouvelYa = ancienY + (ecartAvt/3);
+                    nouvelYb = node.y + (ecartApr/3);
+                    nodes[cn-1].y = nouvelYa;
+                    nodes[cn+1].y = nouvelYb;
+                    node.y = (nodes[cn-1].y + nodes[cn+1].y) / 2;
+                }
+                cn++;
             }
           });
         }
@@ -747,7 +785,7 @@
 
         // Je ne sais pas à quoi ça sert d'itérer la dessus... 
        for (alpha = 1; iterations > 0; --iterations) {
-         alpha *= 0.2;
+         alpha *= 0.5;
          relaxRightToLeft(alpha);
          resolveCollisions();
          relaxLeftToRight(alpha);
@@ -1244,9 +1282,9 @@
 
       },
       TRANSITION_DURATION = 800,
-      HEIGHT = 1600 - MARGIN.TOP - MARGIN.BOTTOM,
-      WIDTH =  1600 - MARGIN.LEFT - MARGIN.RIGHT,
-      LAYOUT_INTERATIONS = 100,
+      HEIGHT = 1000 - MARGIN.TOP - MARGIN.BOTTOM,
+      WIDTH =  890 - MARGIN.LEFT - MARGIN.RIGHT,
+      LAYOUT_INTERATIONS = 0,
       REFRESH_INTERVAL = 3500;
       
     var map;
@@ -1953,6 +1991,10 @@
            // tooltip.transition().style("opacity",1).select(".cimg").attr("src",'https://raw.githubusercontent.com/samueldb/samueldb.github.io/master/images/portraits/'+g.id+'.jpg');
        }
      });
+     
+     /**
+        Gestion de la barre des temps
+     */
       var minYear = 2000;
       for (var n of biHiSankey.nodes()){
         if (typeof(n.dBirth) != 'undefined' && n.dBirth != 'null' && n.dBirth != null){
@@ -1977,15 +2019,15 @@
             })
             .y(function(d) { return 0; });
         
-        svg.append("g")
-            .attr("class", "x axis")  // two classes, one for css formatting, one for selection below
-            .attr("transform", "translate(0," + (HEIGHT-25) + ")")  // HEIGHT-10
-            .attr("d", valueline(biHiSankey.nodes()))
-            .call(xAxis);
-        svg.append("text")                                                              // ajout du titre du graph
-        .attr("transform", "translate(" + (WIDTH / 2) + " ," + (HEIGHT + 25) + ")")
-        .style("text-anchor", "middle")
-        .text("Date");
+        //svg.append("g")
+        //    .attr("class", "x axis")  // two classes, one for css formatting, one for selection below
+        //    .attr("transform", "translate(0," + (HEIGHT-25) + ")")  // HEIGHT-10
+        //    .attr("d", valueline(biHiSankey.nodes()))
+        //    .call(xAxis);
+        //svg.append("text")                                                              // ajout du titre du graph
+        //.attr("transform", "translate(" + (WIDTH / 2) + " ," + (HEIGHT + 25) + ")")
+        //.style("text-anchor", "middle")
+        //.text("Date");
         
       function formatDate(date){
         var dateFormatee = "";
