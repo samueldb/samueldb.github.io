@@ -32,6 +32,15 @@ RecherchePersonne{
     display:block;
 }
 
+#txt_old_nom_auto{
+}
+.ui-autocomplete {
+    font-size: 80%;
+}
+.ui-autocomplete:hover {
+    font-size: 80%;
+}
+
 .axis path,
 .axis line {
     fill: none;
@@ -611,6 +620,7 @@ a.button_small {
   color: #fff;
   font-family: 'Architects Daughter', 'Helvetica Neue', Helvetica, Arial, serif;
   text-align:center;
+  cursor:pointer;
 }
 
 #cartodb-map {
@@ -1117,6 +1127,7 @@ footer a:hover {
   }
   aside#sidebar a.button {
     display: none;
+    cursor:pointer; 
   }
   #main-content h1:before,
   #main-content h2:before,

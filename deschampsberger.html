@@ -6,11 +6,11 @@
     <link href='https://fonts.googleapis.com/css?family=Architects+Daughter' rel='stylesheet' type='text/css'>
     <link rel="stylesheet" type="text/css" href="stylesheets/stylesheet.css" media="screen">
     <link rel="stylesheet" type="text/css" href="stylesheets/github-light.css" media="screen">
-    <link href="http://code.jquery.com/ui/1.11.4/themes/ui-lightness/jquery-ui.css" rel="stylesheet">
     <link rel="stylesheet" type="text/css" href="stylesheets/print.css" media="print">
     <script src="http://libs.cartocdn.com/cartodb.js/v3/3.15/cartodb.js" type="text/javascript"></script>
     <script src="http://d3js.org/d3.v3.min.js"></script>
     <script src="https://code.jquery.com/ui/1.11.4/jquery-ui.js" type="text/javascript"></script>
+    <link href="http://code.jquery.com/ui/1.11.4/themes/ui-lightness/jquery-ui.css" rel="stylesheet">
     
     <!--[if lt IE 9]>
     <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
@@ -28,8 +28,7 @@
       </div>
     </header>
     <ul id="nav"><!--
-        --><li><a href="deschampsberger.html">Côté papa</a></li><!--
-        --><li><a href="tripard.html">Côté maman</a></li><!--
+        --><li><a href="deschampsberger.html">Deschamps Berger</a></li><!--
         --><li><a href="add_personne.html">Ajout d'une personne</a></li><!--
         --><li><a href="cartographie.html">Cartographie</a></li><!--
         --><li><a href="village.html">Montfort</a></li>
@@ -43,6 +42,7 @@
 
         <aside id="sidebar">
             <div id="RecherchePersonne"></div>
+            <div id="sideTooltip"></div>
         </aside>
       </div>
     </div>
@@ -70,11 +70,95 @@
     }
     </script>
     
+    <script type="text/javascript">     // Définition de la fenêtre de recherche
+    
+        var globalNodes = trouverNodesAll();
+        var noeudsExistants = globalNodes[0];
+        var availableNames = globalNodes[1];
+        
+        // Barre de recherche de personne : 
+        $(RecherchePersonne).append('<fieldset style="border:solid 1px black;width:390px"><legend>Recherche</legend><div id="recherche" style="margin:10px;">Nom de la personne : <input type="text" class="txt_ajt" name="txt_old_nom" id="txt_old_nom_auto" value="" onblur="remplirFamille(value);" autocomplete="on"><FORM NAME="Choix_genre_search" style="display: initial;margin-left: 10px;"><SELECT id="genres_search" NAME="genre" onchange="remplirFamille($(txt_old_nom_auto).val())"><option value="M">Homme</option><option value="F">Femme</option></SELECT></FORM><FORM NAME="Choix_old_prenom" style="display: initial;margin-left: 10px;"><SELECT id="liste_old_prenom" NAME="liste_old_prenom" style="margin-top:20px;margin-left:120px;"></SELECT></FORM><a id="focus_p" class="button_small" onclick="focusPersonne($(liste_old_prenom).val());";>Centrer</a><a id="reinit" class="button_small" style="display:none;" onclick="hideObject(reinit);showObject(focus_p);reinitialiser();";>Réinitialiser</a></div></fieldset>');
+            
+        $(txt_old_nom_auto).autocomplete({
+          source: availableNames,
+          minChars: 1,
+          select: function (event, ui) {
+                var value = ui.item.value;
+                remplirFamille(value);
+        }
+        });
+        
+        function trouverNodesAll(){
+            var noeuds = [];
+            var aNames = [];
+            var sql_statement = "SELECT * FROM nodes WHERE arbre = '1' OR arbre = '2'";
+            $.getJSON('https://samueldeschampsberger.cartodb.com/api/v2/sql/?q='+sql_statement, function(data_json) {
+                if (data_json.rows.length == 0){
+                    // Il n'y a personne dans la table
+                    alert("Il n'y a pas encore de personne dans cet arbre !");
+                }
+                else if (data_json.rows.length > 0){
+                        // Pour chaque ligne, on vérifie
+                        for (var r of data_json.rows){
+                            noeuds.push({"id":r.own_id,"parent":null,"nom":r.nom,"prenom":r.prenom,"mere":r.mother_id,"pere":r.father_id,"genre":r.genre,"couple":r.couple_id,"job":r.profession,"date_birth":formatDate(r.date_naissance),"date_die":formatDate(r.date_deces),"date_mariage":formatDate(r.date_mariage),"geom":r.the_geom, "arbre":r.arbre});
+                            if (aNames.find(function(a){return a == r.nom;})){}
+                            else {aNames.push(r.nom);}
+                        }
+                }
+            });
+            return [noeuds,aNames];
+        }
+        
+        function formatDate(date){
+            var dateFormatee = "";
+            if (date == null ||date == "null" || date == "") return "null";
+            else {dateFormatee = date.substring(8,10) + " " + getMonth(date.substring(5,7)) + " " + date.substring(0,4);
+            return dateFormatee;
+            }
+        }
+            
+        function getMonth(mm){
+            switch(mm)
+            {
+                case "01":return "Janvier";
+                case "02":return "Fevrier";
+                case "03":return "Mars";
+                case "04":return "Avril";
+                case "05":return "Mai";
+                case "06":return "Juin";
+                case "07":return "Juillet";
+                case "08":return "Aout";
+                case "09":return "Septembre";
+                case "10":return "Octobre";
+                case "11":return "Novembre";
+                case "12":return "Decembre";
+            }
+        }
+        
+    </script>
+    
     <script type="text/javascript">
     /**
         BUG CONNUS : 
             -
     */
+    function isParentCelib(node){
+        var nodes = biHiSankey.nodes();
+        var isInCouple = 0;
+        var isParent = 0;
+        nodes.forEach(function (n) {
+            if (n.c_id == node.source.id){
+                isInCouple += 1; // Si la personne est en couple avec le noeud, c'est mort
+            }    
+        });
+        nodes.forEach(function(n){
+            if (n.f_id == node.source.id || n.m_id == node.source.id){
+                isParent += 1;    
+            }
+        });
+        if (isInCouple == 0&& isParent>0){return true;}
+        else {return false;}
+    }
     
     function ascendingXPosition(a, b) {
                 return a.x - b.x;
@@ -135,23 +219,7 @@
       }
       
       
-    function isParentCelib(node){
-        // var nodes = biHiSankey.nodes();
-        var isInCouple = 0;
-        var isParent = 0;
-        nodes.forEach(function (n) {
-            if (n.c_id == node.source.id){
-                isInCouple += 1; // Si la personne est en couple avec le noeud, c'est mort
-            }    
-        });
-        nodes.forEach(function(n){
-            if (n.f_id == node.source.id || n.m_id == node.source.id){
-                isParent += 1;    
-            }
-        });
-        if (isInCouple == 0&& isParent>0){return true;}
-        else {return false;}
-    }
+
     
       // generates the nodeMap {"1": <node1>, "2": <node2>}
       // and initializes the array properties of each node
@@ -1248,6 +1316,7 @@
         };
         
     </script>
+    
     <script type="text/javascript">
 
     'use strict';
@@ -1282,7 +1351,7 @@
 
       },
       TRANSITION_DURATION = 800,
-      HEIGHT = 1000 - MARGIN.TOP - MARGIN.BOTTOM,
+      HEIGHT = 550 - MARGIN.TOP - MARGIN.BOTTOM,
       WIDTH =  890 - MARGIN.LEFT - MARGIN.RIGHT,
       LAYOUT_INTERATIONS = 0,
       REFRESH_INTERVAL = 3500;
@@ -1471,10 +1540,8 @@
     svg.append("g").attr("id", "nodes");
     svg.append("g").attr("id", "collapsers");
 
-    // Barre de recherche de personne : 
-    $(RecherchePersonne).append('<fieldset style="border:solid 1px black;width:390px"><legend>Recherche</legend><div id="recherche" style="margin:10px;">Nom de la personne : <input type="text" class="txt_ajt" name="txt_old_nom" id="txt_old_nom" value="" onblur="remplirFamille(value);"><FORM NAME="Choix_genre_search" style="display: initial;margin-left: 10px;"><SELECT id="genres_search" NAME="genre" onchange="remplirFamille($(txt_old_nom).val())"><option value="M">Homme</option><option value="F">Femme</option></SELECT></FORM><FORM NAME="Choix_old_prenom" style="display: initial;margin-left: 10px;"><SELECT id="liste_old_prenom" NAME="liste_old_prenom" style="margin-top:20px;margin-left:120px;"></SELECT></FORM><a id="focus_p" class="button_small" onclick="focusPersonne($(liste_old_prenom).val());";>Centrer</a><a id="reinit" class="button_small" style="display:none;" onclick="hideObject(reinit);showObject(focus_p);populateNode();";>Réinitialiser</a></div></fieldset>');
-        
-    tooltip = d3.select("#RecherchePersonne").append("div").attr("id", "tooltip");
+    
+    tooltip = d3.select("#sideTooltip").append("div").attr("id", "tooltip");
     tooltip.style("width", "390px");
     tooltip.style("margin-left", "0px");
     tooltip.style("margin", "20px");
@@ -1499,7 +1566,7 @@
           .attr("id","id_ptool")
           .attr("style","float:left")
           ;
-
+          
     biHiSankey = d3.biHiSankey();
 
     // Set the biHiSankey diagram properties
@@ -1780,27 +1847,11 @@
         .style("stroke-WIDTH", function (d) { return Math.max(1, d.thickness); })
         .attr("d", path)
         .style("opacity", function(d){return d.id.includes("c_") || isParentCelib(d) ? 1:0});
-
-
-
-
-
-
-
-
       link.exit().remove();
-
-
-
       linkEnter = link.enter().append("path")
         .attr("class", "link")
         .style("fill", "none");
-
-
-
-
-
-
+        
       linkEnter.on('mouseenter', function (d) {
         if (!isTransitioning) {
           showTooltip().select(".value").text(function () {
@@ -2112,6 +2163,7 @@
 
           
         node.attr("rotateZ","90deg");
+        node.attr("id",function(d){return d.id;});
       collapser = svg.select("#collapsers").selectAll(".collapser")
         .data(biHiSankey.expandedNodes(), function (d) { return d.id; });
 
@@ -2247,14 +2299,13 @@
     
     populateNode();
     function drawTree(nodesTree,linksTree){
-    
         biHiSankey
           .nodes(nodesTree)
           .links(linksTree)
           .initializeNodes(function (node) {
             //node.state = node.parent ? "contained" : "collapsed";
             node.state = "collapsed";
-            //node.id = "g_" + node.id;
+            //node.id = node.id;
           })
           .layout(LAYOUT_INTERATIONS);
 
@@ -2263,45 +2314,6 @@
         update();
     }
     
-    var globalNodes = trouverNodesAll();
-    var noeudsExistants = globalNodes[0];
-    
-    var availableNames = globalNodes[1];
-    //if (noeudsExistants.length > 0){
-    //    for (var n of noeudsExistants){
-    //        if (availableNames.find(function(a){return a == n.nom;})){}
-    //        else {availableNames.push(n.nom);}
-    //    }
-    //}
-    $( "#txt_old_nom" ).autocomplete({
-      source: availableNames,
-      minChars: 1,
-      select: function (event, ui) {
-            var value = ui.item.value;
-            remplirFamille(value);
-    }
-    });
-    function trouverNodesAll(){
-        var noeuds = [];
-        var aNames = [];
-        var sql_statement = "SELECT * FROM nodes WHERE arbre = '1' OR arbre = '2'";
-        $.getJSON('https://samueldeschampsberger.cartodb.com/api/v2/sql/?q='+sql_statement, function(data_json) {
-            if (data_json.rows.length == 0){
-                // Il n'y a personne dans la table
-                alert("Il n'y a pas encore de personne dans cet arbre !");
-            }
-            else if (data_json.rows.length > 0){
-                    // Pour chaque ligne, on vérifie
-                    for (var r of data_json.rows){
-                        noeuds.push({"id":r.own_id,"parent":null,"nom":r.nom,"prenom":r.prenom,"mere":r.mother_id,"pere":r.father_id,"genre":r.genre,"couple":r.couple_id,"job":r.profession,"date_birth":formatDate(r.date_naissance),"date_die":formatDate(r.date_deces),"date_mariage":formatDate(r.date_mariage),"geom":r.the_geom, "arbre":r.arbre});
-                        if ($(aNames).find(function(a){return a == r.nom;})){}
-                        else {aNames.push(r.nom);}
-                    }
-            }
-        });
-        return [noeuds,aNames];
-    }
-        
     function remplirFamille(nomFamille){
         //showObject(liste_old_prenom);
         viderListe(liste_old_prenom);
@@ -2359,145 +2371,37 @@
             case "12":return "Decembre";
         }
     }
-    
+    /**
+        Focus du graph sur une personne en particulier
+    */
     function focusPersonne(value){
+        console.log("on focus sur " + value);
         hideObject(focus_p);
         showObject(reinit);
         var personne = value;
-        //1. On récupère tous les noeuds du graph :
-        var Noeuds =biHiSankey.nodes();
-        //var Liens = biHiSankey.links();
-        var noeudFocus = Noeuds.find(function(a){return a.id == personne;});
-        var allParents = [];
-        // On remonte tous les parents du focus : 
-        //1ère génération : 
-        var p1 = getParents(noeudFocus,Noeuds);
-        for (p of p1){
-            allParents.push(p);
-        }
-        var thereisStillParents = true;
-        // Autres générations :
-        while (thereisStillParents){
-            // Pour tous les parents déjà dans le tableau, on récupère leurs propres parents :
-            var tabPparents = [];
-            for (p of allParents){
-                var px = getParents(p,Noeuds);
-                for (p of px){
-                    // On check si le parent est déjà dans le tableau : 
-                    var isInTabA = allParents.filter(function(a){return a.id == p.id;});
-                    if (typeof(isInTabA != 'undefined')){
-                        if (isInTabA.length > 0){}
-                        else {tabPparents.push(p);}
-                    }
-                }
-            }
-            if (tabPparents.length == 0){thereisStillParents = false;}
-            else {
-                // Pour tous les parents trouvés, on n'ajoute que les nouveaux et leurs conjoints
-                for (p of tabPparents){
-                    var isInTab = allParents.filter(function(a){return a.id == p.id;});
-                    if (typeof(isInTab != 'undefined')){
-                        if (isInTab.length > 0){
-                            // ça veut dire que le parent est déjà dans le tableau
-                        }
-                        else {
-                            allParents.push(p);
-                            //if (p.c_id != "null" && p.c_id != "" && p.c_id != null){
-                            //    // Si le parent a un conjoint, on l'ajoute également
-                            //    var conj = Noeuds.find(function(a){return a.c_id == p.id;});
-                            //    allParents.push(conj);
-                            //}
-                        }
-                    }
-                }
-            }
-        }
-        // Reste à ajouter la personne même et son possible conjoint
-        allParents.push(noeudFocus);
-        if (noeudFocus.c_id != "null" && noeudFocus.c_id != "" && noeudFocus.c_id != null){
-            // Si la pers a un conjoint, on l'ajoute également
-            var conj = Noeuds.find(function(a){return a.c_id == noeudFocus.id;});
-            allParents.push(conj);
-        }
-        // A ce niveau, allParents contient tous les ancètres du focus. 
-        // Maintenant, on cherche tous les enfants de cet ancètre commun
-        
-        // On descend tous les enfants du plus grand ancetre : 
-        var plusGrandAncetre = allParents.sort(ascendingXPosition)[0];
-        var allEnfants = [];
-        //1ère génération : 
-        var e1 = getEnfants(plusGrandAncetre,Noeuds);
-        for (e of e1){
-            allEnfants.push(e);
-            if (e.c_id != "null" && e.c_id != "" && e.c_id != null){
-                // Si l'enfant a un conjoint, on l'ajoute également - uniquement dans le sens descendant donc
-                var conj = Noeuds.find(function(a){return a.c_id == e.id;});
-                allEnfants.push(conj);
-            }
-        }
-        var thereisStillEnfants = true;
-        // Autres générations :
-        while (thereisStillEnfants){
-            // Pour tous les enfants déjà dans le tableau, on récupère leurs propres enfants :
-            var tabPenfants = [];
-            for (e of allEnfants){
-                var ex = getEnfants(e,Noeuds);
-                for (e of ex){
-                    // On check si l'enfant est déjà dans le tableau : 
-                    var isInTabA = allEnfants.filter(function(a){return a.id == e.id;});
-                    if (typeof(isInTabA != 'undefined')){
-                        if (isInTabA.length > 0){}
-                        else {tabPenfants.push(e);}
-                    }
-                }
-            }
-            if (tabPenfants.length == 0){thereisStillEnfants = false;}
-            else {
-                // Pour tous les enfants trouvés, on n'ajoute que les nouveaux et leur conjoint
-                for (e of tabPenfants){
-                    var isInTab = allEnfants.filter(function(a){return a.id == e.id;});
-                    if (typeof(isInTab != 'undefined')){
-                        if (isInTab.length > 0){
-                            // ça veut dire que l'enfant est déjà dans le tableau
-                        }
-                        else {
-                            allEnfants.push(e);
-                            if (e.c_id != "null" && e.c_id != "" && e.c_id != null){
-                                // Si l'enfant a un conjoint, on l'ajoute également - uniquement dans le sens descendant donc
-                                var conj = Noeuds.find(function(a){return a.c_id == e.id;});
-                                allEnfants.push(conj);
-                            }
-                        }
-                    }
-                }
-            }
-        }
-        // On combine les 2 tableaux :
-        for (var e of allEnfants){
-            var isInTab = allParents.filter(function(a){return a.id == e.id;});
-            if (typeof(isInTab != 'undefined')){
-                if (isInTab.length > 0){
-                    // ça veut dire que l'enfant est déjà dans le tableau global
-                }
-                else {
-                    allParents.push(e);
-                }
-            }
-        }
-        if (noeudFocus.c_id != "null" && noeudFocus.c_id != "" && noeudFocus.c_id != null){
-            // Si la pers a un conjoint, on l'ajoute également
-            var conj = Noeuds.find(function(a){return a.c_id == noeudFocus.id;});
-            allParents.push(conj);
-        }
-        // Fin récup
-        populateNode(1,allParents);
         
         // On met en surbrillance la personne concernée
-        svg.select("#nodes").selectAll(".node").data(biHiSankey.nodes().filter(function(a){return a.id == noeudFocus.id;}))
-            .attr("style", "fill: \"#3366FF\"; outline: 2px solid red;font-weight: 900;outline-offset: 2px;");
-        
-            
+        var selNodes = svg.select("#nodes").selectAll(".node").data(biHiSankey.nodes());
+        selNodes.filter(function(d){return d.id != personne;}).style("opacity",function(d){return d.id.includes("c_") ? 0:0.1});
+        selNodes.filter(function(d){return d.id == personne;}).attr("selected","true");
+        var link = svg.select("#links").selectAll("path.link").data(biHiSankey.visibleLinks(), function (d) { return d.id; });
+        link.style("opacity",0);
+        var node = biHiSankey.nodes().find(function(d){return d.id == personne;});
+        var centreX = biHiSankey.size()[0]/2;
+        var centreY = biHiSankey.size()[1]/2;
+        var dx = centreX - node.x;
+        var dy = centreY - node.y;
+        svg.attr("transform", "translate(" + dx + "," + dy + ")");
+        selNodes.filter(function(d){return d.id == personne;}).mouseover();
     }
+    
+    function reinitialiser(){
+        var selNodes = svg.select("#nodes").selectAll(".node").data(biHiSankey.nodes().filter(function(a){return a.id;}));
+        selNodes.filter(function(d){return d.selected != "true" && !d.id.includes("c_");}).style("opacity",1);
+        var link = svg.select("#links").selectAll("path.link").data(biHiSankey.visibleLinks(), function (d) { return d.id; });
+        link.style("opacity",1);
+    }
+    
     
     function getParents(val,Noeuds){
         try{
@@ -2509,7 +2413,7 @@
         catch(Err){
             console.log('erreur lors de la récupération des parents (normale)');
         }
-    }    
+    }
     function getEnfants(val,Noeuds){
         try{
             var idParent = val.id;
@@ -2526,6 +2430,14 @@
             console.log('erreur lors de la récupération des enfants (normale)');
         }
     }
+    
+    
+    jQuery.fn.d3MouseOver = function () {
+      this.each(function (i, e) {
+        var evt = new MouseEvent("mouseover");
+        e.dispatchEvent(evt);
+      });
+    };
     </script>
   
   </body>
