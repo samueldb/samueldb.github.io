@@ -267,8 +267,9 @@ function init() {
         map.on('singleclick', function(evt) {
             var coordinate = evt.coordinate;
             var featureSelected1728 = batiments1728.getSource().getFeaturesAtCoordinate(coordinate)[0];  // On ne récupère qu'une seule feature
+            var featureSelected1888 = batiments1888.getSource().getFeaturesAtCoordinate(coordinate)[0];  // On ne récupère qu'une seule feature
             var featureSelectedActuels = batimentsActuels.getSource().getFeaturesAtCoordinate(coordinate)[0];  // On ne récupère qu'une seule feature
-            var proprio1728, usage1728, proprioActuel, usageActuel;
+            var proprio1728, usage1728, proprio1888, usage1888, proprioActuel, usageActuel;
             if (featureSelected1728 && batiments1728.getProperties().opacity != 0 && batiments1728.getProperties().visible) {
                 proprio1728 = featureSelected1728.get("proprietaire");
                 usage1728 = featureSelected1728.get("utilisation");
@@ -278,6 +279,16 @@ function init() {
             }
             else {
                 proprio1728 = "pas d'élément pour cette date"
+            }
+            if (featureSelected1888 && batiments1888.getProperties().opacity != 0 && batiments1888.getProperties().visible) {
+                proprio1888 = featureSelected1888.get("proprietaire");
+                usage1888 = featureSelected1888.get("utilisation");
+            }
+            else if (!batiments1888.getProperties().visible) {
+                proprio1888 = "la couche n'est pas visible sur la carte"
+            }
+            else {
+                proprio1888 = "pas d'élément pour cette date"
             }
             if (featureSelectedActuels && batimentsActuels.getProperties().opacity != 0 && batimentsActuels.getProperties().visible) {
                 proprioActuel = featureSelectedActuels.get("proprietaire");
@@ -291,6 +302,8 @@ function init() {
             }
             document.getElementById('info').innerHTML = '<h5 style:"font-size: 15px;">En 1728 : </h5>'+
                                                         '<p>' + proprio1728 + ' - ' + usage1728 + '</p>'+
+                                                        '<h5 style:"font-size: 15px;">En 1888 : </h5>'+
+                                                        '<p>' + proprio1888 + ' - ' + usage1888 + '</p>'+
                                                         '<h5 style:"font-size: 15px;>Actuellement : </h5>'+
                                                         '<p>' + proprioActuel + ' - ' + usageActuel + '</p>'
                                                         ;
