@@ -101,7 +101,8 @@ function init() {
         })
         var mtft_1888Layer = new ol.layer.Tile({
           source: new ol.source.XYZ({
-            url: 'https://api.mapbox.com/v4/samueldb.5vy14jxi/{z}/{x}/{y}.png?access_token=pk.eyJ1Ijoic2FtdWVsZGIiLCJhIjoiY2lzc2t4a3RnMDAwYTJ5bnplNjBiYXg4dyJ9.D9yc49jOivEKLDNmFaqIeg'
+            // url: 'https://api.mapbox.com/v4/samueldb.5vy14jxi/{z}/{x}/{y}.png?access_token=pk.eyJ1Ijoic2FtdWVsZGIiLCJhIjoiY2lzc2t4a3RnMDAwYTJ5bnplNjBiYXg4dyJ9.D9yc49jOivEKLDNmFaqIeg'
+            url: 'https://api.mapbox.com/v4/samueldb.2w36gjhb/{z}/{x}/{y}.png?access_token=pk.eyJ1Ijoic2FtdWVsZGIiLCJhIjoiY2lzc2t4a3RnMDAwYTJ5bnplNjBiYXg4dyJ9.D9yc49jOivEKLDNmFaqIeg'
           }),
           title: "cadastre de 1888"
         })
