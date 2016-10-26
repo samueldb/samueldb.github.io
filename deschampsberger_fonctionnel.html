@@ -37,8 +37,7 @@
       <div class="inner clearfix">
         <section id="main-content">
             <div id="titre"></div>
-            <div id="titre"></div>
-            <div id="chart" style=""></div>
+            <div id="chart" style="overflow-x:scroll"></div>
         </section>
 
         <aside id="sidebar">
@@ -198,10 +197,10 @@
 
       var biHiSankey = {},
         nodeWidth = 18,
-        nodeSpacing = 50,
+        nodeSpacing = 24,
         linkSpacing = 1,
         arrowheadScaleFactor = 0.5, // Specifies the proportion of a link's stroke width to be allowed for the marker at the end of the link.
-        size = [5, 1], // default to one pixel by one pixel
+        size = [1, 1], // default to one pixel by one pixel
         nodes = [],
         nodeMap = {},
         parentNodes = [],
@@ -1149,7 +1148,7 @@
         
         function scaleNodeBreadths(kx) {
             nodes.forEach(function (node) {
-                node.x *= 2*kx;     // On donne de l'air sur la hauteur
+                node.x *= kx;
             });
         }
           
@@ -1354,17 +1353,17 @@
         RADIUS: NODE_WIDTH / 2,
         SPACING: 1
       },
-      OUTER_MARGIN = 65,
+      OUTER_MARGIN = 50,
       MARGIN = {
-        TOP: 2.5,
-        RIGHT: 2.5,
-        BOTTOM: 2.5,
-        LEFT: 2.5
+        TOP: 25,
+        RIGHT: 25,
+        BOTTOM: 25,
+        LEFT: 25
 
       },
-      TRANSITION_DURATION = 400,
-      HEIGHT = 600 - MARGIN.TOP - MARGIN.BOTTOM,
-      WIDTH =  550 - MARGIN.LEFT - MARGIN.RIGHT,
+      TRANSITION_DURATION = 800,
+      HEIGHT = 550 - MARGIN.TOP - MARGIN.BOTTOM,
+      WIDTH =  890 - MARGIN.LEFT - MARGIN.RIGHT,
       LAYOUT_INTERATIONS = 0,
       REFRESH_INTERVAL = 3500;
       
@@ -1537,22 +1536,16 @@
     highlightColorScale = d3.scale.ordinal().domain(TYPES).range(TYPE_HIGHLIGHT_COLORS),
     
     svg = d3.select("#chart").append("svg")
-            .attr("id","id_svg")
-            .attr("width", "100%")
-            .attr("height", "900px")
-            .attr("viewBox","0 -100 1350 1500") //cadre sur l'ensemble des noeuds 
-            .attr("style",function(){
-                return "transform:rotate(90deg)";}) // tourne la map de haut en bas
+            .attr("width", WIDTH + MARGIN.LEFT + MARGIN.RIGHT)
+            .attr("height", HEIGHT + MARGIN.TOP + MARGIN.BOTTOM)
+            // .on('mousedown', disableRightClick)
             // .call(zoom)
             .call(d3.behavior.zoom().on("zoom", function () {       // Permet de gérer le zoom et le déplacement
                 console.log("on zoom !");
-                var x = d3.event.translate[1];
-                var y = -d3.event.translate[0];
-                console.log("transform", "translate(" + x + ","+ y +")" + " scale(" + d3.event.scale + ")")
-                svg.attr("transform", "translate(" + x + ","+ y +")" + " scale(" + d3.event.scale + ")")
+                svg.attr("transform", "translate(" + d3.event.translate + ")" + " scale(" + d3.event.scale + ")")
               }))
-          .append("g");
-            //.attr("transform", "translate(" + -100 + "," + 100 + ") scale(0.17)");
+          .append("g")
+            .attr("transform", "translate(" + MARGIN.LEFT + "," + MARGIN.TOP + ")");
     svg.append("g").attr("id", "path_time");
     svg.append("g").attr("id", "links");
     svg.append("g").attr("id", "nodes");
@@ -1992,18 +1985,36 @@
              .attr("r", 24)     
              .style("stroke", "black")     
              .style("stroke-width", 0.5)
-             .style("transform","rotate(-90deg)")
             .style("fill","url(#mImg)");
       
-    nodeEnter.append("text");
-      
-    node.on("click",function(g){
+      nodeEnter.append("text");
+      /*
+      node.append("circle")
+
+            .attr("cx", biHiSankey.nodeWidth()/2)
+            .attr("cy", function (d) {
+                return d.height/2;
+            })
+            .attr("r", function (d) {
+                //return Math.sqrt(d.height);
+                return 2;
+            })
+        .style("stroke", function (d) {
+       *///   return d3.rgb(colorScale(d.type.replace(/ .*/, ""))).darker(0.1);
+      /*  })
+        .style("stroke-WIDTH", "5px")
+        .attr("height", function (d) { return d.height; })
+        .attr("width", biHiSankey.nodeWidth());
+        */
+
+
+        node.on("click",function(g){
             console.log("click sur "+g.prenom);
                 //alert('on a tiré sur : '+g.prenom);
         })
      node.on("mouseover", function (g) { 
        console.log("mouseoever sur "+g.id+" : "+g.prenom);
-       if (!isTransitioning && !g.id.includes("c_")) {
+       if (!isTransitioning) {
          // restoreLinksAndNodes();
          highlightConnected(g);
          fadeUnconnected(g);
@@ -2140,7 +2151,7 @@
           .attr("y", function (d) { return d.height; })
           .attr("dy", ".35em")
           .attr("text-anchor", "bottom")
-          .attr("transform", "rotate(225) translate(0,-15)") //function (d) { return d.height; }+");")
+          //.attr("transform", "rotate(90deg) translate(-6,"+function (d) { return d.height; }+");")
           .text(function (d) {
                 var txt = "";
                 if (d.name.includes(" ") ||d.name.includes("-")){

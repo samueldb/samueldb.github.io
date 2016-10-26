@@ -520,7 +520,7 @@ header h2 {
 
 #main-content {
   float: left;
-  width: 890px;
+  width: 78%;
 }
 
 #main-content img {
@@ -529,7 +529,7 @@ header h2 {
 
 aside#sidebar {
   float: right;
-  width: 200px;
+  width: 20%;
   min-height: 504px;
   padding-left: 20px;
   font-size: 12px;
@@ -1033,10 +1033,6 @@ footer a:hover {
     .btn:hover { 
         background-color: red;
     }
-    
-    /*svg{
-        transform: rotate(90deg) translateX(200px);
-    } */
 /* #Media Queries
 ================================================== */
 
