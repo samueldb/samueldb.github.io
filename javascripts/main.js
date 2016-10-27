@@ -106,8 +106,8 @@ var map;
         var today = new Date();
         var expires = "";
         today.setTime(today.getTime() + (1*24*60*60*1000));
-        expires = "; expires="+today.toGMTString();
-        document.cookie = sName + "=" + sValue + expires+ "path=/";
+        expires = "; expires="+today.toUTCString();
+        document.cookie = sName + "=" + sValue + expires+ ";path=/";
         this[sName] = sValue;
     }
     
@@ -156,15 +156,6 @@ var map;
             $(remplissage).append('<div id=\'remplissage_old_personne\'>');
                 ModifierPersonne("sam");
             });
-        
-           // Wix.currentMember(function(member){
-           //     res = member.id;
-           //     localStorage.setItem("user", res);
-           //     
-           //     $(remplissage).append('<div id=\'remplissage_new_personne\'>');
-           //     nouvellePersonne(res);
-           //     
-           //     });
           
     }
      
@@ -522,6 +513,7 @@ var map;
         el.textContent = " ";
         el.value = " ";
         select.appendChild(el);
+        noeudsExistants = trouverNodes()[0];
         for (var p of noeudsExistants.filter(function (a){return a.nom == nomFamille && a.genre == genre_sel})){
             var select = document.getElementById("liste_old_prenom"); 
             var el = document.createElement("option");
