@@ -660,9 +660,12 @@
                 var tabTrieparYAnc = tabYancestors.sort(ascendingYancPosition);
                 var i = tabGeneration.max()=='undefined' ? 0:tabGeneration.max()+1;
                 for (var node of tabGeneration){
-                    if (node.y == 'undefined'){
+                    var conjoint = tabGeneration.find(function(a){return a.c_id == node.id});
+                    if (node.y == 'undefined' && conjoint.y != 'undefined'){
+                        node.y = conjoint.y;
+                    }
+                    else if (node.y == 'undefined' && node.id.includes('c_')){
                         node.y = i;
-                        i++;
                     }
                 }
                 
