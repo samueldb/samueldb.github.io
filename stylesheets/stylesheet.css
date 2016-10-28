@@ -821,6 +821,15 @@ td {
   color: #474747;
   text-indent: 3px;
 }
+#help  h3 {
+  margin-top: 24px;
+  margin-bottom: 8px;
+  font-family: 'Architects Daughter', 'Helvetica Neue', Helvetica, Arial, serif;
+  font-size: 18px;
+  font-weight: bold;
+  color: #474747;
+  text-indent: 3px;
+}
 
 #main-content h3:before {
   padding-right: 0.3em;
@@ -836,6 +845,19 @@ td {
   font-weight: bold;
   color: #474747;
   text-indent: 3px;
+}
+#help h4 {
+  margin-bottom: 8px;
+  font-family: 'Architects Daughter', 'Helvetica Neue', Helvetica, Arial, serif;
+  font-size: 15px;
+  font-weight: bold;
+  color: #474747;
+  text-indent: 3px;
+}
+
+#help h4:before{
+    margin-left: 2.8em;
+    color: #9ddcff;
 }
 
 h4:before {

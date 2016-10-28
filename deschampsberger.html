@@ -33,11 +33,20 @@
         --><li><a href="cartographie.html">Cartographie</a></li><!--
         --><li><a href="village.html">Montfort</a></li>
     </ul>
+    <div class="content-tooltip">
+        <img id="helper" src="./images/help-icon.png" width="80px" height="80px" style="float:left" onmouseover="showHelp()" onmouseout="hideHelp()"></img>
+        <div id="help" style="display:none; position:absolute; left:90px;border-left:solid 1px black;border-bottom:solid 1px black;background-color:aliceblue">
+            <h3>Module d'aide</h3>
+            <h4>Zoomez dans le graph avec la molette de votre souris</h4>
+            <h4>Déplacez vous dans le graph en faisant un clique gauche tout en déplaçant votre souris</h4>
+            <h4>Consultez les info de chaque personne en gardant la souris sur son image</h4>
+        </div>
+    </div>
     <div id="content-wrapper">
-      <div class="inner clearfix">
+    <div class="inner clearfix">
+    <!--<img src="./images/help-icon.png" width="80px" height="80px" style="float:left"></img>-->
         <section id="main-content">
             <div id="titre"></div>
-            <div id="informations"></div>
             <div id="chart" style=""></div>
         </section>
 
@@ -57,6 +66,17 @@
 
       ga('create', 'UA-86030173-1', 'auto');
       ga('send', 'pageview');
+    </script>
+    
+    <script type="text/javascript">     //Helper
+        function showHelp(){
+            console.log("help!");
+            $(help).show();
+        }
+        function hideHelp(){
+            console.log("help!");
+            $(help).hide();
+        }
     </script>
     
     <script type="text/javascript">     // Compatibilité FF
@@ -2143,7 +2163,7 @@
           .attr("y", function (d) { return d.height; })
           .attr("dy", ".35em")
           .attr("text-anchor", "bottom")
-          .attr("transform", "rotate(225) translate(0,-15)") //function (d) { return d.height; }+");")
+          .attr("transform", "rotate(225) translate(5,-15)") //function (d) { return d.height; }+");")
           .text(function (d) {
                 var txt = "";
                 if (d.name.includes(" ") ||d.name.includes("-")){
