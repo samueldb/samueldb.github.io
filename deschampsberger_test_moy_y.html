@@ -6,11 +6,11 @@
     <link href='https://fonts.googleapis.com/css?family=Architects+Daughter' rel='stylesheet' type='text/css'>
     <link rel="stylesheet" type="text/css" href="stylesheets/stylesheet.css" media="screen">
     <link rel="stylesheet" type="text/css" href="stylesheets/github-light.css" media="screen">
-    <link href="http://code.jquery.com/ui/1.11.4/themes/ui-lightness/jquery-ui.css" rel="stylesheet">
     <link rel="stylesheet" type="text/css" href="stylesheets/print.css" media="print">
     <script src="http://libs.cartocdn.com/cartodb.js/v3/3.15/cartodb.js" type="text/javascript"></script>
     <script src="http://d3js.org/d3.v3.min.js"></script>
     <script src="https://code.jquery.com/ui/1.11.4/jquery-ui.js" type="text/javascript"></script>
+    <link href="http://code.jquery.com/ui/1.11.4/themes/ui-lightness/jquery-ui.css" rel="stylesheet">
     
     <!--[if lt IE 9]>
     <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
@@ -23,30 +23,62 @@
     <header>
       <div class="inner">
         <h1>Travaux Carto</h1>
-        <h2 style="text-align:right;">by Samuel Deschamps Berger</h2>
-        <a class="WIP" style="width:250px;height: 140px;"><div style="margin-left:25px;">Work In Progress </div><div style="margin-left:25px;"> <small> ajouté : <p>compatibilité Firefox / IE</p></small> </div></a>
+        <h2 style="text-align:right;">et un peu de généalogie</h2>
+        <a class="WIP" style="width:250px;height: 140px;"><div style="margin-left:25px;">Work In Progress </div><div style="margin-left:25px;"> <small> ajouté : <p>carto historique</p></small> </div></a>
       </div>
     </header>
     <ul id="nav"><!--
-        --><li><a href="deschampsberger.html">Côté papa</a></li><!--
-        --><li><a href="tripard.html">Côté maman</a></li><!--
+        --><li><a href="deschampsberger.html">Deschamps Berger</a></li><!--
         --><li><a href="add_personne.html">Ajout d'une personne</a></li><!--
         --><li><a href="cartographie.html">Cartographie</a></li><!--
         --><li><a href="village.html">Montfort</a></li>
     </ul>
+    <div class="content-tooltip">
+        <img id="helper" src="./images/help-icon.png" width="80px" height="80px" style="float:left" onmouseover="showHelp()" onmouseout="hideHelp()"></img>
+        <div id="help" style="display:none; position:absolute; left:90px;border-left:solid 1px black;border-bottom:solid 1px black;background-color:aliceblue">
+            <h3>Module d'aide</h3>
+            <h4>Zoomez dans le graph avec la molette de votre souris</h4>
+            <h4>Déplacez vous dans le graph en faisant un clique gauche tout en déplaçant votre souris</h4>
+            <h4>Consultez les info de chaque personne en gardant la souris sur son image</h4>
+        </div>
+    </div>
     <div id="content-wrapper">
-      <div class="inner clearfix">
+    <div class="inner clearfix">
+    <!--<img src="./images/help-icon.png" width="80px" height="80px" style="float:left"></img>-->
         <section id="main-content">
             <div id="titre"></div>
-            <div id="chart" style="overflow-x:scroll"></div>
+            <div id="chart" style=""></div>
         </section>
 
         <aside id="sidebar">
             <div id="RecherchePersonne"></div>
+            <div id="sideTooltip"></div>
         </aside>
       </div>
     </div>
+    
+    
+    <script>
+      (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+      (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+      m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+      })(window,document,'script','https://www.google-analytics.com/analytics.js','ga');
 
+      ga('create', 'UA-86030173-1', 'auto');
+      ga('send', 'pageview');
+    </script>
+    
+    <script type="text/javascript">     //Helper
+        function showHelp(){
+            console.log("help!");
+            $(help).show();
+        }
+        function hideHelp(){
+            console.log("help!");
+            $(help).hide();
+        }
+    </script>
+    
     <script type="text/javascript">     // Compatibilité FF
     if (!Array.prototype.find) {
         Array.prototype.find = function (callback, thisArg) {
@@ -70,13 +102,96 @@
     }
     </script>
     
+    <script type="text/javascript">     // Définition de la fenêtre de recherche
+    
+        var globalNodes = trouverNodesAll();
+        var noeudsExistants = globalNodes[0];
+        var availableNames = globalNodes[1];
+        
+        // Barre de recherche de personne : 
+        $(RecherchePersonne).append('<fieldset style="border:solid 1px black;width:390px"><legend>Recherche</legend><div id="recherche" style="margin:10px;">Nom de la personne : <input type="text" class="txt_ajt" name="txt_old_nom" id="txt_old_nom_auto" value="" onblur="remplirFamille(value);" autocomplete="on"><FORM NAME="Choix_genre_search" style="display: initial;margin-left: 10px;"><SELECT id="genres_search" NAME="genre" onchange="remplirFamille($(txt_old_nom_auto).val())"><option value="M">Homme</option><option value="F">Femme</option></SELECT></FORM><FORM NAME="Choix_old_prenom" style="display: initial;margin-left: 10px;"><SELECT id="liste_old_prenom" NAME="liste_old_prenom" style="margin-top:20px;margin-left:120px;"></SELECT></FORM><a id="focus_p" class="button_small" onclick="focusPersonne($(liste_old_prenom).val());";>Centrer</a><a id="reinit" class="button_small" style="display:none;" onclick="hideObject(reinit);showObject(focus_p);reinitialiser();";>Réinitialiser</a></div></fieldset>');
+            
+        $(txt_old_nom_auto).autocomplete({
+          source: availableNames,
+          minChars: 1,
+          select: function (event, ui) {
+                var value = ui.item.value;
+                remplirFamille(value);
+        }
+        });
+        
+        function trouverNodesAll(){
+            var noeuds = [];
+            var aNames = [];
+            var sql_statement = "SELECT * FROM nodes WHERE arbre = '1' OR arbre = '2'";
+            $.getJSON('https://samueldeschampsberger.cartodb.com/api/v2/sql/?q='+sql_statement, function(data_json) {
+                if (data_json.rows.length == 0){
+                    // Il n'y a personne dans la table
+                    alert("Il n'y a pas encore de personne dans cet arbre !");
+                }
+                else if (data_json.rows.length > 0){
+                        // Pour chaque ligne, on vérifie
+                        for (var r of data_json.rows){
+                            noeuds.push({"id":r.own_id,"parent":null,"nom":r.nom,"prenom":r.prenom,"mere":r.mother_id,"pere":r.father_id,"genre":r.genre,"couple":r.couple_id,"job":r.profession,"date_birth":formatDate(r.date_naissance),"date_die":formatDate(r.date_deces),"date_mariage":formatDate(r.date_mariage),"geom":r.the_geom, "arbre":r.arbre});
+                            if (aNames.find(function(a){return a == r.nom;})){}
+                            else {aNames.push(r.nom);}
+                        }
+                }
+            });
+            return [noeuds,aNames];
+        }
+        
+        function formatDate(date){
+            var dateFormatee = "";
+            if (date == null ||date == "null" || date == "") return "null";
+            else {dateFormatee = date.substring(8,10) + " " + getMonth(date.substring(5,7)) + " " + date.substring(0,4);
+            return dateFormatee;
+            }
+        }
+            
+        function getMonth(mm){
+            switch(mm)
+            {
+                case "01":return "Janvier";
+                case "02":return "Fevrier";
+                case "03":return "Mars";
+                case "04":return "Avril";
+                case "05":return "Mai";
+                case "06":return "Juin";
+                case "07":return "Juillet";
+                case "08":return "Aout";
+                case "09":return "Septembre";
+                case "10":return "Octobre";
+                case "11":return "Novembre";
+                case "12":return "Decembre";
+            }
+        }
+        
+    </script>
+    
     <script type="text/javascript">
-
-
-
-
-
-
+    /**
+        BUG CONNUS : 
+            -
+    */
+    function isParentCelib(node){
+        var nodes = biHiSankey.nodes();
+        var isInCouple = 0;
+        var isParent = 0;
+        nodes.forEach(function (n) {
+            if (n.c_id == node.source.id){
+                isInCouple += 1; // Si la personne est en couple avec le noeud, c'est mort
+            }    
+        });
+        nodes.forEach(function(n){
+            if (n.f_id == node.source.id || n.m_id == node.source.id){
+                isParent += 1;    
+            }
+        });
+        if (isInCouple == 0&& isParent>0){return true;}
+        else {return false;}
+    }
+    
     function ascendingXPosition(a, b) {
                 return a.x - b.x;
               }
@@ -103,16 +218,16 @@
 
       var biHiSankey = {},
         nodeWidth = 18,
-        nodeSpacing = 24,
-        linkSpacing = 15,
+        nodeSpacing = 50,
+        linkSpacing = 1,
         arrowheadScaleFactor = 0.5, // Specifies the proportion of a link's stroke width to be allowed for the marker at the end of the link.
-        size = [3, 3], // default to one pixel by one pixel
+        size = [5, 1], // default to one pixel by one pixel
         nodes = [],
         nodeMap = {},
         parentNodes = [],
         leafNodes = [],
         links = [],
-        xScaleFactor = 1,
+        xScaleFactor = 5,
         yScaleFactor = 1,
         defaultLinkCurvature = 0.5;
 
@@ -134,6 +249,10 @@
         node.children = [];
         node.ancestors = [];
       }
+      
+      
+
+    
       // generates the nodeMap {"1": <node1>, "2": <node2>}
       // and initializes the array properties of each node
       function initializeNodeMap() {
@@ -161,7 +280,7 @@
           addAncestorsToChildren(child);
         }, node);
       }
-
+      
       // generate hierarchical connections between parent and child nodes
       function computeNodeHierarchy() {
         var parent,
@@ -189,20 +308,31 @@
       // Populate the sourceLinks and targetLinks for each node.
       function computeNodeLinks() {
         var sourceNode, targetNode;
-        links.forEach(function (link) {
-          sourceNode = nodeMap[link.source] || link.source;
-          targetNode = nodeMap[link.target] || link.target;
-          link.id = link.source + '-' + link.target;
-          link.source = sourceNode;
-          link.target = targetNode;
-          sourceNode.sourceLinks.push(link);
-          targetNode.targetLinks.push(link);
-        });
+        // links.filter(function(link){ // Ajouter pour ne pas pousser les liens sur une même génération
+                // return (link.source.state === "collapsed" || link.target.state === "expanded")       // Gestion de l'affichage des liens pour ne pas voir les liens parents->enfants autre que ceux passant par le couple
+                // && ((!link.source.id.includes("c_") && link.target.id.includes("c_") && link.source.x == link.target.x) 
+                    // || (link.source.id.includes("c_") && !link.target.id.includes("c_"))
+                    // || (isParentCelib(link) && !link.target.id.includes("c_"))      // Cas des parents célibataires
+                    // );
+            // })
+            links.forEach(function (link) {                         // Gérer le cas des liens entre personnes d'un couple
+              sourceNode = nodeMap[link.source] || link.source;
+              targetNode = nodeMap[link.target] || link.target;
+              link.id = link.source + '-' + link.target;
+              link.source = sourceNode;
+              link.target = targetNode;
+              sourceNode.sourceLinks.push(link);
+              targetNode.targetLinks.push(link);
+            });
       }
 
       function visible(linkCollection) {
         return linkCollection.filter(function (link) {
-          return link.source.state === "collapsed" && link.target.state === "collapsed";
+          return (link.source.state === "collapsed" || link.target.state === "expanded")       // Gestion de l'affichage des liens pour ne pas voir les liens parents->enfants autre que ceux passant par le couple
+                && ((!link.source.id.includes("c_") && link.target.id.includes("c_") && link.source.x == link.target.x) 
+                    || (link.source.id.includes("c_") && !link.target.id.includes("c_"))
+                    || (isParentCelib(link) && !link.target.id.includes("c_"))      // Cas des parents célibataires
+                    );
         });
       }
 
@@ -285,17 +415,17 @@
           .entries(links)                                                                
           .map(function (object) { return object.values; });                             
                                                                                          
-        links = linkGroups.map(function (linkGroup) {                                    
-          return linkGroup.reduce(function (previousLink, currentLink) {                 
-            return {                                                                     
-              "source": previousLink.source,                                             
-              "target": previousLink.target,                                             
-              "id": d3.min([previousLink.id, currentLink.id]),                           
-              //"value": previousLink.value + currentLink.value                            
-              "value": 1 
-            };                                                                           
-          });
-        });
+        // links = linkGroups.map(function (linkGroup) {                                    
+          // return linkGroup.reduce(function (previousLink, currentLink) {                 
+            // return {                                                                     
+              // "source": previousLink.source,                                             
+              // "target": previousLink.target,                                             
+              // "id": d3.min([previousLink.id, currentLink.id]),                           
+              // "value": previousLink.value + currentLink.value                            
+              // "value": 1 
+            // };                                                                           
+          // });
+        // });
       }
 
       // Calcul la hauteur de chaque noeuds
@@ -316,7 +446,8 @@
           );
           node.netFlow = 1;
           node.height = Math.max(nodeHeight(visible(node.leftLinks)), nodeHeight(visible(node.rightLinks)));
-          node.linkSpaceCount = Math.max(Math.max(node.leftLinks.length, node.rightLinks.length) - 1, 0);
+          //node.linkSpaceCount = Math.max(Math.max(node.leftLinks.length, node.rightLinks.length) - 1, 0);
+          node.linkSpaceCount = 1;
         });
       }
 
@@ -325,12 +456,12 @@
         links.forEach(function (link) {
           sourceNode = link.source;
           targetNode = link.target;
-          if (sourceNode.connectedNodes.indexOf(targetNode) < 0) {
+          // if (sourceNode.connectedNodes && sourceNode.connectedNodes.indexOf(targetNode) < 0) {     // on test l'existence de sourceNode par rapport aux ajout du filtre ligne 212
             sourceNode.connectedNodes.push(targetNode);
-          }
-          if (targetNode.connectedNodes.indexOf(sourceNode) < 0) {
+          // }
+          // if (targetNode.connectedNodes && targetNode.connectedNodes.indexOf(sourceNode) < 0) {     // on test l'existence de sourceNode par rapport aux ajout du filtre ligne 212
             targetNode.connectedNodes.push(sourceNode);
-          }
+          // }
         });
       }
 
@@ -372,7 +503,7 @@
 
       function scaleNodeXPositions() {
         var minX = d3.min(nodes, function (node) { return node.x; }),
-            maxX = d3.max(nodes, function (node) { return node.x; }) - minX;
+            maxX = d3.max(nodes, function (node) { return node.x; }); // - minX;
         xScaleFactor = (size[0] - nodeWidth) / maxX;
 
         nodes.forEach(function (node) {
@@ -391,9 +522,11 @@
               }
             },
             setValues = function (node) {
-              node.x = x;
-              node.width = nodeWidth;
-              node.sourceLinks.forEach(addToNextNodes, node);
+                node.x = x;
+                node.width = nodeWidth;
+                if (node.sourceLinks){          // on test l'existence de sourceNode par rapport aux ajout du filtre ligne 212
+                    node.sourceLinks.forEach(addToNextNodes, node);
+                }
             };
 
         while (remainingNodes.length) {
@@ -453,9 +586,7 @@
             linkSpacesCount = d3.sum(nodes, function (node) {
               return node.linkSpaceCount;
             });
-            nodeValueSum = d3.sum(nodes, function (node) {
-              return node.value;
-            });
+            nodeValueSum = d3.sum(nodes, function (node) {return node.value;});
             discretionaryY = (size[1]
                             - (nodes.length - 1) * nodeSpacing
                             - linkSpacesCount * linkSpacing);
@@ -510,7 +641,8 @@
                      }
                      else {
                        node.y = 0;
-                        node.heightAllowance = node.value * yScaleFactor + linkSpacing * node.linkSpaceCount;  
+                        //node.heightAllowance = node.value * yScaleFactor + linkSpacing * node.linkSpaceCount;  
+                        node.heightAllowance = node.value * yScaleFactor;// + linkSpacing * node.linkSpaceCount;  
                      }
                        //i++;// calcul de la position verticale
                 });
@@ -521,8 +653,6 @@
             var nodesGenerationXclasses = nodesByXPosition.sort(ascendingNodeXPosition);
             for (var tabGeneration of nodesGenerationXclasses){
                 if(generation > 0){
-
-                    
                     // On récupère les ancêtres :
                    var tabYancestors = [];
                    for (var node of tabGeneration){
@@ -542,90 +672,21 @@
                             // on a a priori aucun grand parent : 
                                 node.y = 'undefined';
                            }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
                        }
                    }
                 // Pour tous ceux qui ont des ancêtres, on leur donne le yVoulu
                 var tabTrieparYAnc = tabYancestors.sort(ascendingYancPosition);
                 var i = tabGeneration.max()=='undefined' ? 0:tabGeneration.max()+1;
                 for (var node of tabGeneration){
-                    if (node.y == 'undefined'){
+                    var conjoint = tabGeneration.find(function(a){return a.c_id == node.id});
+                    if (node.y == 'undefined' && conjoint.y != 'undefined'){
+                        node.y = conjoint.y;
+                    }
+                    else if (node.y == 'undefined' && node.id.includes('c_')){
                         node.y = i;
-                        i++;
                     }
                 }
                 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
                  //  // On rassemble les couples 
                    var tabHomme = tabGeneration.filter(function (a){return (a.type == "M" && !a.id.includes("c_")) || (a.type == "F" && (a.c_id == "" || a.c_id == "null" ||a.c_id == null))});
                    var tabFemme = tabGeneration.filter(function (a){return a.type == "F" && !a.id.includes("c_")});
@@ -634,10 +695,6 @@
                    for (var nodeH of tabFinalYClasse){
                         if ((nodeH.c_id != null && nodeH.c_id != "null" && nodeH.c_id != "")){
                             var saFemme = tabFemme.find(function(a){return a.c_id == nodeH.id});
-                            // fonctionne, mais on a des élements en double
-                            //var pivot = tabFinalYClasse[tabFinalYClasse.indexOf(nodeH)+1];
-                            //tabFinalYClasse[tabFinalYClasse.indexOf(nodeH)+1] = saFemme;
-                            //tabFinalYClasse[tabFinalYClasse.length] = pivot;
                             // on ajoute à l'index voulu :
                             if (saFemme != 'undefined' && saFemme != undefined){
                                 tabFinalYClasse.splice(tabFinalYClasse.indexOf(nodeH)+1, 0, saFemme);
@@ -659,31 +716,9 @@
                         else {tabFinalYClasse.push(node);}
                    }
                     tabGeneration = tabFinalYClasse;
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+                    
                  // Il faut itérer sur les couples pour moyenner leurs Y afin qu'ils se trouvent à la même place
-                   var tabCouple = tabGeneration.filter(function (a){return a.id.includes("c_")});
+                   var tabCouple = tabGeneration.filter(function (a){return a.id.includes("c_")}); // On ne gère que les points "Couple"
                    for (var c of tabCouple){
                        var homme = tabGeneration.find(function (a){return a.id == c.id_homme});
                        var femme = tabGeneration.find(function (a){return a.id == c.id_femme});
@@ -714,16 +749,101 @@
                         c.x = homme.x;
                     }
                 }
-                
-                // Maintenant que tous les y ont été distribués, il faut les réarranger pour qu'ils aient le même écartement
-                //var tabRange = tabGeneration.sort(ascendingYPosition);
-                //var i = 0;
-                //for (var ligne of tabRange){
-                //    ligne.y = i;
-                //    i++
-                //}
                 generation = generation + 1;
             }
+            
+            // A ce niveau, les gens sont correctement placés sur l'arbre. 
+            // Maintenant, nous voulons qu'ils soient le plus possible placé en fonction de leurs ancêtre de manière "droite", "direct", que le tronc soit le plus droit possible
+            //1. on cherche la génération comportant le plus d'enfant
+            //2. on recalcule la position des parents et des enfants en fonction de la place des gens sur la génération la plus nombreuse
+            var geneLaPlusNombreuse = 0;
+            var maxLength = 0;
+            for (var i = 0;i<nodesGenerationXclasses.length;i++){
+                if (nodesGenerationXclasses[i].length > maxLength){
+                    maxLength = nodesGenerationXclasses[i].length;
+                    geneLaPlusNombreuse = i;
+                }
+            }
+            
+            var tabGenePlusNombreuse = nodesGenerationXclasses[geneLaPlusNombreuse];
+            // On commence par traiter les générations plus récentes : 
+            var generationN = geneLaPlusNombreuse + 1; // C'est la 1ère génération après la plus nombreuse
+            for (var gene = generationN;gene<nodesGenerationXclasses.length;gene++){
+                var tabGene = nodesGenerationXclasses[gene];
+                for (var node of tabGene){
+                    if (typeof(node.ytraite) != 'undefined'){
+                    }
+                    else {
+                        if (node.type != 'couple'){
+                            var FreresEtSoeurs = tabGene.filter(function (bn){return bn.m_id == node.m_id || bn.f_id == node.f_id;});   // Les frères et soeurs des enfants
+                            var Parents = nodesGenerationXclasses[gene-1].filter(function (bn){return bn.id == node.m_id || bn.id == node.f_id;}); // gene-1 est la génération la plus nombreuse
+                            //FreresEtSoeurs.add(node);
+                            var minYFratrie = d3.min(FreresEtSoeurs, function (node) { return node.y; });
+                            var maxYFratrie = d3.max(FreresEtSoeurs, function (node) { return node.y; });
+                            var meanYFratrie = (maxYFratrie + minYFratrie)/2;
+                            var minYParents = d3.min(Parents, function (node) { return node.y; });
+                            var maxYParents = d3.max(Parents, function (node) { return node.y; });
+                            var meanYParents = (maxYParents + minYParents)/2;
+                            var dy = meanYParents - meanYFratrie;
+                            for (var fratrie of FreresEtSoeurs){
+                                fratrie.y += dy;
+                                fratrie.ytraite = 'ok';
+                            }
+                        }
+                    }
+                }
+            }
+            
+            //Puis les générations plus anciennes, en commençant par leurs parents : 
+            var generationN = geneLaPlusNombreuse - 1;
+            for (var gene = generationN;gene>-1;gene--){
+                var tabGene = nodesGenerationXclasses[gene];
+                for (var node of tabGene){
+                    if (typeof(node.ytraite) != 'undefined'){
+                    }
+                    else {
+                        if (node.type != 'couple'){
+                            var Parents = tabGene.filter(function (bn){return bn.c_id == node.id || bn.id == node.id}); //Les max 2 parents à bouger
+                            var FreresEtSoeurs = nodesGenerationXclasses[gene+1].filter(function (bn){return bn.m_id == node.id || bn.f_id == node.id;}); //De la génération "enfant"
+                            //FreresEtSoeurs.add(node);
+                            if (FreresEtSoeurs.length == 0){ // Le noeud n'a pas de descendant
+                            }
+                            else {
+                                var minYFratrie = d3.min(FreresEtSoeurs, function (node) { return node.y; });
+                                var maxYFratrie = d3.max(FreresEtSoeurs, function (node) { return node.y; });
+                                var meanYFratrie = (maxYFratrie + minYFratrie)/2;
+                                var minYParents = d3.min(Parents, function (node) { return node.y; });
+                                var maxYParents = d3.max(Parents, function (node) { return node.y; });
+                                var meanYParents = (maxYParents + minYParents)/2;
+                                var dy = meanYFratrie - meanYParents;
+                                for (var parent of Parents){
+                                    parent.y += dy;
+                                    parent.ytraite = 'ok';
+                                }
+                                // On déplace également le point du couple s'il existe : 
+                                if (Parents.length > 1){
+                                    nodeCouple = tabGene.find(function(n){return n.id == "c_"+Parents[0].id || n.id == "c_"+Parents[1].id;});
+                                    nodeCouple.y = meanYParents + dy;
+                                    nodeCouple.ytraite = 'ok';
+                                }
+                            }
+                        }
+                        else {
+                        }
+                    }
+                }
+                // On égalise les écarts de place au sein d'une même fratrie de la génération n+1
+                for (var node of tabGene){
+                    var FreresEtSoeursParents = tabGene.filter(function(n){return (n.f_id == node.f_id || n.m_id == node.m_id) && n.id != node.id;});
+                    for (var parent of FreresEtSoeursParents){
+                        if (typeof(parent.ytraite) == 'undefined'){
+                            parent.y += dy;
+                            parent.ytraite = 'ok';
+                        }
+                    }
+                }
+            }
+            
         }
 
         // Calcul de la taille du lien
@@ -736,7 +856,7 @@
 
         function relaxLeftToRight(alpha) {
           function weightedSource(link) {
-            return center(link.source) * link.value / 6;
+            return center(link.source) * link.value;
           }
 
           nodesByXPosition.forEach(function (nodes) {
@@ -764,13 +884,10 @@
           });
         }
 
-        function resolveCollisions() {
+        function resolveCollisions() {              // Il y a qqch à faire ici pour que les y se répartissent mieux entre frères/soeurs/couples d'une même génération
           function ascendingYPosition(a, b) {
             return a.y - b.y;
           }
-          
-          
-
           nodesByXPosition.forEach(function (nodes) {
             var node,
                 dy,
@@ -780,31 +897,57 @@
 
             nodes.sort(ascendingYPosition);
 
+            var cn = 0;
             // Push any overlapping nodes down.
+            
+//            for (i=0;i<n;i++){
+//                oldY = nodes[i].y;
+//                nodes[i].y *= 85;
+//            }
+//            for (i=1;i<n;i++){
+//                    dy = nodes[i].y - nodes[i-1].y;
+//                    if (dy < (5*nodeSpacing)){
+//                        nodes[i].y += 2*nodeSpacing;
+//                    }
+//            }
             for (i = 0; i < n; ++i) {
               node = nodes[i];
+              node.y *= 85;
               dy = y0 - node.y;
               if (dy > 0) {
                 node.y += dy;
               }
               y0 = node.y + node.heightAllowance + 2*nodeSpacing;
-            }
-
-            // If the bottommost node goes outside the bounds, push it back up.
-            dy = y0 - nodeSpacing - size[1];
-            if (dy > 0) {
-              node.y -= dy;
-              y0 = node.y;
-         
-              // Push any overlapping nodes back up.
-              for (i = n - 2; i >= 0; --i) {
-                node = nodes[i];
-                dy = node.y + node.heightAllowance + nodeSpacing - y0;
-                if (dy > 0) {
-                  node.y -= dy;
+          }
+//
+//            // If the bottommost node goes outside the bounds, push it back up.
+//            dy = y0 - nodeSpacing - size[1];
+//            if (dy > 0) {
+//              node.y -= dy;
+//              y0 = node.y;
+//         
+//              // Push any overlapping nodes back up.
+//              for (i = n - 2; i >= 0; --i) {
+//                node = nodes[i];
+//                dy = node.y + node.heightAllowance + nodeSpacing - y0;
+//                if (dy > 0) {
+//                  node.y -= dy;
+//                }
+//                y0 = node.y;
+//              }
+            
+            for (var node of nodes){
+                if (cn>0 && cn<nodes.length-1 && node.type=='couple'){
+                    ancienY = nodes[cn-1].y;
+                    ecartAvt = node.y - ancienY;
+                    ecartApr = nodes[cn+1].y - node.y;
+                    nouvelYa = ancienY + (ecartAvt/3);
+                    nouvelYb = node.y + (ecartApr/3);
+                    nodes[cn-1].y = nouvelYa;
+                    nodes[cn+1].y = nouvelYb;
+                    node.y = (nodes[cn-1].y + nodes[cn+1].y) / 2;
                 }
-                y0 = node.y;
-              }
+                cn++;
             }
           });
         }
@@ -816,7 +959,7 @@
 
         // Je ne sais pas à quoi ça sert d'itérer la dessus... 
        for (alpha = 1; iterations > 0; --iterations) {
-         alpha *= 0.2;
+         alpha *= 0.5;
          relaxRightToLeft(alpha);
          resolveCollisions();
          relaxLeftToRight(alpha);
@@ -891,13 +1034,15 @@
         nextNodes = [];
         var pers = [];
         remainingNodes.forEach(function (node) {
-        node.x = x;
-        node.dx = nodeWidth;
-        node.sourceLinks.forEach(function (link) {
-            nextNodes.push(link.target);
-        });
+            node.x = x;
+            node.dx = nodeWidth;
+            node.sourceLinks.forEach(function (link) {
+                if (link.target.type != "couple"){
+                    nextNodes.push(link.target);
+                }
+            });
 
-        pers.push({"id":node.id,"x=":node.x});
+            pers.push({"id":node.id,"x":node.x});
         });
         remainingNodes = nextNodes;
         x = x + 1;
@@ -908,7 +1053,7 @@
         checkGenerationDistance();
         modelCoupleX();
         checkNegativeX();
-        //moveSinksRight(x);
+        // moveSinksRight(x);
         scaleNodeBreadths((size[0] - nodeWidth) / (x - 1));
         
         };
@@ -960,14 +1105,14 @@
                             //  Attention, il faut maintenant tiré également les parents du conjoints
                             //
                             //
-                            //var sonCoupleSonPere = nodes.find(function (a){return a.id == sonCouple.f_id});
-                            //var sonCoupleSaMere = nodes.find(function (a){return a.id == sonCouple.m_id});
-                            //if (typeof(sonCoupleSonPere) != "undefined"){
-                            //    sonCoupleSonPere.x = node.x - 1;
-                            //}
-                            //if (typeof(sonCoupleSaMere) != "undefined"){
-                            //    sonCoupleSaMere.x = node.x - 1;
-                            //}
+                            // var sonCoupleSonPere = nodes.find(function (a){return a.id == sonCouple.f_id});
+                            // var sonCoupleSaMere = nodes.find(function (a){return a.id == sonCouple.m_id});
+                            // if (typeof(sonCoupleSonPere) != "undefined"){
+                               // sonCoupleSonPere.x = node.x - 1;
+                            // }
+                            // if (typeof(sonCoupleSaMere) != "undefined"){
+                               // sonCoupleSaMere.x = node.x - 1;
+                            // }
                        }
                     }
                 }
@@ -1024,20 +1169,20 @@
                 }
                 
                 // 2. Pour chacun, on vérifie son x 
-                if (pere != "null"){
-                    if (node.x == pere.x + 1){ // Tout est ok 
-                    }
-                    else {
-                        pere.x = node.x - 1;
-                    }
-                }
-                if (mere != "null"){
-                    if (node.x == mere.x + 1){ // Tout est ok 
-                    }
-                    else {
-                        mere.x = node.x - 1;
-                    }
-                }
+                // if (pere != "null"){
+                    // if (node.x == pere.x + 1){ // Tout est ok 
+                    // }
+                    // else {
+                        // pere.x = node.x - 1;
+                    // }
+                // }
+                // if (mere != "null"){
+                    // if (node.x == mere.x + 1){ // Tout est ok 
+                    // }
+                    // else {
+                        // mere.x = node.x - 1;
+                    // }
+                // }
             }
         }
         
@@ -1075,6 +1220,10 @@
                 if (p1.x == p2.x){
                     c.x = p1.x;
                 }
+                else if (p1.x > p2.x){
+                    p1.x = p2.x;
+                    c.x = p2.x;
+                }
                 else {
                     p2.x = p1.x;
                     c.x = p1.x;
@@ -1094,7 +1243,7 @@
         
         function scaleNodeBreadths(kx) {
             nodes.forEach(function (node) {
-                node.x *= kx;
+                node.x *= 2*kx;     // On donne de l'air sur la hauteur
             });
         }
           
@@ -1131,8 +1280,8 @@
             var curvature = defaultLinkCurvature;
 
 
-                        function leftToRightLink(link) {
-                if (link.source.id.includes("c_") || link.source.c_id == null || link.source.c_id == "null"){   // On ne rend visible que les liens entre couples et enfants, ou entre parent seul et enfants
+            function leftToRightLink(link) {
+                if (link.source.c_id == null || link.source.c_id == "null"){   // On ne rend visible que les liens entre couples et enfants, ou entre parent seul et enfants
                   var arrowHeadLength = link.thickness * arrowheadScaleFactor,
                       straightSectionLength = (3 * link.thickness / 4) - arrowHeadLength,
                       x0 = link.source.x + link.source.width,
@@ -1141,8 +1290,8 @@
                       xi = d3.interpolateNumber(x0, x4),
                       x2 = xi(curvature),
                       x3 = xi(1 - curvature),
-                      y0 = link.source.y + link.sourceY + link.thickness / 2,
-                      y1 = link.target.y + link.targetY + link.thickness / 2;
+                      y0 = link.source.y; // + link.sourceY + link.thickness / 2,
+                      y1 = link.target.y; // + link.targetY + link.thickness / 2;
                   return "M" + x0 + "," + y0
                        + "L" + x1 + "," + y0
                        + "C" + x2 + "," + y0
@@ -1159,18 +1308,14 @@
                       xi = d3.interpolateNumber(x0, x4),
                       x2 = xi(curvature),
                       x3 = xi(1 - curvature),
-                      y0 = link.source.y + link.sourceY + link.thickness / 2,
-                      y1 = link.target.y + link.targetY + link.thickness / 2;
+                      y0 = link.source.y; // + link.sourceY + link.thickness / 2,
+                      y1 = link.target.y; // + link.targetY + link.thickness / 2;
                       // link.thickness = 0;
                   return "M" + x0 + "," + y0
                        + "L" + x1 + "," + y0
                        + "C" + x2 + "," + y0
                        + " " + x3 + "," + y1
                        + " " + x4 + "," + y1
-
-
-
-
                        + "L" + (x4 + straightSectionLength) + "," + y1;
                }
             }
@@ -1184,8 +1329,8 @@
                   xi = d3.interpolateNumber(x0, x4),
                   x2 = xi(curvature),
                   x3 = xi(1 - curvature),
-                  y0 = link.source.y + link.sourceY + link.thickness / 2,
-                  y1 = link.target.y + link.targetY + link.thickness / 2;
+                  y0 = link.source.y; // + link.sourceY + link.thickness / 2,
+                  y1 = link.target.y;// + link.targetY + link.thickness / 2;
               return "M" + x0 + "," + y0
                    + "L" + x1 + "," + y0
                    + "C" + x2 + "," + y0
@@ -1277,6 +1422,7 @@
         };
         
     </script>
+    
     <script type="text/javascript">
 
     'use strict';
@@ -1300,21 +1446,20 @@
       NODE_WIDTH = 20,
       COLLAPSER = {
         RADIUS: NODE_WIDTH / 2,
-        SPACING: 10
+        SPACING: 1
       },
-      OUTER_MARGIN = 50,
+      OUTER_MARGIN = 65,
       MARGIN = {
-        TOP: 25,
-
-        RIGHT: 25,
-        BOTTOM: 25,
-        LEFT: 25
+        TOP: 2.5,
+        RIGHT: 2.5,
+        BOTTOM: 2.5,
+        LEFT: 2.5
 
       },
-      TRANSITION_DURATION = 800,
-      HEIGHT = 800 - MARGIN.TOP - MARGIN.BOTTOM,
-      WIDTH =  1300 - MARGIN.LEFT - MARGIN.RIGHT,
-      LAYOUT_INTERATIONS = 100,
+      TRANSITION_DURATION = 400,
+      HEIGHT = 600 - MARGIN.TOP - MARGIN.BOTTOM,
+      WIDTH =  550 - MARGIN.LEFT - MARGIN.RIGHT,
+      LAYOUT_INTERATIONS = 0,
       REFRESH_INTERVAL = 3500;
       
     var map;
@@ -1402,6 +1547,8 @@
                                 if (homme){
                                     nodes.push({"type":"couple","id":"c_"+r.couple_id,"parent":null,"name":homme.nom,"prenom":homme.prenom,"id_homme":r.own_id,"id_femme":r.couple_id,"dMar":r.date_mariage,"arbre":r.arbre});
                                     liste_couple.push({"id_c":r.couple_id,"id_homme":r.own_id});
+                                    links.push({"source":homme.id,"target":"c_"+r.couple_id,"value":1});
+                                    links.push({"source":r.couple_id,"target":"c_"+r.couple_id,"value":1});
                                 }
                             }
                         }
@@ -1426,6 +1573,7 @@
                             }
                         }
                     }
+                    
             }
             
             //return nodes;
@@ -1461,7 +1609,7 @@
     },
 
     hideTooltip = function () {
-    tooltip.transition().style("opacity",1).select(".cimg").attr("src","");
+    tooltip.transition().style("opacity",0).select(".cimg").attr("src","");
       return tooltip.transition()
         .duration(TRANSITION_DURATION)
         .style("opacity", 0);
@@ -1469,37 +1617,60 @@
 
     showTooltip = function () {
       return tooltip
-        .style("left", d3.event.layerX + "px")
-        .style("top", d3.event.layerY + 15 + "px")
+        // .style("left", d3.event.layerX + "px")
+        // .style("left", "0 px")
+        // .style("top", d3.event.layerY + 15 + "px")
+        // .style("float", "15 px")
         .transition()
           .duration(TRANSITION_DURATION)
           .style("opacity", 1);
     };
-
+    
+    
     colorScale = d3.scale.ordinal().domain(TYPES).range(TYPE_COLORS),
     highlightColorScale = d3.scale.ordinal().domain(TYPES).range(TYPE_HIGHLIGHT_COLORS),
-
+    
     svg = d3.select("#chart").append("svg")
-            .attr("width", WIDTH + MARGIN.LEFT + MARGIN.RIGHT)
-            .attr("height", HEIGHT + MARGIN.TOP + MARGIN.BOTTOM)
-          .append("g")
-            .attr("transform", "translate(" + MARGIN.LEFT + "," + MARGIN.TOP + ")");
+            .attr("id","id_svg")
+            .attr("width", "100%")
+            .attr("height", "900px")
+            .attr("viewBox","0 -100 1350 1500") //cadre sur l'ensemble des noeuds 
+            .attr("style",function(){
+                return "transform:rotate(90deg)";}) // tourne la map de haut en bas
+            // .call(zoom)
+            .call(d3.behavior.zoom().on("zoom", function () {       // Permet de gérer le zoom et le déplacement
+                console.log("on zoom !");
+                var x = d3.event.translate[1];
+                var y = -d3.event.translate[0];
+                console.log("transform", "translate(" + x + ","+ y +")" + " scale(" + d3.event.scale + ")")
+                svg.attr("transform", "translate(" + x + ","+ y +")" + " scale(" + d3.event.scale + ")")
+              }))
+          .append("g");
+            //.attr("transform", "translate(" + -100 + "," + 100 + ") scale(0.17)");
     svg.append("g").attr("id", "path_time");
     svg.append("g").attr("id", "links");
     svg.append("g").attr("id", "nodes");
     svg.append("g").attr("id", "collapsers");
 
-    tooltip = d3.select("#chart").append("div").attr("id", "tooltip");
-
     
+    tooltip = d3.select("#sideTooltip").append("div").attr("id", "tooltip");
+    tooltip.style("width", "390px");
+    tooltip.style("margin-left", "0px");
+    tooltip.style("margin", "20px");
     tooltip.style("opacity", 0)
         .append("img")
           .attr("src", "")
           .attr("alt","")
-          .attr("height","60px")
-          .attr("width","45px")
+          // .attr("height","60px")
+          // .attr("width","45px")
           .attr("class","cimg")
           .attr("style","float:right")
+          ;
+    tooltip.style("opacity", 0)
+        .append("div")
+          .attr("class", "titre_nom")
+          .attr("id","id_ptool")
+          .attr("style","float:left")
           ;
     tooltip.style("opacity", 0)
         .append("div")
@@ -1507,14 +1678,14 @@
           .attr("id","id_ptool")
           .attr("style","float:left")
           ;
-
+          
     biHiSankey = d3.biHiSankey();
 
     // Set the biHiSankey diagram properties
     biHiSankey
       .nodeWidth(NODE_WIDTH)
       .nodeSpacing(24)
-      .linkSpacing(-1)
+      .linkSpacing(1)
       .arrowheadScaleFactor(0.5) // Specifies that 0.5 of the link's stroke WIDTH should be allowed for the marker at the end of the link.
       .size([WIDTH, HEIGHT]);
 
@@ -1565,8 +1736,7 @@
       .attr("orient", "auto")
       .append("path")
         .attr("d", "M 0 0 L 1 0 L 6 5 L 1 10 L 0 10 z");
-    
-    
+        
     function update () {
       var link, linkEnter, node, nodeEnter, collapser, collapserEnter;
 
@@ -1610,7 +1780,9 @@
           .style("marker-end", function () { return 'url(#arrowHead)'; })
           .transition()
             .duration(TRANSITION_DURATION)
-            .style("opacity", OPACITY.LINK_DEFAULT);
+            .style("opacity", function(d){
+                return d.id.includes("c_") || isParentCelib(d) ? 1:0
+                });
 
         //node
           //.selectAll("circle")
@@ -1624,10 +1796,10 @@
             //})
             //.style("fill-opacity", OPACITY.NODE_DEFAULT);
 
-        node.filter(function (n) { return n.state === "collapsed"; })
+        node.filter(function (n) { return !n.id.includes("c_"); })
           .transition()
             .duration(TRANSITION_DURATION)
-            .style("opacity", OPACITY.NODE_DEFAULT);
+            .style("opacity", 1);
       }
 
       function showHideChildren(node) {
@@ -1663,33 +1835,121 @@
       }
       
       function highlightConnected(g) {
-        link.filter(function (d) { 
-            return d.source === g; 
-        })
+        link.filter(function (d) {
+            if (d.source ===g){
+                console.log("source : " + d.source.id); 
+                return true;}
+            if ((d.source != null || d.target != null)){           // On récupère les enfants et le conjoint
+                if (!isParentCelib(d) && g.parent !=null){
+                    if (d.target.id == g.parent.id || d.source.id == g.parent.id){
+                        console.log("source : " + d.source.id + " - " + d.target.id);
+                        return true;
+                    }
+                    else if (g.parent == null){
+                        return (d.target === g || d.target.id == g.id)
+                    }
+                }
+                else {
+                    return false;
+                }
+            }
+            return false;
+        })        
           .style("marker-end", function () { return 'url(#arrowHeadInflow)'; })
-          .style("stroke", OUTFLOW_COLOR)
-          .style("opacity", OPACITY.LINK_DEFAULT);
+          .style("stroke", OUTFLOW_COLOR) // rouge
+          .style("opacity", 1);
 
-        link.filter(function (d) { return d.target === g; })
+        link.filter(function (d) { 
+            if (d.target != null){
+                if (!isParentCelib(d) && g.parent !=null){
+                    if (d.target === g || d.target.id == g.parent.id) {console.log ("target : " + d.target === g + " - " + d.target.id + " - " + d.target.id);}
+                    return (d.target === g || d.target.id == "c_"+g.f_id || d.target.id == "c_"+g.m_id || d.target.id == g.parent.id) ;
+                }
+                else if (g.parent == null){
+                    return (d.target === g || d.target.id == g.id || d.target.id == "c_"+g.f_id || d.target.id == "c_"+g.m_id)
+                }
+            }
+        })     // On récupère les parents
           .style("marker-end", function () { return 'url(#arrowHeadOutlow)'; })
           .style("stroke", INFLOW_COLOR)
-          .style("opacity", OPACITY.LINK_DEFAULT);
+          .style("opacity", 1);
       }
 
-      function fadeUnconnected(g) {
-        link.filter(function (d) { return d.source !== g && d.target !== g; })
+      function fadeUnconnected(g) { // Il manque le cas des personnes célibataires
+        link.filter(function (d) {
+            if (d.source != null && d.target != null && g.parent != null){
+                return d.source !== g && d.source.id != g.parent.id && d.target !== g && d.target.id != g.parent.id && d.target.id != "c_"+g.f_id && d.target.id != "c_"+g.m_id; 
+            }
+        })  
           .style("marker-end", function () { return 'url(#arrowHead)'; })
           .transition()
             .duration(TRANSITION_DURATION)
             .style("opacity", OPACITY.LINK_FADED);
 
-        node.filter(function (d) {
-          return (d.source === g) ? false : !biHiSankey.connected(d, g);
+        node.filter(function (d) {return !biHiSankey.connected(d, g) && !d.id.includes("c_") && d !== g;    // On fade les non-reliés
         }).transition()
           .duration(TRANSITION_DURATION)
           .style("opacity", OPACITY.NODE_FADED);
       }
+      
+    function isParentCelib(link){
+        var nodes = biHiSankey.nodes();
+        var isInCouple = 0;
+        var isParent = 0;
+        if (link.source != null){
+            nodes.forEach(function (n) {
+                if (n.c_id == link.source.id){
+                    isInCouple += 1; // Si la personne est en couple avec le noeud, c'est mort
+                }    
+            });
+            nodes.forEach(function(n){
+                if (n.f_id == link.source.id || n.m_id == link.source.id){
+                    isParent += 1;    
+                }
+            });
+        }
+        if (isInCouple == 0&& isParent>0){return true;}
+        else {return false;}
+    }
+    
+    /**
+    Gestion des images affichées sur les noeuds
+    */
+    function addImage(noeud){
+    if (noeud.length > 1){
+        noeud = noeud.find(function(g){return g.id == noeud.id});
+    }
+    
+        var pat = noeud.append("pattern")
+        .attr("id","mImg")
+        .attr("x","0")
+        .attr("y","0")
+        .attr("width", "48px")
+        .attr("height", "48px")
+        .style("fill","transparent")
+        .style("stroke","back")
+        .style("stroke-width","0.25");
 
+        pat.append("image")
+        .attr("xlink:href", function(d) { 
+                var image = 'https://raw.githubusercontent.com/samueldb/samueldb.github.io/master/images/portraits/'+d.id+'.jpg';
+                if (d.type == 'couple'){
+                    image = 'https://raw.githubusercontent.com/samueldb/samueldb.github.io/master/images/image_couple.png';
+                }
+                else if (d.adr_photo != null){
+                    image = d.adr_photo;
+                    }
+                else if (d.adr_photo == null){
+                    image = 'https://raw.githubusercontent.com/samueldb/samueldb.github.io/master/images/no_photo.png';
+                    }
+                return image;
+            })
+        .attr("x", "-0")
+        .attr("y", "-0")
+        .attr("width", "48px")
+        .attr("height", "48px");
+    
+    }
       link = svg.select("#links").selectAll("path.link")
         .data(biHiSankey.visibleLinks(), function (d) { return d.id; });
 
@@ -1698,42 +1958,28 @@
         .duration(TRANSITION_DURATION)
         .style("stroke-WIDTH", function (d) { return Math.max(1, d.thickness); })
         .attr("d", path)
-        .style("opacity", OPACITY.LINK_DEFAULT);
-
-
-
-
-
-
-
-
+        .style("opacity", function(d){return d.id.includes("c_") || isParentCelib(d) ? 1:0});
       link.exit().remove();
-
-
-
       linkEnter = link.enter().append("path")
         .attr("class", "link")
         .style("fill", "none");
-
-
-
-
-
-
+        
       linkEnter.on('mouseenter', function (d) {
         if (!isTransitioning) {
           showTooltip().select(".value").text(function () {
             if (d.direction > 0) {
-              return d.source.prenom + " -> " + d.target.prenom + " " + d.target.name + "\n";
+              // return d.source.id + "--" + d.source.prenom + " -> " + d.target.prenom + " " + d.target.name + "\n";
+              return "direction " + d.direction + "-" + d.source.id + "--> " + d.target.id + "\n";
             }
-            return d.target.name + " <- " + d.source.name + d.source.prenom + "\n";
-          });
+            // return d.target.id + "--" + d.target.name + " <- " + d.source.name + d.source.prenom + "\n";
+            return "direction " + d.direction + "-" + d.source.id + "--> " + d.target.id + "\n";
+            });
 
           d3.select(this)
             .style("stroke", LINK_COLOR)
             .transition()
               .duration(TRANSITION_DURATION / 2)
-              .style("opacity", OPACITY.LINK_HIGHLIGHT);
+              .style("opacity", function(d){return d.id.includes("c_") || isParentCelib(d) ? 1:0});
         }
       });
 
@@ -1745,7 +1991,7 @@
             .style("stroke", LINK_COLOR)
             .transition()
               .duration(TRANSITION_DURATION / 2)
-              .style("opacity", OPACITY.LINK_DEFAULT);
+              .style("opacity", function(d){return d.id.includes("c_") || isParentCelib(d) ? 1:0});
         }
       });
 
@@ -1766,7 +2012,7 @@
           .duration(TRANSITION_DURATION)
           .attr("d", path)
           .style("stroke-WIDTH", function (d) { return Math.max(1, d.thickness); })
-          .style("opacity", OPACITY.LINK_DEFAULT);
+          .style("opacity", function(d){return d.id.includes("c_") || isParentCelib(d) ? 1:0});
 
 
       node = svg.select("#nodes").selectAll(".node")
@@ -1778,7 +2024,7 @@
       node.transition()
         .duration(TRANSITION_DURATION)
         .attr("transform", function (d) { return "translate(" + d.x + "," + d.y + ")"; })
-        .style("opacity", OPACITY.NODE_DEFAULT)
+        .style("opacity", function(d){return d.id.includes("c_") ? 1:0})
         //.select("circle")
           //.style("fill", function (d) {
           //  d.color = colorScale(d.type.replace(/ .*/, ""));
@@ -1826,42 +2072,13 @@
         }
           return "translate(" + sX + "," + sY + ")";
         })
-        .style("opacity", 1e-6)
+        .style("opacity", function(d){return d.id.includes("c_") ? 0:1})
         .transition()
           .duration(TRANSITION_DURATION)
-          .style("opacity", OPACITY.NODE_DEFAULT)
+          .style("opacity", function(d){return d.id.includes("c_") ? 0:1})
           .attr("transform", function (d) { return "translate(" + d.x + "," + d.y + ")"; });
 
-          //
-         // Gestion des images affichées sur les noeuds : 
-        var pat = nodeEnter.append("pattern")
-            .attr("id","mImg")
-            .attr("x","0")
-            .attr("y","0")
-            .attr("width", "48px")
-            .attr("height", "48px")
-            .style("fill","transparent")
-            .style("stroke","back")
-            .style("stroke-width","0.25");
-            
-        pat.append("image")
-            .attr("xlink:href", function(d) { 
-                    var image = 'https://raw.githubusercontent.com/samueldb/samueldb.github.io/master/images/portraits/'+d.id+'.jpg';
-                    if (d.type == 'couple'){
-                        image = 'https://raw.githubusercontent.com/samueldb/samueldb.github.io/master/images/image_couple.png';
-                        if (d.adr_photo != null){
-                            image = d.adr_photo;
-                        }
-                    }
-                    else if (d.adr_photo == null){
-                        image = 'https://raw.githubusercontent.com/samueldb/samueldb.github.io/master/images/no_photo.png';
-                        }
-                    return image;
-                })
-            .attr("x", "-0")
-            .attr("y", "-0")
-            .attr("width", "48px")
-            .attr("height", "48px");
+        addImage(nodeEnter);
         
         var circle = nodeEnter.append("circle")
             .attr("cx", 0)
@@ -1869,75 +2086,60 @@
              .attr("r", 24)     
              .style("stroke", "black")     
              .style("stroke-width", 0.5)
+             .style("transform","rotate(-90deg)")
             .style("fill","url(#mImg)");
       
-      nodeEnter.append("text");
-      /*
-      node.append("circle")
-
-            .attr("cx", biHiSankey.nodeWidth()/2)
-            .attr("cy", function (d) {
-                return d.height/2;
-            })
-            .attr("r", function (d) {
-                //return Math.sqrt(d.height);
-                return 2;
-            })
-        .style("stroke", function (d) {
-       *///   return d3.rgb(colorScale(d.type.replace(/ .*/, ""))).darker(0.1);
-      /*  })
-        .style("stroke-WIDTH", "5px")
-        .attr("height", function (d) { return d.height; })
-        .attr("width", biHiSankey.nodeWidth());
-        */
-
-
-        node.on("click",function(g){
+    nodeEnter.append("text");
+      
+    node.on("click",function(g){
             console.log("click sur "+g.prenom);
                 //alert('on a tiré sur : '+g.prenom);
         })
-      node.on("mouseover", function (g) {
-        console.log("mouseoever");
-        if (!isTransitioning) {
-          restoreLinksAndNodes();
-          highlightConnected(g);
-          fadeUnconnected(g);
-
-          //d3.select(this).select("circle")
-            //.style("fill", function (d) {
-            //  d.color = d.netFlow > 0 ? INFLOW_COLOR : OUTFLOW_COLOR;
-            //  return d.color;
-            //})
-            //.style("fill","url(#mImg)")
-            //.style("stroke", function (d) {
-            //  return d3.rgb(d.color).darker(0.1);
-            //})
-            //.style("fill-opacity", OPACITY.LINK_DEFAULT);
-
-          tooltip
-            .style("left", g.x + MARGIN.LEFT + "px")
-            .style("top", g.y + g.height + MARGIN.TOP + 15 + "px")
-            .transition()
-              .duration(TRANSITION_DURATION)
-              .style("opacity", 1).select(".value")
-              .text(function () {
-                var nomsCouples = '';
-                var additionalInstructions = g.children.length ? "\n" +g.dMar ? "\nDate de mariage : "+ formatDate(g.dMar): "" +"(Double clic pour ouvrir)" : ("\nDate de naissance : " + (g.dBirth ? formatDate(g.dBirth) : "non renseignée") + (g.dDie ? ("\nDate de décès : " + formatDate(g.dDie)) : "") + "\nProfession : " + (g.job ? g.job:"non renseignée") + "\n " + (g.comm ? g.comm:" - ") );
-                if (g.children.length){
-                    var nomC1 = g.children[0].name + ' ' + g.children[0].prenom;
-                    var nomC2 = g.children[1].name + ' ' + g.children[1].prenom;
-                    nomsCouples = nomC1 + '\n' + nomC2;
-                }
-                else {
-                    nomsCouples = g.name + ' ' + g.prenom;
-                }
-                return nomsCouples + "\n" + additionalInstructions;
-              });
-          // On ajoute l'image récupérée sur github :     
-            tooltip.transition().style("opacity",1).select(".cimg").attr("src",'https://raw.githubusercontent.com/samueldb/samueldb.github.io/master/images/portraits/'+g.id+'.jpg');
-
-        }
-      });
+     node.on("mouseover", function (g) { 
+       console.log("mouseoever sur "+g.id+" : "+g.prenom);
+       if (!isTransitioning && !g.id.includes("c_")) {
+         // restoreLinksAndNodes();
+         highlightConnected(g);
+         fadeUnconnected(g);
+         addImage(node);
+       
+         tooltip
+           .transition()
+             .duration(TRANSITION_DURATION)
+             .style("opacity", 1).select(".titre_nom")
+             .text(function () {
+               var info = g.name + "\n " + g.prenom;
+               return info;
+             });
+         // On ajoute l'image récupérée sur github :     
+          tooltip.transition().style("opacity",1).select(".cimg").attr("src",'https://raw.githubusercontent.com/samueldb/samueldb.github.io/master/images/portraits/'+g.id+'.jpg');
+    
+    
+         tooltip
+           .transition()
+             .duration(TRANSITION_DURATION)
+             .style("opacity", 1).select(".value")
+             .text(function () {
+               var nomsCouples = '';
+               var additionalInstructions = g.children.length ? "\n " +g.dMar ? "\n Date de mariage : "+ formatDate(g.dMar): "" +"(Double clic pour ouvrir)" : ("\n Date de naissance : " + (g.dBirth ? formatDate(g.dBirth) : "non renseignée") + (g.dDie ? ("\n Date de décès : " + formatDate(g.dDie)) : "") + "\n Profession : " + (g.job ? g.job:"non renseignée") + "\n " + (g.comm ? g.comm:" - ") );
+               if (g.children.length){
+                   var nomC1 = g.children[0].name + ' ' + g.children[0].prenom;
+                   var nomC2 = g.children[1].name + ' ' + g.children[1].prenom;
+                   nomsCouples = nomC1 + '\n' + nomC2;
+               }
+               else {
+                   nomsCouples = g.name + ' ' + g.prenom;
+               }
+               return additionalInstructions;
+             });
+         // On ajoute l'image récupérée sur github :     
+           // tooltip.transition().style("opacity",1).select(".cimg").attr("src",'https://raw.githubusercontent.com/samueldb/samueldb.github.io/master/images/portraits/'+g.id+'.jpg');
+       }
+     });
+     
+     /**
+        Gestion de la barre des temps
+     */
       var minYear = 2000;
       for (var n of biHiSankey.nodes()){
         if (typeof(n.dBirth) != 'undefined' && n.dBirth != 'null' && n.dBirth != null){
@@ -1954,49 +2156,23 @@
             .orient("bottom").ticks(5);
         
         var valueline = d3.svg.line()
-
-
-
-
-
-
-
-
-
-
-
-
-
-
             .x(function(d) { 
                 if (typeof(d.dBirth) != 'undefined' && d.dBirth != 'null' && d.dBirth != null){
                     return x(parseInt(d.dBirth.substring(0,4))); 
-
-
-
-
-
-
-
-
-
-
-
-
                 }
                 else return 1800;
             })
             .y(function(d) { return 0; });
         
-        svg.append("g")
-            .attr("class", "x axis")  // two classes, one for css formatting, one for selection below
-            .attr("transform", "translate(0," + (HEIGHT-25) + ")")  // HEIGHT-10
-            .attr("d", valueline(biHiSankey.nodes()))
-            .call(xAxis);
-        svg.append("text")                                                              // ajout du titre du graph
-        .attr("transform", "translate(" + (WIDTH / 2) + " ," + (HEIGHT + 25) + ")")
-        .style("text-anchor", "middle")
-        .text("Date");
+        //svg.append("g")
+        //    .attr("class", "x axis")  // two classes, one for css formatting, one for selection below
+        //    .attr("transform", "translate(0," + (HEIGHT-25) + ")")  // HEIGHT-10
+        //    .attr("d", valueline(biHiSankey.nodes()))
+        //    .call(xAxis);
+        //svg.append("text")                                                              // ajout du titre du graph
+        //.attr("transform", "translate(" + (WIDTH / 2) + " ," + (HEIGHT + 25) + ")")
+        //.style("text-anchor", "middle")
+        //.text("Date");
         
       function formatDate(date){
         var dateFormatee = "";
@@ -2025,15 +2201,16 @@
         }
       }
 
-      node.on("mouseleave", function () {
-        if (!isTransitioning) {
-          hideTooltip();
-          restoreLinksAndNodes();
-        }
-      });
+     node.on("mouseleave", function () {
+       if (!isTransitioning) {
+         hideTooltip();
+         restoreLinksAndNodes();
+         addImage(node);
+       }
+     });
 
-      node.filter(function (d) { return d.children.length; })
-        .on("dblclick", showHideChildren);
+      //node.filter(function (d) { return d.children.length; })
+      //  .on("dblclick", showHideChildren);
 
 
 
@@ -2057,7 +2234,7 @@
           .attr("y", function (d) { return d.height; })
           .attr("dy", ".35em")
           .attr("text-anchor", "bottom")
-          //.attr("transform", "rotate(90deg) translate(-6,"+function (d) { return d.height; }+");")
+          .attr("transform", "rotate(225) translate(5,-15)") //function (d) { return d.height; }+");")
           .text(function (d) {
                 var txt = "";
                 if (d.name.includes(" ") ||d.name.includes("-")){
@@ -2069,16 +2246,7 @@
                 }
 
                 else {
-
-
-
-
-
                     txt = d.prenom + " " + d.name[0]+ "." ;
-
-
-
-
                 }
                 return txt;
             })
@@ -2088,7 +2256,8 @@
 
 
           
-        node.attr("rotateZ","90deg");
+        //node.attr("rotateZ","90deg");
+        node.attr("id",function(d){return d.id;});
       collapser = svg.select("#collapsers").selectAll(".collapser")
         .data(biHiSankey.expandedNodes(), function (d) { return d.id; });
 
@@ -2103,13 +2272,13 @@
        // });
 
       collapserEnter
-        .style("opacity", OPACITY.NODE_DEFAULT)
+        .style("opacity", function(d){return d.id.includes("c_") ? 0:1})
         .attr("transform", function (d) {
           return "translate(" + (d.x + d.width / 2) + "," + (d.y + COLLAPSER.RADIUS) + ")";
 
         });
 
-      collapserEnter.on("dblclick", showHideChildren);
+      //collapserEnter.on("dblclick", showHideChildren);
 
       collapser.select("circle")
         .attr("r", COLLAPSER.RADIUS);
@@ -2156,25 +2325,26 @@
               
           node.filter(function (d) {
               return (d.arbre != '1' || d.arbre != '2')
-            }).style("opacity", 0)
-                .select("rect")
-                  .style("fill", "url(#mImg)");
+            }).style("opacity", function(d){return d.id.includes("c_") ? 0:1});
+//                .select("rect")
+//                  .style("fill", "url(#mImg)");
         }
       });
 
       collapser.on("mouseleave", function (g) {
         if (!isTransitioning) {
           hideTooltip();
-          d3.select(this)
-            .style("opacity", OPACITY.NODE_DEFAULT)
-            .select("rect")
-              .style("fill","url(#mImg)");
-
-          node.filter(function (d) {
-          return (d.source === g) ? false : !biHiSankey.connected(d, g);
-        }).style("opacity", OPACITY.NODE_DEFAULT)
-            .select("rect")
-              .style("fill", "url(#mImg)");
+          addImage(collapser);
+        //  d3.select(this)
+        //    .style("opacity", function(d){return d.id.includes("c_") ? 0:1})
+        //    .select("rect")
+        //      .style("fill","url(#mImg)");
+        //
+        //  node.filter(function (d) {
+        //      return (d.source === g) ? false : !biHiSankey.connected(d, g);
+        //    }).style("opacity", function(d){return d.id.includes("c_") ? 0:1})
+        //        .select("rect")
+        //          .style("fill", "url(#mImg)");
         }
       });
 
@@ -2223,13 +2393,13 @@
     
     populateNode();
     function drawTree(nodesTree,linksTree){
-    
         biHiSankey
           .nodes(nodesTree)
           .links(linksTree)
           .initializeNodes(function (node) {
-            node.state = node.parent ? "contained" : "collapsed";
-            //node.id = "g_" + node.id;
+            //node.state = node.parent ? "contained" : "collapsed";
+            node.state = "collapsed";
+            //node.id = node.id;
           })
           .layout(LAYOUT_INTERATIONS);
 
@@ -2237,50 +2407,7 @@
 
         update();
     }
-    </script>
-    <script>
     
-    var globalNodes = trouverNodesAll();
-    var noeudsExistants = globalNodes[0];
-    // Barre de recherche de personne : 
-    $(RecherchePersonne).append('<fieldset style="border:solid 1px black;width:390px"><legend>Recherche</legend><div id="recherche" style="margin:10px;">Nom de la personne : <input type="text" class="txt_ajt" name="txt_old_nom" id="txt_old_nom" value="" onblur="remplirFamille(value);"><FORM NAME="Choix_genre_search" style="display: initial;margin-left: 10px;"><SELECT id="genres_search" NAME="genre" onchange="remplirFamille($(txt_old_nom).val())"><option value="M">Homme</option><option value="F">Femme</option></SELECT></FORM><FORM NAME="Choix_old_prenom" style="display: initial;margin-left: 10px;"><SELECT id="liste_old_prenom" NAME="liste_old_prenom" style="margin-top:20px;margin-left:120px;"></SELECT></FORM><a id="focus_p" class="button_small" onclick="focusPersonne($(liste_old_prenom).val());";>Centrer</a><a id="reinit" class="button_small" style="display:none;" onclick="hideObject(reinit);showObject(focus_p);populateNode();";>Réinitialiser</a></div></fieldset>');
-    
-    var availableNames = globalNodes[1];
-    //if (noeudsExistants.length > 0){
-    //    for (var n of noeudsExistants){
-    //        if (availableNames.find(function(a){return a == n.nom;})){}
-    //        else {availableNames.push(n.nom);}
-    //    }
-    //}
-    $( "#txt_old_nom" ).autocomplete({
-      source: availableNames,
-      minChars: 1,
-      select: function (event, ui) {
-            var value = ui.item.value;
-            remplirFamille(value);
-    }
-    });
-    function trouverNodesAll(){
-        var noeuds = [];
-        var aNames = [];
-        var sql_statement = "SELECT * FROM nodes WHERE arbre = '1' OR arbre = '2'";
-        $.getJSON('https://samueldeschampsberger.cartodb.com/api/v2/sql/?q='+sql_statement, function(data_json) {
-            if (data_json.rows.length == 0){
-                // Il n'y a personne dans la table
-                alert("Il n'y a pas encore de personne dans cet arbre !");
-            }
-            else if (data_json.rows.length > 0){
-                    // Pour chaque ligne, on vérifie
-                    for (var r of data_json.rows){
-                        noeuds.push({"id":r.own_id,"parent":null,"nom":r.nom,"prenom":r.prenom,"mere":r.mother_id,"pere":r.father_id,"genre":r.genre,"couple":r.couple_id,"job":r.profession,"date_birth":formatDate(r.date_naissance),"date_die":formatDate(r.date_deces),"date_mariage":formatDate(r.date_mariage),"geom":r.the_geom, "arbre":r.arbre});
-                        if ($(aNames).find(function(a){return a == r.nom;})){}
-                        else {aNames.push(r.nom);}
-                    }
-            }
-        });
-        return [noeuds,aNames];
-    }
-        
     function remplirFamille(nomFamille){
         //showObject(liste_old_prenom);
         viderListe(liste_old_prenom);
@@ -2338,145 +2465,37 @@
             case "12":return "Decembre";
         }
     }
-    
+    /**
+        Focus du graph sur une personne en particulier
+    */
     function focusPersonne(value){
+        console.log("on focus sur " + value);
         hideObject(focus_p);
         showObject(reinit);
         var personne = value;
-        //1. On récupère tous les noeuds du graph :
-        var Noeuds =biHiSankey.nodes();
-        //var Liens = biHiSankey.links();
-        var noeudFocus = Noeuds.find(function(a){return a.id == personne;});
-        var allParents = [];
-        // On remonte tous les parents du focus : 
-        //1ère génération : 
-        var p1 = getParents(noeudFocus,Noeuds);
-        for (p of p1){
-            allParents.push(p);
-        }
-        var thereisStillParents = true;
-        // Autres générations :
-        while (thereisStillParents){
-            // Pour tous les parents déjà dans le tableau, on récupère leurs propres parents :
-            var tabPparents = [];
-            for (p of allParents){
-                var px = getParents(p,Noeuds);
-                for (p of px){
-                    // On check si le parent est déjà dans le tableau : 
-                    var isInTabA = allParents.filter(function(a){return a.id == p.id;});
-                    if (typeof(isInTabA != 'undefined')){
-                        if (isInTabA.length > 0){}
-                        else {tabPparents.push(p);}
-                    }
-                }
-            }
-            if (tabPparents.length == 0){thereisStillParents = false;}
-            else {
-                // Pour tous les parents trouvés, on n'ajoute que les nouveaux et leurs conjoints
-                for (p of tabPparents){
-                    var isInTab = allParents.filter(function(a){return a.id == p.id;});
-                    if (typeof(isInTab != 'undefined')){
-                        if (isInTab.length > 0){
-                            // ça veut dire que le parent est déjà dans le tableau
-                        }
-                        else {
-                            allParents.push(p);
-                            //if (p.c_id != "null" && p.c_id != "" && p.c_id != null){
-                            //    // Si le parent a un conjoint, on l'ajoute également
-                            //    var conj = Noeuds.find(function(a){return a.c_id == p.id;});
-                            //    allParents.push(conj);
-                            //}
-                        }
-                    }
-                }
-            }
-        }
-        // Reste à ajouter la personne même et son possible conjoint
-        allParents.push(noeudFocus);
-        if (noeudFocus.c_id != "null" && noeudFocus.c_id != "" && noeudFocus.c_id != null){
-            // Si la pers a un conjoint, on l'ajoute également
-            var conj = Noeuds.find(function(a){return a.c_id == noeudFocus.id;});
-            allParents.push(conj);
-        }
-        // A ce niveau, allParents contient tous les ancètres du focus. 
-        // Maintenant, on cherche tous les enfants de cet ancètre commun
-        
-        // On descend tous les enfants du plus grand ancetre : 
-        var plusGrandAncetre = allParents.sort(ascendingXPosition)[0];
-        var allEnfants = [];
-        //1ère génération : 
-        var e1 = getEnfants(plusGrandAncetre,Noeuds);
-        for (e of e1){
-            allEnfants.push(e);
-            if (e.c_id != "null" && e.c_id != "" && e.c_id != null){
-                // Si l'enfant a un conjoint, on l'ajoute également - uniquement dans le sens descendant donc
-                var conj = Noeuds.find(function(a){return a.c_id == e.id;});
-                allEnfants.push(conj);
-            }
-        }
-        var thereisStillEnfants = true;
-        // Autres générations :
-        while (thereisStillEnfants){
-            // Pour tous les enfants déjà dans le tableau, on récupère leurs propres enfants :
-            var tabPenfants = [];
-            for (e of allEnfants){
-                var ex = getEnfants(e,Noeuds);
-                for (e of ex){
-                    // On check si l'enfant est déjà dans le tableau : 
-                    var isInTabA = allEnfants.filter(function(a){return a.id == e.id;});
-                    if (typeof(isInTabA != 'undefined')){
-                        if (isInTabA.length > 0){}
-                        else {tabPenfants.push(e);}
-                    }
-                }
-            }
-            if (tabPenfants.length == 0){thereisStillEnfants = false;}
-            else {
-                // Pour tous les enfants trouvés, on n'ajoute que les nouveaux et leur conjoint
-                for (e of tabPenfants){
-                    var isInTab = allEnfants.filter(function(a){return a.id == e.id;});
-                    if (typeof(isInTab != 'undefined')){
-                        if (isInTab.length > 0){
-                            // ça veut dire que l'enfant est déjà dans le tableau
-                        }
-                        else {
-                            allEnfants.push(e);
-                            if (e.c_id != "null" && e.c_id != "" && e.c_id != null){
-                                // Si l'enfant a un conjoint, on l'ajoute également - uniquement dans le sens descendant donc
-                                var conj = Noeuds.find(function(a){return a.c_id == e.id;});
-                                allEnfants.push(conj);
-                            }
-                        }
-                    }
-                }
-            }
-        }
-        // On combine les 2 tableaux :
-        for (var e of allEnfants){
-            var isInTab = allParents.filter(function(a){return a.id == e.id;});
-            if (typeof(isInTab != 'undefined')){
-                if (isInTab.length > 0){
-                    // ça veut dire que l'enfant est déjà dans le tableau global
-                }
-                else {
-                    allParents.push(e);
-                }
-            }
-        }
-        if (noeudFocus.c_id != "null" && noeudFocus.c_id != "" && noeudFocus.c_id != null){
-            // Si la pers a un conjoint, on l'ajoute également
-            var conj = Noeuds.find(function(a){return a.c_id == noeudFocus.id;});
-            allParents.push(conj);
-        }
-        // Fin récup
-        populateNode(1,allParents);
         
         // On met en surbrillance la personne concernée
-        svg.select("#nodes").selectAll(".node").data(biHiSankey.nodes().filter(function(a){return a.id == noeudFocus.id;}))
-            .attr("style", "fill: \"#3366FF\"; outline: 2px solid red;font-weight: 900;outline-offset: 2px;");
-        
-            
+        var selNodes = svg.select("#nodes").selectAll(".node").data(biHiSankey.nodes());
+        selNodes.filter(function(d){return d.id != personne;}).style("opacity",function(d){return d.id.includes("c_") ? 0:0.1});
+        selNodes.filter(function(d){return d.id == personne;}).attr("selected","true");
+        var link = svg.select("#links").selectAll("path.link").data(biHiSankey.visibleLinks(), function (d) { return d.id; });
+        link.style("opacity",0);
+        var node = biHiSankey.nodes().find(function(d){return d.id == personne;});
+        var centreX = biHiSankey.size()[0]/2;
+        var centreY = biHiSankey.size()[1]/2;
+        var dx = centreX - node.x;
+        var dy = centreY - node.y;
+        svg.attr("transform", "translate(" + dx + "," + dy + ")");
+        selNodes.filter(function(d){return d.id == personne;}).mouseover();
     }
+    
+    function reinitialiser(){
+        var selNodes = svg.select("#nodes").selectAll(".node").data(biHiSankey.nodes().filter(function(a){return a.id;}));
+        selNodes.filter(function(d){return d.selected != "true" && !d.id.includes("c_");}).style("opacity",1);
+        var link = svg.select("#links").selectAll("path.link").data(biHiSankey.visibleLinks(), function (d) { return d.id; });
+        link.style("opacity",1);
+    }
+    
     
     function getParents(val,Noeuds){
         try{
@@ -2488,7 +2507,7 @@
         catch(Err){
             console.log('erreur lors de la récupération des parents (normale)');
         }
-    }    
+    }
     function getEnfants(val,Noeuds){
         try{
             var idParent = val.id;
@@ -2505,6 +2524,14 @@
             console.log('erreur lors de la récupération des enfants (normale)');
         }
     }
+    
+    
+    jQuery.fn.d3MouseOver = function () {
+      this.each(function (i, e) {
+        var evt = new MouseEvent("mouseover");
+        e.dispatchEvent(evt);
+      });
+    };
     </script>
   
   </body>
