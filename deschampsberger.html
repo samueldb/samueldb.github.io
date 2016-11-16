@@ -636,7 +636,7 @@
         nodesByXPosition.forEach(function (nodes) {
                nodes.forEach(function (node, i) {
                    if (node.x == 0){
-                         node.y = i;                                                                                // calcul de la position verticale
+                         node.y = i*10;                                                                                // calcul de la position verticale
                          node.heightAllowance = node.value * yScaleFactor + linkSpacing * node.linkSpaceCount;  
                      }
                      else {
@@ -754,13 +754,13 @@
             
             // A ce niveau, les gens sont correctement placés sur l'arbre. 
             // Maintenant, nous voulons qu'ils soient le plus possible placé en fonction de leurs ancêtre de manière "droite", "direct", que le tronc soit le plus droit possible
-            //1. on cherche la génération comportant le plus d'enfant
+            //1. on cherche la génération comportant le plus d'enfant sans couple
             //2. on recalcule la position des parents et des enfants en fonction de la place des gens sur la génération la plus nombreuse
             var geneLaPlusNombreuse = 0;
             var maxLength = 0;
             for (var i = 0;i<nodesGenerationXclasses.length;i++){
                 if (nodesGenerationXclasses[i].length > maxLength){
-                    maxLength = nodesGenerationXclasses[i].length;
+                    maxLength = nodesGenerationXclasses[i].filter(function(n){return n.type != "couple";}).length;
                     geneLaPlusNombreuse = i;
                 }
             }
@@ -769,26 +769,69 @@
             // On commence par traiter les générations plus récentes : 
             var generationN = geneLaPlusNombreuse + 1; // C'est la 1ère génération après la plus nombreuse
             for (var gene = generationN;gene<nodesGenerationXclasses.length;gene++){
+            //--Début experimentation
+                for (var parent of nodesGenerationXclasses[gene-1]){
+                    //Pour chaque parent, on récupère les enfants : 
+                    var Enfants = nodesGenerationXclasses[gene].filter(function(n){return (n.f_id == parent.id && n.f_id != null)||(n.m_id == parent.id && n.m_id != null)});
+                    for (var e of Enfants){
+                        e.parentID = parent.id;
+                    }
+                }
+                var nodesByParents = d3.nest()      //nodesByParents contient un tableau d'enfants classés par parents
+                  .key(function (node) { return node.parentID; })
+                  .sortKeys(d3.ascending)
+                  .entries(nodesGenerationXclasses[gene])
+                  .map(function (object) { return object.values; });
+                  
+                
+            //--Fin experimentation
                 var tabGene = nodesGenerationXclasses[gene];
                 for (var node of tabGene){
                     if (typeof(node.ytraite) != 'undefined'){
                     }
                     else {
                         if (node.type != 'couple'){
-                            var FreresEtSoeurs = tabGene.filter(function (bn){return bn.m_id == node.m_id || bn.f_id == node.f_id;});   // Les frères et soeurs des enfants
+                            var FreresEtSoeurs = tabGene.filter(function (bn){return ((bn.m_id == node.m_id && bn.m_id != null) || (bn.f_id == node.f_id && bn.f_id != null));});   // Les frères et soeurs des enfants
                             var Parents = nodesGenerationXclasses[gene-1].filter(function (bn){return bn.id == node.m_id || bn.id == node.f_id;}); // gene-1 est la génération la plus nombreuse
                             //FreresEtSoeurs.add(node);
-                            var minYFratrie = d3.min(FreresEtSoeurs, function (node) { return node.y; });
-                            var maxYFratrie = d3.max(FreresEtSoeurs, function (node) { return node.y; });
-                            var meanYFratrie = (maxYFratrie + minYFratrie)/2;
-                            var minYParents = d3.min(Parents, function (node) { return node.y; });
-                            var maxYParents = d3.max(Parents, function (node) { return node.y; });
-                            var meanYParents = (maxYParents + minYParents)/2;
-                            var dy = meanYParents - meanYFratrie;
-                            for (var fratrie of FreresEtSoeurs){
-                                fratrie.y += dy;
-                                fratrie.ytraite = 'ok';
+                            if (FreresEtSoeurs.length == 0){ // Le noeud est fils unique
                             }
+                            else {
+                                var minYFratrie = d3.min(FreresEtSoeurs, function (node) { return node.y; });
+                                var maxYFratrie = d3.max(FreresEtSoeurs, function (node) { return node.y; });
+                                var meanYFratrie = (maxYFratrie + minYFratrie)/2;
+                                var minYParents = d3.min(Parents, function (node) { return node.y; });
+                                var maxYParents = d3.max(Parents, function (node) { return node.y; });
+                                var meanYParents = (maxYParents + minYParents)/2;
+                                var dy = meanYParents - meanYFratrie;
+                                for (var fratrie of FreresEtSoeurs){
+                                    fratrie.y += dy;
+                                    fratrie.ytraite = 'ok';
+                                    // On déplace également le couple et le point du couple s'il existe : 
+                                    var encouple = tabGene.find(function(n){return n.c_id == fratrie.id;});
+                                    if (typeof(encouple) != 'undefined'){
+                                        var nodeCouple = tabGene.find(function(n){return n.id == "c_"+fratrie.id || n.id == "c_"+encouple.id;});
+                                        if (typeof(nodeCouple.ytraite) == 'undefined'){
+                                            nodeCouple.y = meanYParents + dy;
+                                            nodeCouple.ytraite = 'ok';
+                                        }
+                                        if (typeof(encouple.ytraite) == 'undefined'){
+                                            encouple.y = meanYParents + dy;
+                                            encouple.ytraite = 'ok';
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+                // On égalise les écarts de place au sein d'une même fratrie de la génération n
+                for (var node of tabGene){
+                    var FreresEtSoeursParents = tabGene.filter(function(n){return (n.f_id == node.f_id || n.m_id == node.m_id) && n.id != node.id;});
+                    for (var parent of FreresEtSoeursParents){
+                        if (typeof(parent.ytraite) == 'undefined'){
+                            parent.y += dy;
+                            parent.ytraite = 'ok';
                         }
                     }
                 }
@@ -797,12 +840,60 @@
             //Puis les générations plus anciennes, en commençant par leurs parents : 
             var generationN = geneLaPlusNombreuse - 1;
             for (var gene = generationN;gene>-1;gene--){
+            //--Début experimentation
+                if (gene>0){
+                    for (var parentParents of nodesGenerationXclasses[gene-1]){ // On veut les frères et soeur des parents
+                        //Pour chaque parent, on récupère les enfants : 
+                        var Parents = nodesGenerationXclasses[gene].filter(function(n){return (n.f_id == parentParents.id && n.f_id != null)||(n.m_id == parentParents.id && n.m_id != null)});
+                        for (var e of Parents){
+                            e.parentID = parentParents.id;
+                        }
+                    }
+                    var nodesByParents = d3.nest()      //nodesByParents contient un tableau des fratries de la génération en cours
+                      .key(function (node) { return node.parentID; })
+                      .sortKeys(d3.ascending)
+                      .entries(nodesGenerationXclasses[gene].filter(function(n){return n.type != 'couple' && typeof(n.parentID) != 'undefined';}))
+                      .map(function (object) { return object.values; });
+                }
+                //On trie ce tableau par groupe de y croissant 
+                nodesByParents.sort(function(a,b){return d3.min(a, function (node) { return node.y; })>d3.min(b, function (node) { return node.y; })});
+                
+                var dy = 0;
+            //--Fin experimentation
                 var tabGene = nodesGenerationXclasses[gene];
+                //ymax = d3.min(nodesByParents[i+1], function (node) { return node.y; });
                 for (var node of tabGene){
+                    var ymax = 0;
                     if (typeof(node.ytraite) != 'undefined'){
                     }
                     else {
                         if (node.type != 'couple'){
+                            //On cherche dans quelle table de nodesByParents est le noeud pour lui affecté un ymax
+                            if (nodesByParents.length == 1){
+                                // on a ici le cas d'une génération composée de frères et soeurs uniquement (et conjoint)
+                                //ymax = d3.max(nodesByParents[0], function (node) { return node.y; });
+                            }
+                            else {
+                                recherche:
+                                for (var i=0;i<nodesByParents.length;i++){
+                                    for (var j=0;j<nodesByParents[i].length;j++){
+                                        if (nodesByParents[i][j].id == node.id){
+                                            if (i+1>=nodesByParents.length){ // ça veut dire qu'on est dans le dernier groupe (celui qui n'a pas de contrainte sur y)
+                                                ymax = 0;
+                                            }
+                                            else {
+                                                ymax = d3.min(nodesByParents[i+1], function (node) { return node.y; });
+                                            }
+                                            break recherche;
+                                        }
+                                    }
+                                }
+                            }
+                            // Ici, on n'a pas encore traité les frères/soeurs sans descendance
+                            //Si le noeud fait parti de la dernière table, on se fout du ymax
+                            if (ymax == 0){
+                                ymax = 100;
+                            }
                             var Parents = tabGene.filter(function (bn){return bn.c_id == node.id || bn.id == node.id}); //Les max 2 parents à bouger
                             var FreresEtSoeurs = nodesGenerationXclasses[gene+1].filter(function (bn){return bn.m_id == node.id || bn.f_id == node.id;}); //De la génération "enfant"
                             //FreresEtSoeurs.add(node);
@@ -816,13 +907,16 @@
                                 var maxYParents = d3.max(Parents, function (node) { return node.y; });
                                 var meanYParents = (maxYParents + minYParents)/2;
                                 var dy = meanYFratrie - meanYParents;
+                                while((maxYParents + dy)>=ymax){
+                                    dy = dy - 1;
+                                }
                                 for (var parent of Parents){
                                     parent.y += dy;
                                     parent.ytraite = 'ok';
                                 }
                                 // On déplace également le point du couple s'il existe : 
                                 if (Parents.length > 1){
-                                    nodeCouple = tabGene.find(function(n){return n.id == "c_"+Parents[0].id || n.id == "c_"+Parents[1].id;});
+                                    var nodeCouple = tabGene.find(function(n){return n.id == "c_"+Parents[0].id || n.id == "c_"+Parents[1].id;});
                                     nodeCouple.y = meanYParents + dy;
                                     nodeCouple.ytraite = 'ok';
                                 }
@@ -834,14 +928,40 @@
                 }
                 // On égalise les écarts de place au sein d'une même fratrie de la génération n+1
                 for (var node of tabGene){
-                    var FreresEtSoeursParents = tabGene.filter(function(n){return (n.f_id == node.f_id || n.m_id == node.m_id) && n.id != node.id;});
+                    var FreresEtSoeursParents = tabGene.filter(function(n){return ((n.f_id == node.f_id && n.f_id != null && n.f_id != "null")||(n.m_id == node.m_id && n.m_id != null && n.m_id != "null"))});
+                    var minYFratrie = d3.min(FreresEtSoeursParents, function (node) { return node.y; });
+                    var maxYFratrie = d3.max(FreresEtSoeursParents, function (node) { return node.y; });
                     for (var parent of FreresEtSoeursParents){
                         if (typeof(parent.ytraite) == 'undefined'){
-                            parent.y += dy;
-                            parent.ytraite = 'ok';
+                            dy = minYFratrie;
+                            for (f of FreresEtSoeursParents){
+                                if ((parent.y + dy) < f.y){
+                                    dy += 0.2;
+                                }
+                                else {
+                                    parent.y += dy;
+                                    parent.ytraite = 'ok';
+                                    var nodeConjoint = tabGene.find(function(n){return n.c_id == parent.id});
+                                    if (typeof(nodeConjoint) != 'undefined' && typeof(nodeConjoint.ytraite)=='undefined'){
+                                       //nodeConjoint.y += 1.25*dy;
+                                       //nodeConjoint.ytraite = 'ok';
+                                    }
+                                    var nodeCouple = tabGene.find(function(n){return n.id == "c_"+parent.id || n.id == "c_"+parent.c_id;});
+                                    if (typeof(nodeCouple) != 'undefined'){
+                                        nodeCouple.y = (parent.y + nodeConjoint.y)/2;
+                                        nodeCouple.ytraite = 'ok';
+                                    }
+                                }
+                            }
+                            //while((parent.y + dy)<=maxYFratrie){    //On essaie de trouver un intervalle pour caser la personne
+                            //    dy = dy + 0.01;
+                            //}
+                            //parent.y += dy;
+                            //parent.ytraite = 'ok';
                         }
                     }
                 }
+                
             }
             
         }
@@ -911,14 +1031,14 @@
 //                    }
 //            }
             for (i = 0; i < n; ++i) {
-              node = nodes[i];
-              node.y *= 85;
-              dy = y0 - node.y;
-              if (dy > 0) {
-                node.y += dy;
-              }
-              y0 = node.y + node.heightAllowance + 2*nodeSpacing;
-          }
+                node = nodes[i];
+                node.y *= 85;
+                dy = y0 - node.y;
+                if (dy > 0) {
+                    node.y += dy;
+                }
+                y0 = node.y + node.heightAllowance + 2*nodeSpacing;
+            }
 //
 //            // If the bottommost node goes outside the bounds, push it back up.
 //            dy = y0 - nodeSpacing - size[1];
@@ -936,6 +1056,7 @@
 //                y0 = node.y;
 //              }
             
+            // On rapproche les couples : 
             for (var node of nodes){
                 if (cn>0 && cn<nodes.length-1 && node.type=='couple'){
                     ancienY = nodes[cn-1].y;
@@ -967,7 +1088,7 @@
        }
 
         minY = d3.min(nodes, function (node) { return node.y; });
-        adjustTop(minY);
+        //adjustTop(minY);
       }
 
       function computeLinkYPositions() {
@@ -1457,8 +1578,8 @@
 
       },
       TRANSITION_DURATION = 400,
-      HEIGHT = 600 - MARGIN.TOP - MARGIN.BOTTOM,
-      WIDTH =  550 - MARGIN.LEFT - MARGIN.RIGHT,
+      HEIGHT = 900 - MARGIN.TOP - MARGIN.BOTTOM,
+      WIDTH =  600 - MARGIN.LEFT - MARGIN.RIGHT,
       LAYOUT_INTERATIONS = 0,
       REFRESH_INTERVAL = 3500;
       
@@ -1634,7 +1755,7 @@
             .attr("id","id_svg")
             .attr("width", "100%")
             .attr("height", "900px")
-            .attr("viewBox","0 -100 1350 1500") //cadre sur l'ensemble des noeuds 
+            .attr("viewBox","0 -100 1450 1600") //cadre sur l'ensemble des noeuds 
             .attr("style",function(){
                 return "transform:rotate(90deg)";}) // tourne la map de haut en bas
             // .call(zoom)
@@ -1741,10 +1862,10 @@
       var link, linkEnter, node, nodeEnter, collapser, collapserEnter;
 
      function dragmove(node) {
-       //node.x = Math.max(0, Math.min(WIDTH - node.width, d3.event.x));            On supprime cette ligne pour ne garder que le déplacement vertical. 
-       node.y = Math.max(0, Math.min(HEIGHT - node.height, d3.event.y));
-       d3.select(this).attr("transform", "translate(" + node.x + "," + node.y + ")");
-       biHiSankey.relayout();
+       node.x = Math.max(0, Math.min(WIDTH - node.width, d3.event.x));           // On supprime cette ligne pour ne garder que le déplacement vertical. 
+       //node.y = Math.max(0, Math.min(HEIGHT - node.height, d3.event.y));
+       //d3.select(this).attr("transform", "translate(" + node.x + "," + node.y + ")");
+       //biHiSankey.relayout();
        svg.selectAll(".node").selectAll("circle").attr("height", function (d) { return d.height; });
        link.attr("d", path);
      }

@@ -760,7 +760,7 @@
             var maxLength = 0;
             for (var i = 0;i<nodesGenerationXclasses.length;i++){
                 if (nodesGenerationXclasses[i].length > maxLength){
-                    maxLength = nodesGenerationXclasses[i].length;
+                    maxLength = nodesGenerationXclasses[i].filter(function(n){return n.type != "couple";}).length;
                     geneLaPlusNombreuse = i;
                 }
             }
