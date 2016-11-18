@@ -59,7 +59,7 @@
 
 .interval {
     fill: #275da1;
-    stroke-width: 6;
+    stroke-width: 10;
     cursor : default;
     pointer-events: true;
 }

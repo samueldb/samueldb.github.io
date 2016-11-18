@@ -139,7 +139,7 @@ function timeline(domElement) {
         // Convert yearStrings into dates
         data.items.forEach(function (item){
             item.start = parseDate(item.start);
-            if (item.end == "" || item.end == "null" ) {
+            if (item.end == "" || item.end == "null"|| typeof(item.end) == "undefined" ) {
                 //console.log("1 item.start: " + item.start);
                 //console.log("2 item.end: " + item.end);
                 item.end = new Date(item.start.getTime() + instantOffset);
@@ -185,8 +185,9 @@ function timeline(domElement) {
         band.h = height * (sizeFactor || 1);
         band.trackOffset = 4;
         // Prevent tracks from getting too high
-        band.trackHeight = Math.min((band.h - band.trackOffset) / data.nTracks, 20);
-        band.itemHeight = band.trackHeight * 0.8,
+        band.trackHeight = Math.min((band.h - band.trackOffset) / data.nTracks, 100);
+        //band.itemHeight = band.trackHeight * 0.9,
+        band.itemHeight = band.trackHeight,         // hauteur du rectangle
         band.parts = [],
         band.instantWidth = 100; // arbitray value
 
@@ -347,9 +348,9 @@ function timeline(domElement) {
         function getHtml(element, d) {
             var html;
             if (element.attr("class") == "interval") {
-                html = d.label + "<br>" + toYear(d.start) + " - " + toYear(d.end);
+                html = d.label + "<br>" + toYear(d.start) + " - " + toYear(d.end) + " et voila";
             } else {
-                html = d.label + "<br>" + toYear(d.start);
+                html = d.label + "<br>" + toYear(d.start)+ " vivant !";
             }
             return html;
         }
