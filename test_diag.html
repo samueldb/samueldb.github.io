@@ -178,6 +178,9 @@
     // Get the nodes from cartodb table
     // flagRecherche = 0 : pas de choix de personne à rechercher, 1 : on recherche l'arbre d'une personne en particulier
     function populateNode(flagRecherche,elementsRecherches){
+        var nodes, links, liste_couple;
+        nodes = [];
+        links = [];
         var sql_statement = "SELECT * FROM nodes WHERE arbre = '1' OR arbre = '2'";
         if (flagRecherche == 1 && elementsRecherches.length > 0){
             // Dans ce cas, on ajoute une clause WHERE à la recherche
@@ -190,8 +193,6 @@
         }
         var NoeudsBase = [];
         if (flagRecherche == 1 && elementsRecherches.length > 0){
-            //biHiSankey.nodes = [];
-            //biHiSankey.links = [];
             NoeudsBase = trouverNodes(flagRecherche,elementsRecherches);}
         else {
             NoeudsBase = trouverNodes(0,[]);
@@ -205,68 +206,72 @@
             else if (data_json.rows.length > 0){
                     // Pour chaque ligne, on l'ajoute au tableau des noeuds. 
                     // Et on formatte le tableau pour qu'il soit exploitable par D3
-                    var nodes, links, liste_couple;
-                    nodes = [];
-                    links = [];
-                    liste_couple = [];
+                    
                     for (var r of data_json.rows){
                         // On remplit les personnes
                         nodes.push({"type":r.genre,"id":r.own_id,"parent":null,"name":r.nom,"prenom":r.prenom,"f_id":r.father_id,"m_id":r.mother_id,"c_id":r.couple_id,"dBirth":r.date_naissance,"dDie":r.date_deces,"dMar":r.date_mariage,"job":r.profession,"comm":r.commentaire,"arbre":r.arbre,"adr_photo":r.adr_photo});
-                        // Si 1 des 2 parents est en couple, on ajoute un noeud
-                        if ((r.couple_id != null && r.couple_id != "null")){
-                            var isinliste = 0;
-                            for (var lc of liste_couple){
-                                if (lc.id_c == r.own_id){
-                                    // Si l'id est déjà dans cette liste, on ne l'ajoute pas
-                                    isinliste = 1;
-                                }
-                            }
-                            if (isinliste == 0){
-                                //var Pere = NoeudsBase.find(function(a){return a.id == r.father_id});
-                                var homme = NoeudsBase.find(function(a){return a.id == r.own_id && r.genre == "M"});
-                                var saFemme;
-                                if (homme){
-                                    //nodes.push({"type":"couple","id":"c_"+r.couple_id,"parent":null,"name":homme.nom,"prenom":homme.prenom,"id_homme":r.own_id,"id_femme":r.couple_id,"dMar":r.date_mariage,"arbre":r.arbre});
-                                    //liste_couple.push({"id_c":r.couple_id,"id_homme":r.own_id});
-                                    //links.push({"source":homme.id,"target":"c_"+r.couple_id,"value":1});
-                                    //links.push({"source":r.couple_id,"target":"c_"+r.couple_id,"value":1});
-                                }
-                            }
-                        }
+                       
                         // On calcul les liens 
-                        var pereExiste = NoeudsBase.find(function(a){return a.id == r.father_id});
-                        var mereExiste = NoeudsBase.find(function(a){return a.id == r.mother_id});
-
-                        if (r.father_id == null || r.father_id == " " || r.father_id == "null" || typeof(pereExiste) == 'undefined'){}
-                        else {
-                            links.push({"source":r.father_id,"target":r.own_id,"value":1});
-                            }
-                        if (r.mother_id == null || r.mother_id == " " || r.mother_id == "null"  || typeof(mereExiste) == 'undefined'){}
-                        else {
-                            links.push({"source":r.mother_id,"target":r.own_id,"value":1});
-                        }
+                        //var pereExiste = NoeudsBase.find(function(a){return a.id == r.father_id});
+                        //var mereExiste = NoeudsBase.find(function(a){return a.id == r.mother_id});
+                        //
+                        //if (r.father_id == null || r.father_id == " " || r.father_id == "null" || typeof(pereExiste) == 'undefined'){}
+                        //else {
+                        //    links.push({"source":r.father_id,"target":r.own_id,"value":1});
+                        //    }
+                        //if (r.mother_id == null || r.mother_id == " " || r.mother_id == "null"  || typeof(mereExiste) == 'undefined'){}
+                        //else {
+                        //    links.push({"source":r.mother_id,"target":r.own_id,"value":1});
+                        //}
                     }
-                    // Une fois les nodes remplis, on ajoute "parent" des noeuds des personnes en couple : 
-                    for (var p of nodes){
-                        for (var lc of liste_couple){
-                            if (p.id == lc.id_c || p.id == lc.id_homme){
-                                p.parent = "c_"+lc.id_c;
-                            }
-                        }
-                    }
-                    
             }
             
             // TEST
             var width = 1500;
             var height = 1000;
 // Compute the distinct nodes from the links.
+            var i=0;
+            nodes.filter(function(n){return n}).forEach(function(node){
+                var fatherIndex = 0;
+                var motherIndex = 0;
+                var coupleIndex = 0;
+                r1:
+                for (var k=0;k<nodes.length;k++){
+                    if (nodes[k].id == node.f_id){
+                        fatherIndex = k;
+                        break r1;
+                    }
+                }
+                r2:
+                for (var k=0;k<nodes.length;k++){
+                    if (nodes[k].id == node.m_id){
+                        motherIndex = k;
+                        break r2;
+                    }
+                }r3:
+                for (var k=0;k<nodes.length;k++){
+                    if (nodes[k].id == node.c_id){
+                        coupleIndex = k;
+                        break r3;
+                    }
+                }
+                if (node.f_id != 'null' && node.f_id != null){
+                    links.push({"source":fatherIndex,"target":i,"value":1,"type":"n"});
+                }
+                if (node.m_id != 'null' && node.m_id != null){
+                    links.push({"source":motherIndex,"target":i,"value":1,"type":"n"});
+                }
+                if (node.c_id != 'null' && node.c_id != null){
+                    links.push({"source":coupleIndex,"target":i,"value":2,"type":"c"});
+                }
+                i++;
+            });
             links.forEach(function(link) {
-                link.source = nodes[link.source] || 
-                    (nodes[link.source] = {name: link.source});
-                link.target = nodes[link.target] || 
-                    (nodes[link.target] = {name: link.target});
-                //link.value = +link.value;
+                //link.source = nodes[link.source] || (nodes[link.source] = {name: link.source});
+                //link.target = nodes[link.target] || (nodes[link.target] = {name: link.target});
+                 //link.source = nodes.find(function(n){return n.id == link.source});
+                 //link.target = nodes.find(function(n){return n.id == link.target});
+                 //link.value = +link.value;
             });
             var force = d3.layout.force()
                 .nodes(d3.values(nodes))
@@ -287,7 +292,7 @@
               .enter().append("svg:marker")    // This section adds in the arrows
                 .attr("id", String)
                 .attr("viewBox", "0 -5 10 10")
-                .attr("refX", 15)
+                .attr("refX", 5)
                 .attr("refY", -1.5)
                 .attr("markerWidth", 6)
                 .attr("markerHeight", 6)
@@ -299,7 +304,7 @@
             var path = svg.append("svg:g").selectAll("path")
                 .data(force.links())
               .enter().append("svg:path")
-            //    .attr("class", function(d) { return "link " + d.type; })
+                .attr("class", function(d) { return "link " + d.type; })
                 .attr("class", "link")
                 .attr("marker-end", "url(#end)");
 
@@ -318,7 +323,7 @@
             node.append("text")
                 .attr("x", 12)
                 .attr("dy", ".35em")
-                .text(function(d) { return d.name + ' ' + d.prenom; });
+                .text(function(d) { return d.prenom + ' ' + d.name; });
 
             // add the curvy lines
             function tick() {
