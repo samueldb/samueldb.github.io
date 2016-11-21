@@ -750,6 +750,7 @@ td {
     -ms-transition-delay:0.5s;     
     -o-transition-delay:0.5s;     
     transition-delay:0.5s; 
+    display: block;
 }
 #nav a {
 		height: 36px;
