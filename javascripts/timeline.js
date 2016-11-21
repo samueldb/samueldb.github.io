@@ -139,6 +139,7 @@ function timeline(domElement) {
         // Convert yearStrings into dates
         data.items.forEach(function (item){
             item.start = parseDate(item.start);
+            //console.log("0." + item.label + ' : ' + item.end);
             if (item.end == "" || item.end == "null"|| typeof(item.end) == "undefined" ) {
                 //console.log("1 item.start: " + item.start);
                 //console.log("2 item.end: " + item.end);
@@ -146,7 +147,7 @@ function timeline(domElement) {
                 //console.log("3 item.end: " + item.end);
                 item.instant = true;
             } else {
-                //console.log("4 item.end: " + item.end);
+                //console.log("4 "+item.label+" : " + item.end);
                 item.end = parseDate(item.end);
                 item.instant = false;
             }
@@ -278,13 +279,13 @@ function timeline(domElement) {
         var labelDefs = [
                 ["start", "bandMinMaxLabel", 0, 4,
                     function(min, max) { return toYear(min); },
-                    "Start of the selected interval", band.x + 30, labelTop],
+                    "Début de l'intervalle sélectionné ", band.x + 30, labelTop],
                 ["end", "bandMinMaxLabel", band.w - labelWidth, band.w - 4,
                     function(min, max) { return toYear(max); },
-                    "End of the selected interval", band.x + band.w - 152, labelTop],
+                    "Fin de l'intervalle sélectionné", band.x + band.w - 152, labelTop],
                 ["middle", "bandMidLabel", (band.w - labelWidth) / 2, band.w / 2,
                     function(min, max) { return max.getUTCFullYear() - min.getUTCFullYear(); },
-                    "Length of the selected interval", band.x + band.w / 2 - 75, labelTop]
+                    "Durée de l'intervalle sélectionné", band.x + band.w / 2 - 75, labelTop]
             ];
 
         var bandLabels = chart.append("g")
@@ -347,10 +348,19 @@ function timeline(domElement) {
 
         function getHtml(element, d) {
             var html;
-            if (element.attr("class") == "interval") {
-                html = d.label + "<br>" + toYear(d.start) + " - " + toYear(d.end) + " et voila";
+            if (element.attr("class") == "part interval") {
+                // html = d.label + "<br>" + toYear(d.start) + " - " + toYear(d.end) + " et voila";
+                var currentDate = new Date();
+                console.log(toYear(d.end) +">="+ toYear(currentDate));
+                if (toYear(d.end) == toYear(currentDate)){
+                    html = d.label + "<br>" + toYear(d.start) + " - ...";
+                }
+                else {
+                    html = d.label + "<br>" + toYear(d.start) + " - " + toYear(d.end) + "";
+                }
             } else {
-                html = d.label + "<br>" + toYear(d.start)+ " vivant !";
+                // html = d.label + "<br>" + toYear(d.start)+ " vivant !";
+                html = d.label + "<br>" + toYear(d.start)+ " - ?";
             }
             return html;
         }
