@@ -936,28 +936,40 @@
                     var FreresEtSoeursParents = tabGene.filter(function(n){return ((n.f_id == node.f_id && n.f_id != null && n.f_id != "null")||(n.m_id == node.m_id && n.m_id != null && n.m_id != "null"))});
                     var minYFratrie = d3.min(FreresEtSoeursParents, function (node) { return node.y; });
                     var maxYFratrie = d3.max(FreresEtSoeursParents, function (node) { return node.y; });
+                    // On calcul l'écart minimum entre 2 personnes proches (par les y)
+                    var tabFStrieParY = FreresEtSoeursParents.sort(ascendingYPosition);
+                    var minDy = 10;
+                    if (tabFStrieParY.length > 0){
+                        for (var i=0;i<tabFStrieParY.length-2;i++){
+                            var dylocal = tabFStrieParY[i+1].y-tabFStrieParY[i].y;
+                            if (dylocal < minDy){
+                                minDy = dylocal;
+                            }
+                        }
+                    }
                     for (var parent of FreresEtSoeursParents){
                         if (typeof(parent.ytraite) == 'undefined'){
-                            dy = minYFratrie;
-                            for (f of FreresEtSoeursParents){
-                                if ((parent.y + dy) < f.y){
-                                    dy += 0.2;
+                            dy = minDy;
+                            //dy = minYFratrie;
+                            var fy = d3.max(FreresEtSoeursParents, function (node) { return node.y; });
+                            if ((parent.y + dy) < fy && isGeneConflit(tabGene) == true){
+                                dy += 0.2;
+                            }
+                            else {
+                                parent.y += dy;
+                                parent.ytraite = 'ok';
+                                var nodeConjoint = tabGene.find(function(n){return n.c_id == parent.id});
+                                if (typeof(nodeConjoint) != 'undefined' && typeof(nodeConjoint.ytraite)=='undefined'){
+                                   //nodeConjoint.y += 1.25*dy;
+                                   //nodeConjoint.ytraite = 'ok';
                                 }
-                                else {
-                                    parent.y += dy;
-                                    parent.ytraite = 'ok';
-                                    var nodeConjoint = tabGene.find(function(n){return n.c_id == parent.id});
-                                    if (typeof(nodeConjoint) != 'undefined' && typeof(nodeConjoint.ytraite)=='undefined'){
-                                       //nodeConjoint.y += 1.25*dy;
-                                       //nodeConjoint.ytraite = 'ok';
-                                    }
-                                    var nodeCouple = tabGene.find(function(n){return n.id == "c_"+parent.id || n.id == "c_"+parent.c_id;});
-                                    if (typeof(nodeCouple) != 'undefined'){
-                                        nodeCouple.y = (parent.y + nodeConjoint.y)/2;
-                                        nodeCouple.ytraite = 'ok';
-                                    }
+                                var nodeCouple = tabGene.find(function(n){return n.id == "c_"+parent.id || n.id == "c_"+parent.c_id;});
+                                if (typeof(nodeCouple) != 'undefined'){
+                                    nodeCouple.y = (parent.y + nodeConjoint.y)/2;
+                                    nodeCouple.ytraite = 'ok';
                                 }
                             }
+                            
                             //while((parent.y + dy)<=maxYFratrie){    //On essaie de trouver un intervalle pour caser la personne
                             //    dy = dy + 0.01;
                             //}
@@ -970,7 +982,34 @@
             }
             
         }
-
+        function ascendingYPosition(a, b) {
+            return a.y - b.y;
+        }
+        /**
+            isGeneConflit vérifie que sur une génération, tous les noeuds ont des places différentes
+        */
+        function isGeneConflit(tabGene){
+            //var yaPb = false;
+            var tabYdejaPresent = [];
+            var isinliste = 0;
+            for (var node of tabGene){
+                for (var i of tabYdejaPresent){
+                    if (node.id == i.id){
+                    // Si l'id est déjà dans cette liste, on ne l'ajoute pas
+                    isinliste = 1;
+                    return true;
+                    }
+                }
+                if (isinliste == 0){
+                    tabYdejaPresent.push(node);
+                }
+            }
+            if (isinliste == 0){
+                return false;
+            }
+            else { return true;}
+        }
+        
         // Calcul de la taille du lien
         function calculateLinkThickness() {
           links.forEach(function (link) {
