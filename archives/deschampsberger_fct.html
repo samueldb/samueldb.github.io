@@ -770,59 +770,55 @@
                 }
             }
             
-            var tabGenePlusNombreuse = nodesGenerationXclasses[geneLaPlusNombreuse].sort(ascendingYPosition);
+            var tabGenePlusNombreuse = nodesGenerationXclasses[geneLaPlusNombreuse];
             // On commence par traiter les générations plus récentes : 
-            var generationN = geneLaPlusNombreuse + 1; // C'est la 1ère génération après la plus nombreuse
+            var generationN = geneLaPlusNombreuse; // C'est la 1ère génération après la plus nombreuse
             for (var gene = generationN;gene<nodesGenerationXclasses.length;gene++){
             //--Début classement des enfants par parents
-            //for (var parent of nodesGenerationXclasses[gene-1]){
-            //    //Pour chaque parent, on récupère les enfants : 
-            //    var Enfants = nodesGenerationXclasses[gene].filter(function(n){return (n.f_id == parent.id && n.f_id != null)||(n.m_id == parent.id && n.m_id != null)});
-            //    for (var e of Enfants){
-            //        e.parentID = parent.id;
-            //    }
-            //}
-            //var nodesByParents = d3.nest()      //nodesByParents contient un tableau d'enfants classés par parents
-            //  .key(function (node) { return node.parentID; })
-            //  .sortKeys(d3.ascending)
-            //  .entries(nodesGenerationXclasses[gene])
-            //  .map(function (object) { return object.values; });
-            //      
+                for (var parent of nodesGenerationXclasses[gene-1]){
+                    //Pour chaque parent, on récupère les enfants : 
+                    var Enfants = nodesGenerationXclasses[gene].filter(function(n){return (n.f_id == parent.id && n.f_id != null)||(n.m_id == parent.id && n.m_id != null)});
+                    for (var e of Enfants){
+                        e.parentID = parent.id;
+                    }
+                }
+                var nodesByParents = d3.nest()      //nodesByParents contient un tableau d'enfants classés par parents
+                  .key(function (node) { return node.parentID; })
+                  .sortKeys(d3.ascending)
+                  .entries(nodesGenerationXclasses[gene])
+                  .map(function (object) { return object.values; });
+                  
             //--Fin classement des enfants par parents
-                var tabGene = nodesGenerationXclasses[gene].sort(ascendingYPosition);
+                var tabGene = nodesGenerationXclasses[gene];
                 for (var node of tabGene){
-                    if (typeof(node.ytraiteok) != 'undefined'){
+                    if (typeof(node.ytraite) != 'undefined'){
                     }
                     else {
                         if (node.type != 'couple'){
                             var FreresEtSoeurs = tabGene.filter(function (bn){return ((bn.m_id == node.m_id && bn.m_id != null) || (bn.f_id == node.f_id && bn.f_id != null));});   // Les frères et soeurs des enfants
                             var Parents = nodesGenerationXclasses[gene-1].filter(function (bn){return bn.id == node.m_id || bn.id == node.f_id;}); // gene-1 est la génération la plus nombreuse
                             //FreresEtSoeurs.add(node);
-                            if (FreresEtSoeurs.length == 1){ // Le noeud est fils unique
+                            if (FreresEtSoeurs.length == 0){ // Le noeud est fils unique
                                 var minYParents = d3.min(Parents, function (node) { return node.y; });
                                 var maxYParents = d3.max(Parents, function (node) { return node.y; });
                                 var meanYParents = (maxYParents + minYParents)/2;
-                                var dy = meanYParents - node.y;
-                                node.y += dy;
-                                node.ytraiteok = 'ok';
+                                node.y = meanYParents;
+                                node.ytraite = 'ok';
                                 // On déplace également le couple et le point du couple s'il existe : 
                                 var encouple = tabGene.find(function(n){return n.c_id == node.id;});
                                 if (typeof(encouple) != 'undefined'){
                                     var nodeCouple = tabGene.find(function(n){return n.id == "c_"+node.id || n.id == "c_"+encouple.id;});
-                                    if (typeof(nodeCouple.ytraiteok) == 'undefined'){
-                                        nodeCouple.y = dy;
-                                        nodeCouple.ytraiteok = 'ok';
+                                    if (typeof(nodeCouple.ytraite) == 'undefined'){
+                                        nodeCouple.y = meanYParents + dy;
+                                        nodeCouple.ytraite = 'ok';
                                     }
-                                    if (typeof(encouple.ytraiteok) == 'undefined'){
-                                        encouple.y = dy;
-                                        encouple.ytraiteok = 'ok';
+                                    if (typeof(encouple.ytraite) == 'undefined'){
+                                        encouple.y = meanYParents + dy;
+                                        encouple.ytraite = 'ok';
                                     }
-                                }
-                                for (var autreNoeuds of tabGene.filter(function(n){return typeof(n.ytraiteok) == 'undefined'})){
-                                    autreNoeuds.y += dy;
                                 }
                             }
-                            else if (FreresEtSoeurs.length > 1){  // Le noeud a des frères et soeurs
+                            else {
                                 var minYFratrie = d3.min(FreresEtSoeurs, function (node) { return node.y; });
                                 var maxYFratrie = d3.max(FreresEtSoeurs, function (node) { return node.y; });
                                 var meanYFratrie = (maxYFratrie + minYFratrie)/2;
@@ -830,114 +826,199 @@
                                 var maxYParents = d3.max(Parents, function (node) { return node.y; });
                                 var meanYParents = (maxYParents + minYParents)/2;
                                 var dy = meanYParents - meanYFratrie;
-                                for (var fratrie of FreresEtSoeurs.filter(function(n){return typeof(n.ytraiteok) == 'undefined'})){
+                                for (var fratrie of FreresEtSoeurs){
                                     fratrie.y += dy;
-                                    fratrie.ytraiteok = 'ok';
+                                    fratrie.ytraite = 'ok';
                                     // On déplace également le couple et le point du couple s'il existe : 
                                     var encouple = tabGene.find(function(n){return n.c_id == fratrie.id;});
                                     if (typeof(encouple) != 'undefined'){
                                         var nodeCouple = tabGene.find(function(n){return n.id == "c_"+fratrie.id || n.id == "c_"+encouple.id;});
-                                        if (typeof(nodeCouple.ytraiteok) == 'undefined'){
+                                        if (typeof(nodeCouple.ytraite) == 'undefined'){
                                             nodeCouple.y = meanYParents + dy;
-                                            nodeCouple.ytraiteok = 'ok';
+                                            nodeCouple.ytraite = 'ok';
                                         }
-                                        if (typeof(encouple.ytraiteok) == 'undefined'){
+                                        if (typeof(encouple.ytraite) == 'undefined'){
                                             encouple.y = meanYParents + dy;
-                                            encouple.ytraiteok = 'ok';
+                                            encouple.ytraite = 'ok';
                                         }
                                     }
                                 }
-                                for (var autreNoeuds of tabGene.filter(function(n){return typeof(n.ytraiteok) == 'undefined'})){
-                                    autreNoeuds.y += dy;
-                                }
                             }
+                        }
+                    }
+                }
+                // On égalise les écarts de place au sein d'une même fratrie de la génération n
+                for (var node of tabGene){
+                    var FreresEtSoeursParents = tabGene.filter(function(n){return (n.f_id == node.f_id || n.m_id == node.m_id) && n.id != node.id;});
+                    for (var parent of FreresEtSoeursParents){
+                        if (typeof(parent.ytraite) == 'undefined'){
+                            parent.y += dy;
+                            parent.ytraite = 'ok';
                         }
                     }
                 }
             }
-            ////Puis les générations plus anciennes, en commençant par leurs parents : 
+            
+            //Puis les générations plus anciennes, en commençant par leurs parents : 
             var generationN = geneLaPlusNombreuse - 1;
-            //for (var gene = generationN;gene>-1;gene--){
             for (var gene = generationN;gene>-1;gene--){
-                var tabGene = nodesGenerationXclasses[gene].sort(ascendingYPosition);
-                var minYDetermineOK = 0;        // Cette variable nous permet de ne pas nous occuper des personnes dont la position est déjà derrière les y traités
+            //--Début experimentation
+                if (gene>0){
+                    for (var parentParents of nodesGenerationXclasses[gene-1]){ // On veut les frères et soeur des parents
+                        //Pour chaque parent, on récupère les enfants : 
+                        var Parents = nodesGenerationXclasses[gene].filter(function(n){return (n.f_id == parentParents.id && n.f_id != null)||(n.m_id == parentParents.id && n.m_id != null)});
+                        for (var e of Parents){
+                            e.parentID = parentParents.id;
+                        }
+                    }
+                    var nodesByParents = d3.nest()      //nodesByParents contient un tableau des fratries de la génération en cours
+                      .key(function (node) { return node.parentID; })
+                      .sortKeys(d3.ascending)
+                      .entries(nodesGenerationXclasses[gene].filter(function(n){return n.type != 'couple' && typeof(n.parentID) != 'undefined';}))
+                      .map(function (object) { return object.values; });
+                }
+                //On trie ce tableau par groupe de y croissant 
+                nodesByParents.sort(function(a,b){return d3.min(a, function (node) { return node.y; })>d3.min(b, function (node) { return node.y; })});
+                
+                var dy = 0;
+            //--Fin experimentation
+                var tabGene = nodesGenerationXclasses[gene];
+                //ymax = d3.min(nodesByParents[i+1], function (node) { return node.y; });
                 for (var node of tabGene){
-                    if (typeof (node.ytraiteok) == 'undefined'){
-                        var Parents = tabGene.filter(function (bn){return bn.c_id == node.id || bn.id == node.id}); //Les max 2 parents à bouger
-                        var Descendants = nodesGenerationXclasses[gene+1].filter(function (bn){return bn.m_id == node.id || bn.f_id == node.id;}); //De la génération "enfant"
-                        if (Descendants.length == 0){ // Le noeud n'a pas de descendant
-                            minYDetermineOK = node.y;
+                    var ymax = 0;
+                    if (typeof(node.ytraite) != 'undefined'){
+                    }
+                    else {
+                        if (node.type != 'couple'){
+                            //On cherche dans quelle table de nodesByParents est le noeud pour lui affecté un ymax
+                            if (nodesByParents.length == 1){
+                                // on a ici le cas d'une génération composée de frères et soeurs uniquement (et conjoint)
+                                //ymax = d3.max(nodesByParents[0], function (node) { return node.y; });
+                            }
+                            else {
+                                recherche:
+                                for (var i=0;i<nodesByParents.length;i++){
+                                    for (var j=0;j<nodesByParents[i].length;j++){
+                                        if (nodesByParents[i][j].id == node.id){
+                                            if (i+1>=nodesByParents.length){ // ça veut dire qu'on est dans le dernier groupe (celui qui n'a pas de contrainte sur y)
+                                                ymax = 0;
+                                            }
+                                            else {
+                                                ymax = d3.min(nodesByParents[i+1], function (node) { return node.y; });
+                                            }
+                                            break recherche;
+                                        }
+                                    }
+                                }
+                            }
+                            // Ici, on n'a pas encore traité les frères/soeurs sans descendance
+                            //Si le noeud fait parti de la dernière table, on se fout du ymax
+                            if (ymax == 0){
+                                ymax = 100;
+                            }
+                            var Parents = tabGene.filter(function (bn){return bn.c_id == node.id || bn.id == node.id}); //Les max 2 parents à bouger
+                            var FreresEtSoeurs = nodesGenerationXclasses[gene+1].filter(function (bn){return bn.m_id == node.id || bn.f_id == node.id;}); //De la génération "enfant"
+                            //FreresEtSoeurs.add(node);
+                            if (FreresEtSoeurs.length == 0){ // Le noeud n'a pas de descendant
+                            }
+                            else {
+                                var minYFratrie = d3.min(FreresEtSoeurs, function (node) { return node.y; });
+                                var maxYFratrie = d3.max(FreresEtSoeurs, function (node) { return node.y; });
+                                var meanYFratrie = (maxYFratrie + minYFratrie)/2;
+                                var minYParents = d3.min(Parents, function (node) { return node.y; });
+                                var maxYParents = d3.max(Parents, function (node) { return node.y; });
+                                var meanYParents = (maxYParents + minYParents)/2;
+                                var dy = meanYFratrie - meanYParents;
+                                while((maxYParents + dy)>=ymax){
+                                    dy = dy - 1;
+                                }
+                                var parentsTrie = Parents.sort(ascendingYPosition);
+                                if (dy<0){parentsTrie = Parents.sort(descendingYPosition)};
+                                for (var parent of parentsTrie){
+                                    //var resOp = 1;
+                                    //while (resOp == 1){
+                                    //    if (isGeneConflit(tabGene,parent,dy)){
+                                    //        resOp = 1;
+                                    //        dy > 0 ? dy -= 0.2 : dy += 0.2;
+                                    //    }
+                                    //    else {resOp = 0;}
+                                    //}
+                                    // on cherche toutes les personnes qui sont entre l'ancienne et la nouvelle position, pour leur appliquer l'écart : 
+                                    var NodesIntersectes = nodesGenerationXclasses[gene].filter(function(n){
+                                        if (dy>0){
+                                            return (n.y > parent.y && n.y < (parent.y + dy) && n.id != parent.id && n.id != parent.c_id && n.id != "c_" + parent.id && n.type != "couple");
+                                        }
+                                        else {
+                                            return (n.y < parent.y && n.y > (parent.y + dy) && n.id != parent.id && n.id != parent.c_id && n.id != "c_" + parent.id && n.type != "couple");
+                                        }
+                                    });
+                                    for (var nodeInt of NodesIntersectes){  // pour chaque noeud entre parent.y et parent.y + dy, on applique le dy
+                                        nodeInt.y += dy;
+                                    }
+                                    parent.y += dy;
+                                    parent.ytraite = 'ok';
+                                }
+                                // On déplace également le point du couple s'il existe : 
+                                if (Parents.length > 1){
+                                    var nodeCouple = tabGene.find(function(n){return n.id == "c_"+Parents[0].id || n.id == "c_"+Parents[1].id;});
+                                    nodeCouple.y = meanYParents + dy;
+                                    nodeCouple.ytraite = 'ok';
+                                }
+                            }
                         }
                         else {
-                            var minYFratrie = d3.min(Descendants, function (node) { return node.y; });
-                            var maxYFratrie = d3.max(Descendants, function (node) { return node.y; });
-                            var meanYFratrie = (maxYFratrie + minYFratrie)/2;
-                            var minYParents = d3.min(Parents, function (node) { return node.y; });
-                            var maxYParents = d3.max(Parents, function (node) { return node.y; });
-                            var meanYParents = (maxYParents + minYParents)/2;
-                            var dy = meanYFratrie - meanYParents;
-                            for (var parent of Parents){
-                                parent.y += dy;
-                                parent.ytraiteok = 'ok';
-                            }
-                            // On déplace également le point du couple s'il existe : 
-                            if (Parents.length > 1){
-                                        var nodeCouple = tabGene.find(function(n){return n.id == "c_"+Parents[0].id || n.id == "c_"+Parents[1].id;});
-                                        nodeCouple.y = meanYParents + dy;
-                                        nodeCouple.ytraiteok = 'ok';
-                            }                            
-                            //var minYDetermineOK = tabGene.filter(function(n){return typeof(n.ytraiteok) != 'undefined'}).sort(descendingYPosition)[0].y;
-                            //var i = 0;
-                            //while (minYDetermineOK < ){
-                            //    minYDetermineOK = tabGene.filter(function(n){return typeof(n.ytraiteok) != 'undefined'}).sort(ascendingYPosition)[i+1].y;
-                            //    i++;
-                            //}
-                            var test = tabGene.filter(function(n){return typeof(n.ytraiteok) != 'undefined'}).sort(ascendingYPosition)[0].y;
-                            if (test>minYDetermineOK){
-                                minYDetermineOK = test;
-                            }
-                            //minYDetermineOK = tabGene.filter(function(n){return typeof(n.ytraiteok) != 'undefined'}).sort(ascendingYPosition)[0].y;
-                            for (var autreNoeuds of tabGene.filter(function(n){return typeof(n.ytraiteok) == 'undefined' && n.y > minYDetermineOK})){
-                                autreNoeuds.y += dy;
-                            }
                         }
                     }
                 var test = 'ok';
                 }
-                var resteADetermine = tabGene.filter(function(n){return typeof(n.ytraiteok) == 'undefined' && n.y > minYDetermineOK});
-                if (resteADetermine.length > 0){ // Il reste à traiter les noeuds sans descendance
-                    for (var node of resteADetermine){
-                        if (typeof (node.ytraiteok) == 'undefined'){
-                            // On cherche tout ces frères & soeurs
-                            var FetS = tabGene.filter(function (bn){return (bn.m_id != 'null' && bn.m_id == node.m_id) || (bn.f_id != 'null' && bn.f_id == node.f_id);});
-                            // On détermine la ou l'écart en Y est le plus important
-                            var ecart = 0;
-                            var frere = FetS[0];
-                            for (var i=0;i<FetS.length-1;i++){
-                                var dd = FetS[i+1].y - FetS[i].y;
-                                if (dd > ecart){ecart = dd;}
-                                frere = FetS[i+1];
-                            }
-                            // On le case entre ces 2 personnes
-                            var encouple = tabGene.find(function(n){return n.c_id == node.id;});
-                            var delta = 0;
-                            if (typeof(encouple) != 'undefined'){
-                                delta = node.y - encouple.y;
-                                node.y = frere.y + ecart/2;
-                                encouple.y = frere.y + delta + ecart/2;
-                                encouple.ytraiteok = 'ok';
-                                var nodeCouple = tabGene.find(function(n){return n.id == "c_"+node.id || n.id == "c_"+encouple.id;});
-                                if (typeof(nodeCouple) != 'undefined'){
-                                    nodeCouple.y = (node.y + encouple.y)/2;
-                                    nodeCouple.ytraiteok = 'ok';
-                                }
-                            }
-                            else {
-                                node.y = frere.y + ecart/2;
+                // On égalise les écarts de place au sein d'une même fratrie de la génération n+1
+                for (var node of tabGene){
+                    var FreresEtSoeursParents = tabGene.filter(function(n){return ((n.f_id == node.f_id && n.f_id != null && n.f_id != "null")||(n.m_id == node.m_id && n.m_id != null && n.m_id != "null"))});
+                    var minYFratrie = d3.min(FreresEtSoeursParents, function (node) { return node.y; });
+                    var maxYFratrie = d3.max(FreresEtSoeursParents, function (node) { return node.y; });
+                    // On calcul l'écart minimum entre 2 personnes proches (par les y)
+                    var tabFStrieParY = FreresEtSoeursParents.sort(ascendingYPosition);
+                    var minDy = 10;
+                    if (tabFStrieParY.length > 0){
+                        for (var i=0;i<tabFStrieParY.length-1;i++){
+                            var dylocal = tabFStrieParY[i+1].y-tabFStrieParY[i].y;
+                            if (dylocal < minDy){
+                                minDy = dylocal;
                             }
                         }
                     }
+                    for (var parent of FreresEtSoeursParents){
+                        if (typeof(parent.ytraite) == 'undefined'){
+                            dy = minDy;
+                            //dy = minYFratrie;
+                            var fy = d3.max(FreresEtSoeursParents, function (node) { return node.y; });
+                            if (isGeneConflit(tabGene,parent,dy) == true){
+                                dy > 0 ? dy -= 0.2 : dy += 0.2;
+                            }
+                            else {
+                                parent.y += dy;
+                                parent.ytraite = 'ok';
+                                var nodeConjoint = tabGene.find(function(n){return n.c_id == parent.id});
+                                if (typeof(nodeConjoint) != 'undefined' && typeof(nodeConjoint.ytraite)=='undefined'){
+                                   //nodeConjoint.y += 1.25*dy;
+                                   //nodeConjoint.ytraite = 'ok';
+                                }
+                                var nodeCouple = tabGene.find(function(n){return n.id == "c_"+parent.id || n.id == "c_"+parent.c_id;});
+                                if (typeof(nodeCouple) != 'undefined'){
+                                    nodeCouple.y = (parent.y + nodeConjoint.y)/2;
+                                    nodeCouple.ytraite = 'ok';
+                                }
+                            }
+                            
+                            //while((parent.y + dy)<=maxYFratrie){    //On essaie de trouver un intervalle pour caser la personne
+                            //    dy = dy + 0.01;
+                            //}
+                            //parent.y += dy;
+                            //parent.ytraite = 'ok';
+                        }
+                    }
                 }
+                
             }
             
         }
