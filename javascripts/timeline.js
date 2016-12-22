@@ -11,7 +11,7 @@ function timeline(domElement) {
     // chart geometry
     var margin = {top: 20, right: 20, bottom: 20, left: 20},
         outerWidth = 1000,
-        outerHeight = 750,
+        outerHeight = 950,
         width = outerWidth - margin.left - margin.right,
         height = outerHeight - margin.top - margin.bottom;
 
@@ -226,12 +226,34 @@ function timeline(domElement) {
             .attr("x", 1)
             .attr("y", 10)
             .text(function (d) { return d.label; });
-
+            
+        var gradient = svg
+            .append("linearGradient")
+            .attr("y1", "0%")
+            .attr("y2", "0%")
+            .attr("x1", "0%")
+            .attr("x2", "100%")
+            .attr("id", "gradient")
+            
+        gradient
+            .append("stop")
+            .attr("offset", "0%")
+            .attr("stop-color", "#275da1")
+            
+        gradient
+            .append("stop")
+            .attr("offset", "100%")
+            .attr("stop-color", "#EEEEEE");
+            
         var instants = d3.select("#band" + bandNum).selectAll(".instant");
-        instants.append("circle")
-            .attr("cx", band.itemHeight / 2)
-            .attr("cy", band.itemHeight / 2)
-            .attr("r", 5);
+        //instants.append("circle")
+        //    .attr("cx", band.itemHeight / 2)
+        //    .attr("cy", band.itemHeight / 2)
+        //    .attr("r", 5);
+        instants.append("rect")
+            .attr("width","20px")
+            .attr("height","100%")
+            .attr("fill","url(#gradient)");
         instants.append("text")
             .attr("class", "instantLabel")
             .attr("x", 15)
@@ -282,10 +304,11 @@ function timeline(domElement) {
                     "Début de l'intervalle sélectionné ", band.x + 30, labelTop],
                 ["end", "bandMinMaxLabel", band.w - labelWidth, band.w - 4,
                     function(min, max) { return toYear(max); },
-                    "Fin de l'intervalle sélectionné", band.x + band.w - 152, labelTop],
-                ["middle", "bandMidLabel", (band.w - labelWidth) / 2, band.w / 2,
-                    function(min, max) { return max.getUTCFullYear() - min.getUTCFullYear(); },
-                    "Durée de l'intervalle sélectionné", band.x + band.w / 2 - 75, labelTop]
+                    "Fin de l'intervalle sélectionné", band.x + band.w - 152, labelTop]
+                //    ,
+                //["middle", "bandMidLabel", (band.w - labelWidth) / 2, band.w / 2,
+                //    function(min, max) { return max.getUTCFullYear() - min.getUTCFullYear(); },
+                //    "Durée de l'intervalle sélectionné", band.x + band.w / 2 - 75, labelTop]
             ];
 
         var bandLabels = chart.append("g")
@@ -298,7 +321,7 @@ function timeline(domElement) {
                 tooltip.html(d[5])
                     .style("top", d[7] + "px")
                     .style("left", d[6] + "px")
-                    .style("visibility", "visible");
+                    .style("visibility", "hidden"); // Hidden car mauvais emplacement
                 })
             .on("mouseout", function(){
                 tooltip.style("visibility", "hidden");
