@@ -897,8 +897,20 @@
                                 minYDetermineOK = test;
                             }
                             //minYDetermineOK = tabGene.filter(function(n){return typeof(n.ytraiteok) != 'undefined'}).sort(ascendingYPosition)[0].y;
-                            for (var autreNoeuds of tabGene.filter(function(n){return typeof(n.ytraiteok) == 'undefined' && n.y > minYDetermineOK})){
+                            var rad = tabGene.filter(function(n){return typeof(n.ytraiteok) == 'undefined' && n.y > minYDetermineOK});
+                            var radID = [];
+                            for (var r of rad){
+                                radID.push(r.id);
+                            }
+                            for (var autreNoeuds of rad){
                                 autreNoeuds.y += dy;
+                                // Si son couple n'est pas dans le filtre, on le bouge quand même aussi : 
+                                var encouple = tabGene.find(function(n){return n.c_id == autreNoeuds.id;});
+                                if (typeof(encouple) != 'undefined' && jQuery.inArray( encouple.id, radID ) != -1){ // rien 
+                                }
+                                else if (typeof(encouple) != 'undefined'){
+                                    encouple.y += dy;
+                                }
                             }
                         }
                     }
