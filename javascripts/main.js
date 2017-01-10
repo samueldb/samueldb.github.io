@@ -419,23 +419,24 @@ var map;
     function trouverNodes(){
         var noeuds = [];
         var aNames = [];
-                var sql_statement = "SELECT * FROM nodes";
-                $.getJSON('https://samueldeschampsberger.cartodb.com/api/v2/sql/?q='+sql_statement, function(data_json) {
-                    if (data_json.rows.length == 0){
-                        // Il n'y a personne dans la table
-                        alert("Il n'y a pas encore de personne dans cet arbre !");
-                    }
-                    else if (data_json.rows.length > 0){
-                            // Pour chaque ligne, on vérifie
-                            for (var r of data_json.rows){
-                                noeuds.push({"id":r.own_id,"parent":null,"nom":r.nom,"prenom":r.prenom,"mere":r.mother_id,"pere":r.father_id,"genre":r.genre,"couple":r.couple_id,"job":r.profession,"comm":r.commentaire,"date_birth":formatDate(r.date_naissance),"date_die":formatDate(r.date_deces),"date_mariage":formatDate(r.date_mariage),"geom":r.the_geom});
-                                if (aNames.find(function(a){return a == r.nom;})){}
-                                else {aNames.push(r.nom);}
-                            }
-                    }
-                });
-                return [noeuds,aNames];
+        var sql_statement = "SELECT * FROM nodes";
+        $.getJSON('https://samueldeschampsberger.cartodb.com/api/v2/sql/?q='+sql_statement).then( function(data_json) {
+            if (data_json.rows.length == 0){
+                // Il n'y a personne dans la table
+                alert("Il n'y a pas encore de personne dans cet arbre !");
             }
+            else if (data_json.rows.length > 0){
+                    // Pour chaque ligne, on vérifie
+                    for (var r of data_json.rows){
+                        noeuds.push({"id":r.own_id,"parent":null,"nom":r.nom,"prenom":r.prenom,"mere":r.mother_id,"pere":r.father_id,"genre":r.genre,"couple":r.couple_id,"job":r.profession,"comm":r.commentaire,"date_birth":formatDate(r.date_naissance),"date_die":formatDate(r.date_deces),"date_mariage":formatDate(r.date_mariage),"geom":r.the_geom});
+                        if (aNames.find(function(a){return a == r.nom;})){}
+                        else {aNames.push(r.nom);}
+                    }
+            }
+            return [noeuds,aNames];
+        });
+        return [noeuds,aNames];
+    }
 
     function searchPeres(nomFamille){
        showObject(liste_pères);
