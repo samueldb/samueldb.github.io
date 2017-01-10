@@ -420,7 +420,7 @@ var map;
         var noeuds = [];
         var aNames = [];
         var sql_statement = "SELECT * FROM nodes";
-        $.getJSON('https://samueldeschampsberger.cartodb.com/api/v2/sql/?q='+sql_statement).then( function(data_json) {
+        $.getJSON('https://samueldeschampsberger.cartodb.com/api/v2/sql/?q='+sql_statement).success( function(data_json) {
             if (data_json.rows.length == 0){
                 // Il n'y a personne dans la table
                 alert("Il n'y a pas encore de personne dans cet arbre !");
@@ -433,7 +433,6 @@ var map;
                         else {aNames.push(r.nom);}
                     }
             }
-            return [noeuds,aNames];
         });
         return [noeuds,aNames];
     }
