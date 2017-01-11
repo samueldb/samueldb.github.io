@@ -46,7 +46,7 @@
             return savePict(new_id,filesPromises,gitHub,config,commitTitle);
         }
         else {
-            $.getJSON('https://samueldeschampsberger.cartodb.com/api/v2/sql/?q='+sql_statement, function(data_json) {
+            $.getJSON('https://samueldeschampsberger.cartodb.com/api/v2/sql/?q='+sql_statement).done( function(data_json) {
                 var new_id_1 = (data_json.rows[0].count) + 1;
                 new_id = new_id_1;
             })
