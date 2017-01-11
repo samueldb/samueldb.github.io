@@ -55,7 +55,7 @@ var map;
         
         if (new_user != "alerte" && new_mail != "alerte" && new_mdp != "alerte"){
             var sql_insert = "INSERT INTO auth_globale (utilisateur,passe,mel,application) VALUES ('"+new_user+"','"+new_mdp+"','"+new_mail+"','geneadb')&api_key="+apikey+"";
-                getJSON('https://samueldeschampsberger.cartodb.com/api/v2/sql/?q='+sql_insert, function(res) {
+                getJSON('https://samueldeschampsberger.cartodb.com/api/v2/sql/?q='+sql_insert).done (function(res) {
                     $('#fs_inscription').append('<div><h3>Votre inscription a bien été prise en compte</h3></div>');
                 });
         }
@@ -303,7 +303,7 @@ var map;
             new_geom = geocoder(adr,cp,ville);
             if (new_geom != undefined && new_geom != ""){
                 var sql_insert = "INSERT INTO nodes (own_id,nom,prenom,genre,father_id,mother_id,couple_id,profession,date_naissance,date_deces,date_mariage,commentaire,the_geom,arbre) VALUES ('"+new_id+"','"+nom+"','"+prenom+"','"+genre+"','"+pere+"','"+mere+"','"+couple+"','"+job+"',"+formatInsertTimeStamp(date_n)+","+formatInsertTimeStamp(date_d)+","+formatInsertTimeStamp(date_m)+",'"+com+"',"+new_geom+","+arbre+")&api_key="+apikey+"";
-                getJSON('https://samueldeschampsberger.cartodb.com/api/v2/sql/?q='+sql_insert, function(res) {
+                getJSON('https://samueldeschampsberger.cartodb.com/api/v2/sql/?q='+sql_insert).done (function(res) {
                     document.getElementById('remplissage').innerHTML = "<h3>Personne bien ajoutée à l'arbre !</h3>";
                     document.getElementById('remplissage').innerHTML = "<h3>Attention, si vous avez ajouté un couple, il est nécessaire de modifier également le/la conjoint(e)</h3>";
                     $(remplissage).append('<a id="create_pbis" class="button" onclick="javascript:nouvellePersonne(\''+user+'\');">Ajouter une personne ?</a>');
@@ -319,14 +319,14 @@ var map;
                 var sql_update; 
                 if (genre === "M"){
                     sql_update = "UPDATE nodes SET father_id = "+new_id+" WHERE own_id = '"+enfant+"';&api_key="+apikey+"";
-                    getJSON('https://samueldeschampsberger.cartodb.com/api/v2/sql/?q='+sql_update, function(res) {
+                    getJSON('https://samueldeschampsberger.cartodb.com/api/v2/sql/?q='+sql_update).done (function(res) {
                     document.getElementById('remplissage').innerHTML = "<h4>Personne bien ajoutée à l'arbre !</h4>";
                     $(remplissage).append('<a id="create_pbis" class="button" onclick="javascript:nouvellePersonne(\''+user+'\');">Créer une autre personne ?</a>');
                 });
                 }
                 if (genre === "F"){
                     sql_update = "UPDATE nodes SET mother_id = "+new_id+" WHERE own_id = '"+enfant+"';&api_key="+apikey+"";
-                    getJSON('https://samueldeschampsberger.cartodb.com/api/v2/sql/?q='+sql_update, function(res) {
+                    getJSON('https://samueldeschampsberger.cartodb.com/api/v2/sql/?q='+sql_update).done (function(res) {
                     document.getElementById('remplissage').innerHTML = "<h4>Personne bien ajoutée à l'arbre !</h4>";
                     $(remplissage).append('<a id="create_pbis" class="button" onclick="javascript:nouvellePersonne(\''+user+'\');">Créer une autre personne ?</a>');
                 });
@@ -337,7 +337,7 @@ var map;
             if (couple != null && couple != " " && couple != "null"){
                 var sql_update; 
                 sql_update = "UPDATE nodes SET couple_id = "+new_id+" WHERE own_id = '"+couple+"';&api_key="+apikey+"";
-                getJSON('https://samueldeschampsberger.cartodb.com/api/v2/sql/?q='+sql_update, function(res) {
+                getJSON('https://samueldeschampsberger.cartodb.com/api/v2/sql/?q='+sql_update).done (function(res) {
                     document.getElementById('remplissage').innerHTML = "<h4>Personne bien ajoutée à l'arbre !</h4>";
                     $(remplissage).append('<a id="create_pbis" class="button" onclick="javascript:nouvellePersonne(\''+user+'\');">Créer une autre personne ?</a>');
                 });
@@ -785,7 +785,7 @@ var map;
             new_geom = geocoder(adr,cp,ville);
             if (new_geom != undefined && new_geom != ""){
                 var sql_update = "UPDATE nodes SET the_geom = "+new_geom+" WHERE own_id = '"+personne+"';&api_key="+apikey+"";
-                getJSON('https://samueldeschampsberger.cartodb.com/api/v2/sql/?q='+sql_update, function(res) {
+                getJSON('https://samueldeschampsberger.cartodb.com/api/v2/sql/?q='+sql_update).done (function(res) {
                     $(fsA).append("<div id='aa'>Attribut modifié</div>");
                     $(aa).css("color", "green");
                     $(aa).css("float", "right");
@@ -799,7 +799,7 @@ var map;
         if (chgt_p){
             pere = checkValiditeInsert($(m_liste_pères).val(),'id');
             var sql_update = "UPDATE nodes SET father_id = "+pere+" WHERE own_id = '"+personne+"';&api_key="+apikey+"";
-                getJSON('https://samueldeschampsberger.cartodb.com/api/v2/sql/?q='+sql_update, function(res) {
+                getJSON('https://samueldeschampsberger.cartodb.com/api/v2/sql/?q='+sql_update).done (function(res) {
                     $(fsR).append("<div id='mp'>père modifié</div>");
                     $(mp).css("color", "green");
                     $(mp).css("float", "right");
@@ -808,7 +808,7 @@ var map;
         if (chgt_m){
             mere = checkValiditeInsert($(m_liste_mères).val(),'id');
             var sql_update = "UPDATE nodes SET mother_id = "+mere+" WHERE own_id = '"+personne+"';&api_key="+apikey+"";
-                getJSON('https://samueldeschampsberger.cartodb.com/api/v2/sql/?q='+sql_update, function(res) {
+                getJSON('https://samueldeschampsberger.cartodb.com/api/v2/sql/?q='+sql_update).done (function(res) {
                     $(fsR).append("<div id='mm'>mère modifiée</div>");
                     $(mm).css("color", "green");
                     $(mm).css("float", "right");
@@ -818,10 +818,10 @@ var map;
             couple = checkValiditeInsert($(m_liste_couple).val(),'id');
             if (couple != '' && couple != 'null' && couple != null){
                 var sql_update = "UPDATE nodes SET couple_id = "+couple+" WHERE own_id = '"+personne+"';&api_key="+apikey+"";
-                    getJSON('https://samueldeschampsberger.cartodb.com/api/v2/sql/?q='+sql_update, function(res) {
+                    getJSON('https://samueldeschampsberger.cartodb.com/api/v2/sql/?q='+sql_update).done (function(res) {
                 });
                 var sql_update = "UPDATE nodes SET couple_id = "+personne+" WHERE own_id = '"+couple+"';&api_key="+apikey+"";
-                    getJSON('https://samueldeschampsberger.cartodb.com/api/v2/sql/?q='+sql_update, function(res) {
+                    getJSON('https://samueldeschampsberger.cartodb.com/api/v2/sql/?q='+sql_update).done (function(res) {
                         $(fsR).append("<div id='mr'>relation modifiée</div>");
                         $(mr).css("color", "green");
                         $(mr).css("float", "right");
@@ -830,12 +830,12 @@ var map;
             date_dm = checkValiditeInsert($(datepicker_new_dm).val(),'string');
             if (date_dm != '' && date_dm != 'null' && date_dm != null){    
                 var sql_update = "UPDATE nodes SET date_mariage = "+formatInsertTimeStamp(date_dm)+" WHERE own_id = '"+personne+"';&api_key="+apikey+"";
-                    getJSON('https://samueldeschampsberger.cartodb.com/api/v2/sql/?q='+sql_update, function(res) {
+                    getJSON('https://samueldeschampsberger.cartodb.com/api/v2/sql/?q='+sql_update).done (function(res) {
                         $(datepicker_new_dm).val("Attribut modifié");
                         $(datepicker_n).css("color", "green");
                 });
                 var sql_update = "UPDATE nodes SET date_mariage = "+formatInsertTimeStamp(date_dm)+" WHERE own_id = '"+couple+"';&api_key="+apikey+"";
-                    getJSON('https://samueldeschampsberger.cartodb.com/api/v2/sql/?q='+sql_update, function(res) {
+                    getJSON('https://samueldeschampsberger.cartodb.com/api/v2/sql/?q='+sql_update).done (function(res) {
                         $(fsR).append("<div id='mr'>relation modifiée</div>");
                         $(mr).css("color", "green");
                         $(mr).css("float", "right");
@@ -848,7 +848,7 @@ var map;
             var genre = $(genres_search).val();
             if (genre === "M"){
                 sql_update = "UPDATE nodes SET father_id = "+personne+" WHERE own_id = '"+enfant+"';&api_key="+apikey+"";
-                getJSON('https://samueldeschampsberger.cartodb.com/api/v2/sql/?q='+sql_update, function(res) {
+                getJSON('https://samueldeschampsberger.cartodb.com/api/v2/sql/?q='+sql_update).done (function(res) {
                     $(fsR).append("<div id='me'>enfants modifiés</div>");
                     $(me).css("color", "green");
                     $(me).css("float", "right");
@@ -856,7 +856,7 @@ var map;
             }
             if (genre === "F"){
                 sql_update = "UPDATE nodes SET mother_id = "+personne+" WHERE own_id = '"+enfant+"';&api_key="+apikey+"";
-                getJSON('https://samueldeschampsberger.cartodb.com/api/v2/sql/?q='+sql_update, function(res) {
+                getJSON('https://samueldeschampsberger.cartodb.com/api/v2/sql/?q='+sql_update).done (function(res) {
                     $(fsR).append("<div id='me'>enfants modifiés</div>");
                     $(me).css("color", "green");
                     $(me).css("float", "right");
@@ -867,7 +867,7 @@ var map;
         if (chgt_j){
             job = checkValiditeInsert($(m_txt_job).val(),'string');
             var sql_update = "UPDATE nodes SET profession = '"+job+"' WHERE own_id = '"+personne+"';&api_key="+apikey+"";
-                getJSON('https://samueldeschampsberger.cartodb.com/api/v2/sql/?q='+sql_update, function(res) {
+                getJSON('https://samueldeschampsberger.cartodb.com/api/v2/sql/?q='+sql_update).done (function(res) {
                     $(m_txt_job).val("Attribut modifié");
                     $(m_txt_job).css("color", "green");
             });
@@ -875,7 +875,7 @@ var map;
         if (chgt_dn){
             date_dn = checkValiditeInsert($(datepicker_n).val(),'string');
             var sql_update = "UPDATE nodes SET date_naissance = "+formatInsertTimeStamp(date_dn)+" WHERE own_id = '"+personne+"';&api_key="+apikey+"";
-                getJSON('https://samueldeschampsberger.cartodb.com/api/v2/sql/?q='+sql_update, function(res) {
+                getJSON('https://samueldeschampsberger.cartodb.com/api/v2/sql/?q='+sql_update).done (function(res) {
                     $(datepicker_n).val("Attribut modifié");
                     $(datepicker_n).css("color", "green");
             });
@@ -883,7 +883,7 @@ var map;
         if (chgt_dd){
             date_dd = checkValiditeInsert($(datepicker_d).val(),'string');
             var sql_update = "UPDATE nodes SET date_deces = "+formatInsertTimeStamp(date_dd)+" WHERE own_id = '"+personne+"';&api_key="+apikey+"";
-                getJSON('https://samueldeschampsberger.cartodb.com/api/v2/sql/?q='+sql_update, function(res) {
+                getJSON('https://samueldeschampsberger.cartodb.com/api/v2/sql/?q='+sql_update).done (function(res) {
                     $(datepicker_d).val("Attribut modifié");
                     $(datepicker_d).css("color", "green");
             });
@@ -891,7 +891,7 @@ var map;
         if (chgt_com){
             com = checkValiditeInsert($(m_txt_com).val(),'string');
             var sql_update = "UPDATE nodes SET commentaire = '"+com+"' WHERE own_id = '"+personne+"';&api_key="+apikey+"";
-                getJSON('https://samueldeschampsberger.cartodb.com/api/v2/sql/?q='+sql_update, function(res) {
+                getJSON('https://samueldeschampsberger.cartodb.com/api/v2/sql/?q='+sql_update).done (function(res) {
                     $(m_txt_com).val("Attribut modifié");
                     $(m_txt_com).css("color", "green");
             });
