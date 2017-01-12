@@ -233,7 +233,7 @@ var map;
             
             
             // var new_id = noeudsExistants.length + 1;
-            var new_id = noeudsExistants.sort(function(a,b){return b.id-a.id})[0].id + 1;  // On prend le plus grand id de tous les noeuds
+            var new_id = parseInt(noeudsExistants.sort(function(a,b){return b.id-a.id})[0].id) + 1;  // On prend le plus grand id de tous les noeuds
             //$(remplissage_new_personne).append('<a style="margin-left: 200px;" id="btn_create_pict" class="btn" style="width:100px;height:10px;" onclick="javascript:add_pict();">importer la photo</a>');
             $(remplissage_new_personne).append('<a style="margin-left: 200px;margin-top:2px;" id="create_carnet" class="button" onclick="javascript:add_Personne(\''+user+'\','+new_id+');">Valider les informations</a>');
             $(remplissage).append("</div></div>");
