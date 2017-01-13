@@ -11,7 +11,7 @@ var map;
         var password = document.getElementById("pdm").value;
         var users = [];
         var sql_statement = "SELECT * FROM auth_globale WHERE application = 'geneadb';";
-                getJSON('https://samueldeschampsberger.cartodb.com/api/v2/sql/?q='+sql_statement, function(data_json) {
+                getJSON('https://samueldeschampsberger.cartodb.com/api/v2/sql/?q='+sql_statement).done( function(data_json) {
                     if (data_json.rows.length == 0){
                         // Il n'y a personne dans la table
                         alert("erreur technique");
