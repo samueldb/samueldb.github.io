@@ -171,7 +171,7 @@ var map;
      
     function nouvellePersonne(user){
     
-        //if (getCookie('identifie') == 'ok'){
+        if (getCookie('identifie') == 'ok'){
             $('#Avertissement_connexion_requise').length > 0 ? hideObject('#Avertissement_connexion_requise'):true;
         
             $('#remplissage_new_personne').length > 0 ? $(remplissage_new_personne).remove():true;
@@ -237,7 +237,7 @@ var map;
             //$(remplissage_new_personne).append('<a style="margin-left: 200px;" id="btn_create_pict" class="btn" style="width:100px;height:10px;" onclick="javascript:add_pict();">importer la photo</a>');
             $(remplissage_new_personne).append('<a style="margin-left: 200px;margin-top:2px;" id="create_carnet" class="button" onclick="javascript:add_Personne(\''+user+'\','+new_id+');">Valider les informations</a>');
             $(remplissage).append("</div></div>");
-        //}
+        }
     }
 
     function ModifierPersonne(user){
