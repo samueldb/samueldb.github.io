@@ -148,7 +148,7 @@
                         if (r.date_naissance !=null && r.date_naissance != "null" && typeof(r.date_naissance) != 'undefined' ){
                             var datedeces = formatDate(r.date_deces);
                             if ((r.date_deces == null || r.date_deces == 'null') && r.date_naissance.substring(0,4) > 1920){
-                                datedeces = "31-12-2016";
+                                datedeces = "";
                             }
                             nodes.push({"start":formatDate(r.date_naissance),"end":datedeces,"label":r.prenom + ' ' + r.nom});
                         }

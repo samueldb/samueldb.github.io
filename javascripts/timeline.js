@@ -11,7 +11,7 @@ function timeline(domElement) {
     // chart geometry
     var margin = {top: 20, right: 20, bottom: 20, left: 20},
         outerWidth = 1000,
-        outerHeight = 950,
+        outerHeight = 1200,
         width = outerWidth - margin.left - margin.right,
         height = outerHeight - margin.top - margin.bottom;
 
@@ -188,7 +188,7 @@ function timeline(domElement) {
         // Prevent tracks from getting too high
         band.trackHeight = Math.min((band.h - band.trackOffset) / data.nTracks, 100);
         //band.itemHeight = band.trackHeight * 0.9,
-        band.itemHeight = band.trackHeight,         // hauteur du rectangle
+        band.itemHeight = band.trackHeight * 1.2,         // hauteur du rectangle
         band.parts = [],
         band.instantWidth = 100; // arbitray value
 
