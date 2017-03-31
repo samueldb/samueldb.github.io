@@ -177,7 +177,8 @@
     <script type="text/javascript">
     /**
         BUG CONNUS : 
-            - les liens entre personnes restent quand on observe une personne sans enfant
+            - le pliage/dépliage des descendants ne fonctionne plus
+            - la selection d'un noeud fait perdre sa photo
     */
     function isParentCelib(node){
         var nodes = biHiSankey.nodes();
@@ -529,7 +530,7 @@
             setValues = function (node) {
                 node.x = x;
                 node.width = nodeWidth;
-                if (node.sourceLinks){          // on test l'existence de sourceNode par rapport aux ajout du filtre ligne 212
+                if (node.sourceLinks){          // on teste l'existence de sourceNode par rapport aux ajout du filtre ligne 212
                     node.sourceLinks.forEach(addToNextNodes, node);
                 }
             };
@@ -1802,9 +1803,10 @@
             .attr("id","id_svg")
             .attr("width", "100%")
             .attr("height", "900px")
-            .attr("viewBox","0 -100 1450 1600") //cadre sur l'ensemble des noeuds 
+            //.attr("viewBox","0 -100 1450 1600") //cadre sur l'ensemble des noeuds 
+            .attr("viewBox","0 -100 2500 3400") //cadre sur l'ensemble des noeuds 
             .attr("style",function(){
-                return "transform:rotate(90deg)";}) // tourne la map de haut en bas
+                return "transform:rotate(90deg);";}) // tourne la map de haut en bas // overflow: visible
             // .call(zoom)
             .call(d3.behavior.zoom().on("zoom", function () {       // Permet de gérer le zoom et le déplacement
                 console.log("on zoom !");
