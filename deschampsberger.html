@@ -773,6 +773,8 @@
             var tabGenePlusNombreuse = nodesGenerationXclasses[geneLaPlusNombreuse].sort(ascendingYPosition);
             // On commence par traiter les générations plus récentes : 
             var generationN = geneLaPlusNombreuse + 1; // C'est la 1ère génération après la plus nombreuse
+            //var generationN = 3; // C'est la 1ère génération après la plus nombreuse
+            
             for (var gene = generationN;gene<nodesGenerationXclasses.length;gene++){
             //--Début classement des enfants par parents
             //for (var parent of nodesGenerationXclasses[gene-1]){
@@ -861,12 +863,15 @@
             for (var gene = generationN;gene>-1;gene--){
                 var tabGene = nodesGenerationXclasses[gene].sort(ascendingYPosition);
                 var minYDetermineOK = 0;        // Cette variable nous permet de ne pas nous occuper des personnes dont la position est déjà derrière les y traités
+                var oldMinYDetermineOK = 0;
                 for (var node of tabGene){
                     if (typeof (node.ytraiteok) == 'undefined'){
                         var Parents = tabGene.filter(function (bn){return bn.c_id == node.id || bn.id == node.id}); //Les max 2 parents à bouger
                         var Descendants = nodesGenerationXclasses[gene+1].filter(function (bn){return bn.m_id == node.id || bn.f_id == node.id;}); //De la génération "enfant"
                         if (Descendants.length == 0){ // Le noeud n'a pas de descendant
                             minYDetermineOK = node.y;
+                            node.ytraiteok = 'ok';
+                            oldMinYDetermineOK = minYDetermineOK;
                         }
                         else {
                             var minYFratrie = d3.min(Descendants, function (node) { return node.y; });
@@ -876,40 +881,56 @@
                             var maxYParents = d3.max(Parents, function (node) { return node.y; });
                             var meanYParents = (maxYParents + minYParents)/2;
                             var dy = meanYFratrie - meanYParents;
-                            for (var parent of Parents){
-                                parent.y += dy;
-                                parent.ytraiteok = 'ok';
+                            if (minYParents+dy<minYDetermineOK){    // Si le décalage revient sur des éléments déjà positionné, on ne déplace pas le noeuds, par contre, on replace ses descendants. 
+                                for (var parent of Parents){    
+                                    parent.ytraiteok = 'ok';
+                                    var nodeCouple = tabGene.find(function(n){return n.id == "c_"+Parents[0].id || n.id == "c_"+Parents[1].id;});
+                                    nodeCouple.ytraiteok = 'ok';
+                                    minYDetermineOK = maxYParents;
+                                }
+                                var dyDesc = meanYParents - meanYFratrie;
+                                for (descendant of Descendants){
+                                    descendant.y += dyDesc;
+                                    var encouple = nodesGenerationXclasses[gene+1].find(function(n){return n.c_id == descendant.id;});
+                                    if (typeof(encouple) != 'undefined'){ 
+                                        encouple.y +=dyDesc;
+                                        nodesGenerationXclasses[gene+1].find(function(n){return n.id == "c_"+descendant.id || n.id == "c_"+descendant.id;}).y += dyDesc; // point couple
+                                    }
+                                    
+                                }
                             }
-                            // On déplace également le point du couple s'il existe : 
-                            if (Parents.length > 1){
-                                        var nodeCouple = tabGene.find(function(n){return n.id == "c_"+Parents[0].id || n.id == "c_"+Parents[1].id;});
-                                        nodeCouple.y = meanYParents + dy;
-                                        nodeCouple.ytraiteok = 'ok';
-                            }                            
-                            //var minYDetermineOK = tabGene.filter(function(n){return typeof(n.ytraiteok) != 'undefined'}).sort(descendingYPosition)[0].y;
-                            //var i = 0;
-                            //while (minYDetermineOK < ){
-                            //    minYDetermineOK = tabGene.filter(function(n){return typeof(n.ytraiteok) != 'undefined'}).sort(ascendingYPosition)[i+1].y;
-                            //    i++;
-                            //}
-                            var test = tabGene.filter(function(n){return typeof(n.ytraiteok) != 'undefined'}).sort(ascendingYPosition)[0].y;
-                            if (test>minYDetermineOK){
-                                minYDetermineOK = test;
+                            else{
+                                for (var parent of Parents){
+                                    parent.y += dy;
+                                    parent.ytraiteok = 'ok';
+                                }
+                                // On déplace également le point du couple s'il existe : 
+                                if (Parents.length > 1){
+                                            var nodeCouple = tabGene.find(function(n){return n.id == "c_"+Parents[0].id || n.id == "c_"+Parents[1].id;});
+                                            nodeCouple.y = meanYParents + dy;
+                                            nodeCouple.ytraiteok = 'ok';
+                                }
                             }
-                            //minYDetermineOK = tabGene.filter(function(n){return typeof(n.ytraiteok) != 'undefined'}).sort(ascendingYPosition)[0].y;
-                            var rad = tabGene.filter(function(n){return typeof(n.ytraiteok) == 'undefined' && n.y > minYDetermineOK});
+                            
+                            var rad = tabGene.filter(function(n){return typeof(n.ytraiteok) == 'undefined' && n.y > oldMinYDetermineOK});
                             var radID = [];
                             for (var r of rad){
                                 radID.push(r.id);
                             }
+                            var coupure = 0; // coupure nous sert à déterminer si le début de l'enclenchement est sous le minYDetermineOK. Si c'est le cas, on ne bouge plus rien, le reste de la boucle for (node) s'en chargera
                             for (var autreNoeuds of rad){
-                                autreNoeuds.y += dy;
-                                // Si son couple n'est pas dans le filtre, on le bouge quand même aussi : 
-                                var encouple = tabGene.find(function(n){return n.c_id == autreNoeuds.id;});
-                                if (typeof(encouple) != 'undefined' && jQuery.inArray( encouple.id, radID ) != -1){ // rien 
+                                if (autreNoeuds.y + dy>minYDetermineOK && coupure == 0){
+                                    autreNoeuds.y += dy;
+                                    // Si son couple n'est pas dans le filtre, on le bouge quand même aussi : 
+                                    var encouple = tabGene.find(function(n){return n.c_id == autreNoeuds.id;});
+                                    if (typeof(encouple) != 'undefined' && jQuery.inArray( encouple.id, radID ) != -1){ // rien 
+                                    }
+                                    else if (typeof(encouple) != 'undefined'){
+                                        encouple.y += dy;
+                                    }
                                 }
-                                else if (typeof(encouple) != 'undefined'){
-                                    encouple.y += dy;
+                                else {
+                                    coupure = 1;
                                 }
                             }
                         }
@@ -920,8 +941,8 @@
                 if (resteADetermine.length > 0){ // Il reste à traiter les noeuds sans descendance
                     for (var node of resteADetermine){
                         if (typeof (node.ytraiteok) == 'undefined'){
-                            // On cherche tout ces frères & soeurs
-                            var FetS = tabGene.filter(function (bn){return (bn.m_id != 'null' && bn.m_id == node.m_id) || (bn.f_id != 'null' && bn.f_id == node.f_id);});
+                            // On cherche tout ses frères & soeurs                                                                                                      
+                            var FetS = tabGene.filter(function (bn){return (bn.m_id != null && bn.m_id == node.m_id) || (bn.f_id != null && bn.f_id == node.f_id);});
                             // On détermine la ou l'écart en Y est le plus important
                             var ecart = 0;
                             var frere = FetS[0];
@@ -930,22 +951,27 @@
                                 if (dd > ecart){ecart = dd;}
                                 frere = FetS[i+1];
                             }
-                            // On le case entre ces 2 personnes
-                            var encouple = tabGene.find(function(n){return n.c_id == node.id;});
-                            var delta = 0;
-                            if (typeof(encouple) != 'undefined'){
-                                delta = node.y - encouple.y;
-                                node.y = frere.y + ecart/2;
-                                encouple.y = frere.y + delta + ecart/2;
-                                encouple.ytraiteok = 'ok';
-                                var nodeCouple = tabGene.find(function(n){return n.id == "c_"+node.id || n.id == "c_"+encouple.id;});
-                                if (typeof(nodeCouple) != 'undefined'){
-                                    nodeCouple.y = (node.y + encouple.y)/2;
-                                    nodeCouple.ytraiteok = 'ok';
-                                }
+                            // On vérifie que la personne a au moins 1 de ces parents de renseigné (sinon, c'est une pièce rapportée dont le cas est traité par le 'encouple'
+                            if (node.m_id == 'null' && node.f_id == 'null'){
                             }
                             else {
-                                node.y = frere.y + ecart/2;
+                                // On le case entre ces 2 personnes
+                                var encouple = tabGene.find(function(n){return n.c_id == node.id;});
+                                var delta = 0;
+                                if (typeof(encouple) != 'undefined'){
+                                    delta = node.y - encouple.y;
+                                    node.y = frere.y + ecart/2;
+                                    encouple.y = frere.y + delta + ecart/2;
+                                    encouple.ytraiteok = 'ok';
+                                    var nodeCouple = tabGene.find(function(n){return n.id == "c_"+node.id || n.id == "c_"+encouple.id;});
+                                    if (typeof(nodeCouple) != 'undefined'){
+                                        nodeCouple.y = (node.y + encouple.y)/2;
+                                        nodeCouple.ytraiteok = 'ok';
+                                    }
+                                }
+                                else {
+                                    node.y = frere.y + ecart/2;
+                                }
                             }
                         }
                     }
