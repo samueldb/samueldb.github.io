@@ -890,14 +890,34 @@
                                     minYDetermineOK = maxYParents;
                                 }
                                 var dyDesc = meanYParents - meanYFratrie;
+                                var IDdescendantsLarges = [];
                                 for (descendant of Descendants){
+                                    IDdescendantsLarges.push(descendant.id);
                                     descendant.y += dyDesc;
-                                    var encouple = nodesGenerationXclasses[gene+1].find(function(n){return n.c_id == descendant.id;});
+                                    var encouple = nodesGenerationXclasses[gene+1].find(function(n){return n.c_id == descendant.id || n.id == descendant.c_id;});
                                     if (typeof(encouple) != 'undefined'){ 
                                         encouple.y +=dyDesc;
-                                        nodesGenerationXclasses[gene+1].find(function(n){return n.id == "c_"+descendant.id || n.id == "c_"+descendant.id;}).y += dyDesc; // point couple
+                                        pointCouple = nodesGenerationXclasses[gene+1].find(function(n){return n.id == "c_"+descendant.id || n.id == "c_"+descendant.c_id;});
+                                        pointCouple.y += dyDesc; // point couple
+                                        IDdescendantsLarges.push(encouple.id);
+                                        IDdescendantsLarges.push(pointCouple.id);
                                     }
-                                    
+                                }
+                                // Il faut appliquer ce traitement à tous les noeuds de la géné n+1 qui sont impactés par le déplacement des descendants
+                                noeudsImpactes = nodesGenerationXclasses[gene+1].filter(function(n){return n.y > minYFratrie + dyDesc;});
+                                //descendantsLarges = nodesGenerationXclasses[gene+1].filter(function (bn){return bn.m_id == node.id || bn.f_id == node.id || bn.c_id == node.id || bn.id == node.c_id || bn.id == "c_" + node.id;})
+                                // on retranche les descendants à ce tableau
+                                var noeudsImpactesAllege = [];
+                                for (no of noeudsImpactes){
+                                    if (jQuery.inArray(no.id,IDdescendantsLarges) == -1){
+                                        noeudsImpactesAllege.push(no);
+                                    }
+                                }
+                                
+                                if (noeudsImpactesAllege.length > 0){
+                                    for (descendant of noeudsImpactesAllege){
+                                        descendant.y += dyDesc;
+                                    }
                                 }
                             }
                             else{
