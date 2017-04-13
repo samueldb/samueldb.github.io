@@ -114,7 +114,7 @@ var map;
     
     function getCookie(sName) {
         var oRegex = new RegExp("(?:; )?" + sName + "=([^;]*);?");
- 
+        
         if (oRegex.test(document.cookie)) {
                 return decodeURIComponent(RegExp["$1"]);
         } else {
@@ -241,7 +241,8 @@ var map;
     }
 
     function ModifierPersonne(user){
-        if (getCookie('identifie') == 'ok'){
+        //if (getCookie('identifie') == 'ok'){
+        if ('ok' == 'ok'){
             $('#Avertissement_connexion_requise').length > 0 ? hideObject('#Avertissement_connexion_requise'):true;
             showObject(remplissage);
             $('#remplissage_new_personne').length > 0 ? $(remplissage_new_personne).remove():true;
@@ -345,6 +346,7 @@ var map;
             }
             // On met à jour les noeuds existants en prenant en compte le nouvel arrivant. 
             noeudsExistants = trouverNodes()[0];
+            recalculXY(noeudsExistants);
         }
     }
 
@@ -420,7 +422,7 @@ var map;
     function trouverNodes(){
         var noeuds = [];
         var aNames = [];
-        var sql_statement = "SELECT * FROM nodes";
+        var sql_statement = "SELECT * FROM nodes WHERE arbre = '1' OR arbre = '2'";
         getJSON('https://samueldeschampsberger.cartodb.com/api/v2/sql/?q='+sql_statement).done( function(data_json) {
             if (data_json.rows.length == 0){
                 // Il n'y a personne dans la table
@@ -900,6 +902,8 @@ var map;
         
         $(remplissage).append('<div id="btnB""><a id="mod_pbis" class="button" style="margin-left: 110px;" onclick="javascript:ModifierPersonne(\''+user+'\');">Modifier une autre personne ?</a></div>');
         $(btn_maj_pers).remove();
+        noeudsExistants = trouverNodes()[0];
+        recalculXY(noeudsExistants);
     }
 
 
@@ -935,3 +939,97 @@ var map;
         }
         else {return "null";}
     }
+    
+    /*
+        Fonction de calcul des positions des noeuds
+    */
+function recalculXY(noeudsExistants){
+    populateNode(noeudsExistants);
+}
+
+
+// Get the nodes from cartodb table
+// flagRecherche = 0 : pas de choix de personne à rechercher, 1 : on recherche l'arbre d'une personne en particulier
+function populateNode(noeudsExistants){
+    var sql_statement = "SELECT * FROM nodes WHERE arbre = '1' OR arbre = '2'";
+    //if (flagRecherche == 1 && elementsRecherches.length > 0){
+    //    // Dans ce cas, on ajoute une clause WHERE à la recherche
+    //    sql_statement += " AND WHERE ";
+    //    for (var el of elementsRecherches){
+    //        sql_statement += "own_id = '" + el.id + "' OR ";
+    //    }
+    //    sql_statement = sql_statement.substring(0,sql_statement.length - 4);
+    //    //alert("flag-- " + sql_statement);
+    //}
+    var NoeudsBase = noeudsExistants;
+    //if (flagRecherche == 1 && elementsRecherches.length > 0){
+    //    //biHiSankey.nodes = [];
+    //    //biHiSankey.links = [];
+    //    NoeudsBase = trouverNodes(flagRecherche,elementsRecherches);}
+    //else {
+    //    NoeudsBase = trouverNodes(0,[],function(){});
+    //}
+    $.getJSON('https://samueldeschampsberger.cartodb.com/api/v2/sql/?q='+sql_statement, function(data_json) {
+        if (data_json.rows.length == 0){
+            // Il n'y a personne dans la table
+            document.getElementById('titre').innerHTML = "Il n'y a pas encore de personne dans cet arbre !";
+            hideObject(table_carnet);
+        }
+        else if (data_json.rows.length > 0){
+                // Pour chaque ligne, on l'ajoute au tableau des noeuds. 
+                // Et on formatte le tableau pour qu'il soit exploitable par D3
+                var nodes, links, liste_couple;
+                nodes = [];
+                links = [];
+                liste_couple = [];
+                for (var r of data_json.rows){
+                    // On remplit les personnes
+                    nodes.push({"type":r.genre,"id":r.own_id,"parent":null,"name":r.nom,"prenom":r.prenom,"f_id":r.father_id,"m_id":r.mother_id,"c_id":r.couple_id,"dBirth":r.date_naissance,"dDie":r.date_deces,"dMar":r.date_mariage,"job":r.profession,"comm":r.commentaire,"arbre":r.arbre,"adr_photo":r.adr_photo});
+                    // Si 1 des 2 parents est en couple, on ajoute un noeud
+                    if ((r.couple_id != null && r.couple_id != "null")){
+                        var isinliste = 0;
+                        for (var lc of liste_couple){
+                            if (lc.id_c == r.own_id){
+                                // Si l'id est déjà dans cette liste, on ne l'ajoute pas
+                                isinliste = 1;
+                            }
+                        }
+                        if (isinliste == 0){
+                            //var Pere = NoeudsBase.find(function(a){return a.id == r.father_id});
+                            var homme = NoeudsBase.find(function(a){return a.id == r.own_id && r.genre == "M"});
+                            var saFemme;
+                            if (homme){
+                                nodes.push({"type":"couple","id":"c_"+r.couple_id,"parent":null,"name":homme.nom,"prenom":homme.prenom,"id_homme":r.own_id,"id_femme":r.couple_id,"dMar":r.date_mariage,"arbre":r.arbre});
+                                liste_couple.push({"id_c":r.couple_id,"id_homme":r.own_id});
+                                links.push({"source":homme.id,"target":"c_"+r.couple_id,"value":1});
+                                links.push({"source":r.couple_id,"target":"c_"+r.couple_id,"value":1});
+                            }
+                        }
+                    }
+                    // On calcul les liens 
+                    var pereExiste = NoeudsBase.find(function(a){return a.id == r.father_id});
+                    var mereExiste = NoeudsBase.find(function(a){return a.id == r.mother_id});
+
+                    if (r.father_id == null || r.father_id == " " || r.father_id == "null" || typeof(pereExiste) == 'undefined'){}
+                    else {
+                        links.push({"source":r.father_id,"target":r.own_id,"value":1});
+                        }
+                    if (r.mother_id == null || r.mother_id == " " || r.mother_id == "null"  || typeof(mereExiste) == 'undefined'){}
+                    else {
+                        links.push({"source":r.mother_id,"target":r.own_id,"value":1});
+                    }
+                }
+                // Une fois les nodes remplis, on ajoute "parent" des noeuds des personnes en couple : 
+                for (var p of nodes){
+                    for (var lc of liste_couple){
+                        if (p.id == lc.id_c || p.id == lc.id_homme){
+                            p.parent = "c_"+lc.id_c;
+                        }
+                    }
+                }
+                
+        }
+        
+            recalculXY_bhs(nodes,links);
+    });
+}

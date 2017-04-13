@@ -578,14 +578,6 @@
           node.y -= adjustment;
         });
       }
-      
-      // Calcul de la taille du lien
-        function calculateLinkThickness() {
-          links.forEach(function (link) {
-            link.thickness = link.value * yScaleFactor / 6;
-
-          });
-        }
 
       function computeNodeYPositions(iterations) {
         var minY,
@@ -1170,7 +1162,7 @@
       }
 
       function computeLinkYPositions() {
-        
+
         function ascendingLeftNodeYPosition(a, b) {
           var aLeftNode = (a.direction > 0) ? a.source : a.target,
               bLeftNode = (b.direction > 0) ? b.source : b.target;
@@ -1222,30 +1214,38 @@
           });
 
         });
-        
-        calculateLinkThickness();
       }
 
-    function computeAbsolutePositions() {
+    function computeAbsolutePositions() {         
+    var remainingNodes = nodes,
+        nextNodes,
+        x = 0;
 
+    while (remainingNodes.length) {
+        nextNodes = [];
+        var pers = [];
+        remainingNodes.forEach(function (node) {
+            node.x = x;
+            node.dx = nodeWidth;
+            node.sourceLinks.forEach(function (link) {
+                if (link.target.type != "couple"){
+                    nextNodes.push(link.target);
+                }
+            });
+
+            pers.push({"id":node.id,"x":node.x});
+        });
+        remainingNodes = nextNodes;
+        x = x + 1;
+    }
         setNumberOfAncestors();
-        for (var node of nodes){
-            node.width = biHiSankey.nodeWidth();
-            node.dx = biHiSankey.nodeWidth();
-            if (node.id.includes("c_")){
-                var h = nodes.find(function(n){return n.id == node.id_homme;});
-                var f = nodes.find(function(n){return n.id == node.id_femme;});
-                node.x = (h.x + f.x) / 2;
-                node.y = (h.y + f.y) / 2;
-            }
-        }
-        //moveSourcesRight(x);
-        //checkCoupleX();
-        //checkGenerationDistance();
-        //modelCoupleX();
-        //checkNegativeX();
+        moveSourcesRight(x);
+        checkCoupleX();
+        checkGenerationDistance();
+        modelCoupleX();
+        checkNegativeX();
         // moveSinksRight(x);
-        //scaleNodeBreadths((size[0] - nodeWidth) / (x - 1));
+        scaleNodeBreadths((size[0] - nodeWidth) / (x - 1));
         
         };
         
@@ -1457,11 +1457,11 @@
           };
 
           biHiSankey.layout = function (iterations) {
-            //computeNodeXPositions();
+            computeNodeXPositions();
             computeAbsolutePositions();
             computeLeftAndRightLinks();
             computeNodeValues();
-            //computeNodeYPositions(iterations);
+            computeNodeYPositions(iterations);
             computeNodeValues();
             computeLinkYPositions();
             return biHiSankey;
@@ -1470,8 +1470,9 @@
           biHiSankey.link = function () {
             var curvature = defaultLinkCurvature;
 
+
             function leftToRightLink(link) {
-                //if (link.source.c_id == null || link.source.c_id == "null"){   // On ne rend visible que les liens entre couples et enfants, ou entre parent seul et enfants
+                if (link.source.c_id == null || link.source.c_id == "null"){   // On ne rend visible que les liens entre couples et enfants, ou entre parent seul et enfants
                   var arrowHeadLength = link.thickness * arrowheadScaleFactor,
                       straightSectionLength = (3 * link.thickness / 4) - arrowHeadLength,
                       x0 = link.source.x + link.source.width,
@@ -1488,32 +1489,32 @@
                        + " " + x3 + "," + y1
                        + " " + x4 + "," + y1
                        + "L" + (x4 + straightSectionLength) + "," + y1;
-               //}
-               //else {
-               //   var arrowHeadLength = link.thickness * arrowheadScaleFactor,
-               //       straightSectionLength = (3 * link.thickness / 4) - arrowHeadLength,
-               //       x0 = link.source.x + link.source.width,
-               //       x1 = x0 + arrowHeadLength / 2,
-               //       x4 = link.target.x - straightSectionLength - arrowHeadLength,
-               //       xi = d3.interpolateNumber(x0, x4),
-               //       x2 = xi(curvature),
-               //       x3 = xi(1 - curvature),
-               //       y0 = link.source.y; // + link.sourceY + link.thickness / 2,
-               //       y1 = link.target.y; // + link.targetY + link.thickness / 2;
-               //       // link.thickness = 0;
-               //   return "M" + x0 + "," + y0
-               //        + "L" + x1 + "," + y0
-               //        + "C" + x2 + "," + y0
-               //        + " " + x3 + "," + y1
-               //        + " " + x4 + "," + y1
-               //        + "L" + (x4 + straightSectionLength) + "," + y1;
-               //}
+               }
+               else {
+                  var arrowHeadLength = link.thickness * arrowheadScaleFactor,
+                      straightSectionLength = (3 * link.thickness / 4) - arrowHeadLength,
+                      x0 = link.source.x + link.source.width,
+                      x1 = x0 + arrowHeadLength / 2,
+                      x4 = link.target.x - straightSectionLength - arrowHeadLength,
+                      xi = d3.interpolateNumber(x0, x4),
+                      x2 = xi(curvature),
+                      x3 = xi(1 - curvature),
+                      y0 = link.source.y; // + link.sourceY + link.thickness / 2,
+                      y1 = link.target.y; // + link.targetY + link.thickness / 2;
+                      // link.thickness = 0;
+                  return "M" + x0 + "," + y0
+                       + "L" + x1 + "," + y0
+                       + "C" + x2 + "," + y0
+                       + " " + x3 + "," + y1
+                       + " " + x4 + "," + y1
+                       + "L" + (x4 + straightSectionLength) + "," + y1;
+               }
             }
 
             function rightToLeftLink(link) {
               var arrowHeadLength = link.thickness * arrowheadScaleFactor,
                   straightSectionLength = link.thickness / 4,
-                  x0 = link.source.x + link.source.width,
+                  x0 = link.source.x,
                   x1 = x0 - arrowHeadLength / 2,
                   x4 = link.target.x + link.target.width + straightSectionLength + arrowHeadLength,
                   xi = d3.interpolateNumber(x0, x4),
@@ -1720,7 +1721,7 @@
                     liste_couple = [];
                     for (var r of data_json.rows){
                         // On remplit les personnes
-                        nodes.push({"type":r.genre,"id":r.own_id,"parent":null,"name":r.nom,"prenom":r.prenom,"f_id":r.father_id,"m_id":r.mother_id,"c_id":r.couple_id,"dBirth":r.date_naissance,"dDie":r.date_deces,"dMar":r.date_mariage,"job":r.profession,"comm":r.commentaire,"arbre":r.arbre,"adr_photo":r.adr_photo,"x":r.x,"y":r.y});
+                        nodes.push({"type":r.genre,"id":r.own_id,"parent":null,"name":r.nom,"prenom":r.prenom,"f_id":r.father_id,"m_id":r.mother_id,"c_id":r.couple_id,"dBirth":r.date_naissance,"dDie":r.date_deces,"dMar":r.date_mariage,"job":r.profession,"comm":r.commentaire,"arbre":r.arbre,"adr_photo":r.adr_photo});
                         // Si 1 des 2 parents est en couple, on ajoute un noeud
                         if ((r.couple_id != null && r.couple_id != "null")){
                             var isinliste = 0;

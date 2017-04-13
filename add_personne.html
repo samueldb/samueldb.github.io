@@ -15,11 +15,13 @@
     <script src="http://libs.cartocdn.com/cartodb.js/v3/3.15/cartodb.js"></script>
     <script src = "http://www.myersdaily.org/joseph/javascript/md5.js"></script>
     <script src="http://sslstatic.wix.com/services/js-sdk/1.60.0/js/wix.min.js"></script>
+    <script src="http://d3js.org/d3.v3.min.js"></script>
     <title>Travaux Carto</title>
     <header('Access-Control-Allow-Origin: *')>
 
     <script type="text/javascript" src="javascripts/github.js"></script>
     <script type="text/javascript" src="javascripts/main.js"></script>
+    <script type="text/javascript" src="javascripts/bihisankey.js"></script>
 
 </head>
 <body onload="init();">
@@ -61,7 +63,8 @@
                 </p>
                 <button type="submit" class="button_small">Ajouter</button>'
                 </form>
-            </fieldset>'      
+            </fieldset>
+            <div id="progression_maj"></div>
         </aside>
     </div>
     </div>
