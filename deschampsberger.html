@@ -314,14 +314,7 @@
       // Populate the sourceLinks and targetLinks for each node.
       function computeNodeLinks() {
         var sourceNode, targetNode;
-        // links.filter(function(link){ // Ajouter pour ne pas pousser les liens sur une même génération
-                // return (link.source.state === "collapsed" || link.target.state === "expanded")       // Gestion de l'affichage des liens pour ne pas voir les liens parents->enfants autre que ceux passant par le couple
-                // && ((!link.source.id.includes("c_") && link.target.id.includes("c_") && link.source.x == link.target.x) 
-                    // || (link.source.id.includes("c_") && !link.target.id.includes("c_"))
-                    // || (isParentCelib(link) && !link.target.id.includes("c_"))      // Cas des parents célibataires
-                    // );
-            // })
-            links.forEach(function (link) {                         // Gérer le cas des liens entre personnes d'un couple
+        links.forEach(function (link) {                         // Gérer le cas des liens entre personnes d'un couple
                 if (typeof(link) != 'undefined'){
                     sourceNode = nodeMap[link.source] || link.source;
                     targetNode = nodeMap[link.target] || link.target;
@@ -421,19 +414,7 @@
         var linkGroups = d3.nest()                                                       
           .key(function (link) { return link.source.id + "->" + link.target.id; })       
           .entries(links)                                                                
-          .map(function (object) { return object.values; });                             
-                                                                                         
-        // links = linkGroups.map(function (linkGroup) {                                    
-          // return linkGroup.reduce(function (previousLink, currentLink) {                 
-            // return {                                                                     
-              // "source": previousLink.source,                                             
-              // "target": previousLink.target,                                             
-              // "id": d3.min([previousLink.id, currentLink.id]),                           
-              // "value": previousLink.value + currentLink.value                            
-              // "value": 1 
-            // };                                                                           
-          // });
-        // });
+          .map(function (object) { return object.values; });
       }
 
       // Calcul la hauteur de chaque noeuds
@@ -462,15 +443,11 @@
       function computeConnectedNodes() {
         var sourceNode, targetNode;
         links.forEach(function (link) {
-          sourceNode = link.source;
-          targetNode = link.target;
-          // if (sourceNode.connectedNodes && sourceNode.connectedNodes.indexOf(targetNode) < 0) {     // on test l'existence de sourceNode par rapport aux ajout du filtre ligne 212
+            sourceNode = link.source;
+            targetNode = link.target;
             sourceNode.connectedNodes.push(targetNode);
-          // }
-          // if (targetNode.connectedNodes && targetNode.connectedNodes.indexOf(sourceNode) < 0) {     // on test l'existence de sourceNode par rapport aux ajout du filtre ligne 212
             targetNode.connectedNodes.push(sourceNode);
-          // }
-        });
+          });
       }
 
       function sourceAndTargetNodesWithSameX() {            // Dans une même génération donc
@@ -1096,18 +1073,7 @@
             nodes.sort(ascendingYPosition);
 
             var cn = 0;
-            // Push any overlapping nodes down.
             
-//            for (i=0;i<n;i++){
-//                oldY = nodes[i].y;
-//                nodes[i].y *= 85;
-//            }
-//            for (i=1;i<n;i++){
-//                    dy = nodes[i].y - nodes[i-1].y;
-//                    if (dy < (5*nodeSpacing)){
-//                        nodes[i].y += 2*nodeSpacing;
-//                    }
-//            }
             for (i = 0; i < n; ++i) {
                 node = nodes[i];
                 node.y *= 85;
@@ -1117,22 +1083,6 @@
                 }
                 y0 = node.y + node.heightAllowance + 2*nodeSpacing;
             }
-//
-//            // If the bottommost node goes outside the bounds, push it back up.
-//            dy = y0 - nodeSpacing - size[1];
-//            if (dy > 0) {
-//              node.y -= dy;
-//              y0 = node.y;
-//         
-//              // Push any overlapping nodes back up.
-//              for (i = n - 2; i >= 0; --i) {
-//                node = nodes[i];
-//                dy = node.y + node.heightAllowance + nodeSpacing - y0;
-//                if (dy > 0) {
-//                  node.y -= dy;
-//                }
-//                y0 = node.y;
-//              }
             
             // On rapproche les couples : 
             for (var node of nodes){
@@ -1159,9 +1109,6 @@
         // Je ne sais pas à quoi ça sert d'itérer la dessus... 
        for (alpha = 1; iterations > 0; --iterations) {
          alpha *= 0.5;
-         relaxRightToLeft(alpha);
-         resolveCollisions();
-         relaxLeftToRight(alpha);
          resolveCollisions();
        }
 
@@ -1239,14 +1186,6 @@
                 node.y = (h.y + f.y) / 2;
             }
         }
-        //moveSourcesRight(x);
-        //checkCoupleX();
-        //checkGenerationDistance();
-        //modelCoupleX();
-        //checkNegativeX();
-        // moveSinksRight(x);
-        //scaleNodeBreadths((size[0] - nodeWidth) / (x - 1));
-        
         };
         
         //on essaie de déterminer combien d'ancêtre a le noeud
@@ -1272,172 +1211,6 @@
             }
         }
         
-        // On replace les couples sur le même X
-        function checkCoupleX(){
-            for (var node of nodes){
-                // Si le noeuds n'a pas de parent, on cherche si son conjoint en a 
-                if (node.targetLinks.length == 0){
-                    if (node.c_id != null && node.c_id != "null" && node.c_id != 0 && node.c_id != 'undefined'){
-                        var sonCouple = nodes.find(function (a){return a.id == node.c_id});
-                        if (typeof(sonCouple) != 'undefined' && sonCouple.targetLinks.length > 0){
-                            // ça veut dire que le conjoint a des parents
-                            node.x = sonCouple.x;
-                        }
-                    }
-                }
-                // Si le noeuds a des parents, on regarde qui des 2 conjoints en a le plus
-                else {
-                    if (node.c_id != null && node.c_id != "null" && node.c_id != 0){
-                        var sonCouple = nodes.find(function (a){return a.id == node.c_id});
-                        if (sonCouple.nbAncetre > node.nbAncetre){
-                            // ça veut dire que le conjoint a plus de parents
-                            node.x = sonCouple.x;
-                            //
-                            //  Attention, il faut maintenant tiré également les parents du conjoints
-                            //
-                            //
-                            // var sonCoupleSonPere = nodes.find(function (a){return a.id == sonCouple.f_id});
-                            // var sonCoupleSaMere = nodes.find(function (a){return a.id == sonCouple.m_id});
-                            // if (typeof(sonCoupleSonPere) != "undefined"){
-                               // sonCoupleSonPere.x = node.x - 1;
-                            // }
-                            // if (typeof(sonCoupleSaMere) != "undefined"){
-                               // sonCoupleSaMere.x = node.x - 1;
-                            // }
-                       }
-                    }
-                }
-            }
-        }
-        //Cette fonction sert à regrouper les parents pour ne pas que 2 générations soient écartées sur l'arbre
-        function checkGenerationDistance(){
-            var noeudsDeplace = [];
-            for (var node of nodes){
-                // 1. pour chaque noeuds, on trouve ses parents et ses frères et soeurs
-                var pere = nodes.find(function (a){return a.id == node.f_id}) ? nodes.find(function (a){return a.id == node.f_id}):"null";
-                var mere = nodes.find(function (a){return a.id == node.m_id}) ? nodes.find(function (a){return a.id == node.m_id}):"null";
-                var freres = [];
-                
-                if (pere != "null" && mere != "null"){
-                    freres = nodes.filter(function (a){return a.f_id == pere.id || a.m_id == mere.id});
-                }
-                else if (pere != "null"){
-                    freres = nodes.filter(function (a){return a.f_id == pere.id});
-                }
-                else if (mere != "null"){
-                    freres = nodes.filter(function (a){return a.m_id == mere.id});
-                }
-                // 2. On se met d'accord entre frères : celui dont le conjoint à le plus d'ancetre gagne
-                var freresTriesParX = freres.sort(ascendingXPosition);
-                var conjTriesParX = [];
-                for (var f of freres){
-                    // On cherche le conjoint du frere f pour l'ajouter à la liste
-                    var conj = nodes.find(function (a){return a.id == f.c_id}) ? nodes.find(function (a){return a.id == f.c_id}):"null";
-                    if (conj != "null"){
-                        conjTriesParX.push(conj);
-                    }
-                }
-                if (conjTriesParX.length > 0){
-                    // on trie tous les conjoints par x décroissant
-                    conjTriesParX = conjTriesParX.sort(ascendingXPosition);
-                    var leplusGrandX = conjTriesParX[0];
-                    for (var f of freres){
-                        // On applique au conjoint le plus grand x retourné
-                        var conj = nodes.find(function (a){return a.id == f.c_id}) ? nodes.find(function (a){return a.id == f.c_id}):"null";
-                        if (conj != "null"){
-                            conj.x = leplusGrandX.x;
-                        }
-                        // On applique aux enfants le même x + 1
-                        var enf = nodes.filter(function (a){return a.m_id == f.id || a.f_id == f.id}) ? nodes.filter(function (a){return a.m_id == f.id || a.f_id == f.id}):"null";
-                        if (enf.length > 0){
-                            for (var e of enf){
-                                e.x = leplusGrandX.x + 1;
-                            }
-                        }
-                        // On applique au frère le même x 
-                        f.x = leplusGrandX.x;
-                    }
-                }
-                
-                // 2. Pour chacun, on vérifie son x 
-                // if (pere != "null"){
-                    // if (node.x == pere.x + 1){ // Tout est ok 
-                    // }
-                    // else {
-                        // pere.x = node.x - 1;
-                    // }
-                // }
-                // if (mere != "null"){
-                    // if (node.x == mere.x + 1){ // Tout est ok 
-                    // }
-                    // else {
-                        // mere.x = node.x - 1;
-                    // }
-                // }
-            }
-        }
-        
-        // On envoie les plus petits enfants tout à droite
-        function moveSourcesRight() {
-            nodes.forEach(function (node) {
-                if (!node.targetLinks.length) {
-                        node.x = d3.min(node.sourceLinks, function (d) {
-                            return d.target.x;
-                        }) - 1;
-                }
-                // S'il s'agit d'un noeud de couple : 
-                if (node.parent){
-                    node.x == node.parent.x;
-                }
-            });
-        }
-
-        // Envoie les "sans enfants" à droite
-        function moveSinksRight(x) {
-            nodes.forEach(function (node) {
-                if (!node.sourceLinks.length) {
-                    node.x = x - 1;
-                }
-            });
-        }
-        
-        // On vérifie que les noeuds "couple" sont à la même génération que les 2 personnes
-        function modelCoupleX(){
-            var tabNoeudsCouples = nodes.filter(function(a){return a.id.includes("c_")});
-            var tabCouples = nodes.filter(function(a){return a.parent});
-            for (var c of tabNoeudsCouples){
-                var p1 = tabCouples.filter(function(a){return a.parent.id == c.id})[0];
-                var p2 = tabCouples.filter(function(a){return a.parent.id == c.id})[1];
-                if (p1.x == p2.x){
-                    c.x = p1.x;
-                }
-                else if (p1.x > p2.x){
-                    p1.x = p2.x;
-                    c.x = p2.x;
-                }
-                else {
-                    p2.x = p1.x;
-                    c.x = p1.x;
-                }
-            }
-        }
-        
-        function checkNegativeX(){
-            for (var n of nodes){
-                if (n.x < 0){
-                    for (var nn of nodes){
-                        nn.x = (nn.x + 1);
-                    }
-                }
-            }
-        }
-        
-        function scaleNodeBreadths(kx) {
-            nodes.forEach(function (node) {
-                node.x *= 2*kx;     // On donne de l'air sur la hauteur
-            });
-        }
-          
           biHiSankey.arrowheadScaleFactor = function (_) {
             if (!arguments.length) { return arrowheadScaleFactor; }
             arrowheadScaleFactor = +_;
@@ -1457,11 +1230,8 @@
           };
 
           biHiSankey.layout = function (iterations) {
-            //computeNodeXPositions();
             computeAbsolutePositions();
             computeLeftAndRightLinks();
-            computeNodeValues();
-            //computeNodeYPositions(iterations);
             computeNodeValues();
             computeLinkYPositions();
             return biHiSankey;
