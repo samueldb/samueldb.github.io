@@ -1175,15 +1175,18 @@
 
     function computeAbsolutePositions() {
 
-        setNumberOfAncestors();
+        //setNumberOfAncestors(); Commenter car très long à s'exécuter. Besoin sur click link pour rendre invisible des noeuds
+        // On redefini ce qui était calculé par le traitement de base
         for (var node of nodes){
             node.width = biHiSankey.nodeWidth();
             node.dx = biHiSankey.nodeWidth();
+            //node.state = "collapsed";
             if (node.id.includes("c_")){
                 var h = nodes.find(function(n){return n.id == node.id_homme;});
                 var f = nodes.find(function(n){return n.id == node.id_femme;});
                 node.x = (h.x + f.x) / 2;
                 node.y = (h.y + f.y) / 2;
+                //node.state == "collapsed";
             }
         }
         };
