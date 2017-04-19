@@ -241,8 +241,8 @@ var map;
     }
 
     function ModifierPersonne(user){
-        //if (getCookie('identifie') == 'ok'){
-        if ('ok' == 'ok'){
+        if (getCookie('identifie') == 'ok'){
+        //if ('ok' == 'ok'){
             $('#Avertissement_connexion_requise').length > 0 ? hideObject('#Avertissement_connexion_requise'):true;
             showObject(remplissage);
             $('#remplissage_new_personne').length > 0 ? $(remplissage_new_personne).remove():true;
