@@ -1604,8 +1604,8 @@
             // .call(zoom)
             .call(d3.behavior.zoom().on("zoom", function () {       // Permet de gérer le zoom et le déplacement
                 console.log("on zoom !");
-                var x = d3.event.translate[1];
-                var y = -d3.event.translate[0];
+                var x = d3.event.translate[0];
+                var y = -d3.event.translate[1];
                 console.log("transform", "translate(" + x + ","+ y +")" + " scale(" + d3.event.scale + ")")
                 svg.attr("transform", "translate(" + x + ","+ y +")" + " scale(" + d3.event.scale + ")")
               }))
