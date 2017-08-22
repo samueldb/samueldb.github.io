@@ -1386,6 +1386,7 @@
         
     </script>
     
+	</script>
     <script type="text/javascript">
 
     'use strict';
@@ -1598,14 +1599,14 @@
             .attr("width", "100%")
             .attr("height", "900px")
             //.attr("viewBox","0 -100 1450 1600") //cadre sur l'ensemble des noeuds 
-            .attr("viewBox","0 -100 2500 3400") //cadre sur l'ensemble des noeuds 
+            .attr("viewBox","0 -100 3000 5400") //cadre sur l'ensemble des noeuds 
             .attr("style",function(){
                 return "transform:rotate(90deg);";}) // tourne la map de haut en bas // overflow: visible
             // .call(zoom)
             .call(d3.behavior.zoom().on("zoom", function () {       // Permet de gérer le zoom et le déplacement
                 console.log("on zoom !");
                 var x = d3.event.translate[0];
-                var y = -d3.event.translate[1];
+                var y = d3.event.translate[1];
                 console.log("transform", "translate(" + x + ","+ y +")" + " scale(" + d3.event.scale + ")")
                 svg.attr("transform", "translate(" + x + ","+ y +")" + " scale(" + d3.event.scale + ")")
               }))
@@ -1883,9 +1884,11 @@
     if (noeud.length > 1){
         noeud = noeud.find(function(g){return g.id == noeud.id});
     }
-    
-        var pat = noeud.append("pattern")
-        .attr("id","mImg")
+
+        var pat = noeud
+		.append("defs")
+		.append("pattern")
+        .attr("id",function(d){return "mImg_"+d.id})
         .attr("x","0")
         .attr("y","0")
         .attr("width", "48px")
@@ -1989,16 +1992,16 @@
         .duration(TRANSITION_DURATION)
         .attr("transform", function (d) { return "translate(" + d.x + "," + d.y + ")"; })
         .style("opacity", function(d){return d.id.includes("c_") ? 1:0})
-        //.select("circle")
-          //.style("fill", function (d) {
-          //  d.color = colorScale(d.type.replace(/ .*/, ""));
-          //  return d.color;
-          //})
-          //.style("fill","url(#mImg)")
-          //.style("stroke", function (d) { return d3.rgb(colorScale(d.type.replace(/ .*/, ""))).darker(0.1); })
-          //.style("stroke-WIDTH", "1px")
-          //.attr("height", function (d) { return d.height; })
-          //.attr("width", biHiSankey.nodeWidth());
+        .select("circle")
+          .style("fill", function (d) {
+            d.color = colorScale(d.type.replace(/ .*/, ""));
+            return d.color;
+          })
+          .style("fill",function(d){return "url(#mImg_"+d.id+")"})
+          <!-- .style("stroke", function (d) { return d3.rgb(colorScale(d.type.replace(/ .*/, ""))).darker(0.1); }) -->
+          .style("stroke-WIDTH", "1px")
+          .attr("height", function (d) { return d.height; })
+          .attr("width", biHiSankey.nodeWidth());
 
 
       node.exit()
@@ -2051,7 +2054,7 @@
              .style("stroke", "black")     
              .style("stroke-width", 0.5)
              .style("transform","rotate(-90deg)")
-            .style("fill","url(#mImg)");
+             .style("fill",function(d){return "url(#mImg_"+d.id+")"});
       
     nodeEnter.append("text");
       
