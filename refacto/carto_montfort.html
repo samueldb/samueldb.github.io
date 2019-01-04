@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset='utf-8'>
+        <title>Travaux Carto-généalogiques</title>
+        <link rel="stylesheet" type="text/css" href="stylesheets/global.css">
+        <link rel="stylesheet" type="text/css" href="stylesheets/header.css">
+        <link rel="stylesheet" type="text/css" href="stylesheets/navigation.css">
+        <link rel="stylesheet" type="text/css" href="stylesheets/carto_montfort.css">
+        <link href='https://fonts.googleapis.com/css?family=Architects+Daughter' rel='stylesheet' type='text/css'>
+        <script src="javascripts/carto_village.js"></script>
+        
+        <script src="http://libs.cartocdn.com/cartodb.js/v3/3.15/cartodb.js"></script>
+        <link rel="stylesheet" href="http://libs.cartocdn.com/cartodb.js/v3/3.15/themes/css/cartodb.css" />
+    
+        <script src="https://openlayers.org/en/v5.3.0/build/ol.js"></script>
+        <link rel="stylesheet" href="https://openlayers.org/en/v5.3.0/css/ol.css" type="text/css">
+
+        <script src="https://unpkg.com/ol-layerswitcher@3.0.0"></script>
+        <link rel="stylesheet" href="https://unpkg.com/ol-layerswitcher@3.0.0/src/ol-layerswitcher.css" />
+
+        <script
+			  src="https://code.jquery.com/ui/1.12.0/jquery-ui.js"
+			  integrity="sha256-0YPKAwZP7Mp3ALMRVB2i8GXeEndvCq3eSl/WsAl1Ryk="
+			  crossorigin="anonymous"></script>
+    </head>
+
+    <body onload="init()">
+        <header>
+            <section>
+                <h1>Travaux Carto</h1>
+                    <h2>et un peu de généalogie</h2>
+            </section>
+            <aside>
+                <div id="news">
+                    <h1>Work In Progress</h1>
+                    <small> ajouté : <p>refacto du code</p></small>
+                </div>
+            </aside>
+        </header>
+
+        <nav>
+            <ul class="menu">
+                <li class="arbre"><a href="deschampsberger.html">Arbres familiaux</a>
+                    <ul>
+                        <li><a href="timeline.html">timeline</a></li>
+                        <li><a href="deschampsberger.html">arbre</a></li>
+                        <li><a href="add_personne.html">Ajout d'une personne</a></li>
+                    </ul>
+                </li>
+                <li class="carto"><a href="carto_famille.html">Cartographie</a>
+                    <ul>
+                        <li><a href="carto_famille.html">Cartographie</a></li>
+                        <li><a href="carto_montfort.html">Montfort</a></li>
+                    </ul>
+                </li>
+            </ul>
+        </nav>
+
+        <section>
+                <article>
+                    <h1>Evolution de Montfort au fil des siècles</h1>
+                    <div id=map></div>
+                </article>
+            <aside>
+                <div class="infoCouches"><h3>Gestion des couches</h3></div>
+                <ul>
+                    <li>1728
+                        <ul>
+                            <fieldset id="layer0">
+                                <label class="checkbox" for="visible0">
+                                    <input id="visible0" class="visible" type="checkbox"/>Cartographie
+                                    <input class="opacity" type="range" min="0" max="1" step="0.1"/>
+                                </label>
+                            </fieldset>
+                        </ul>
+                        <ul>
+                            <fieldset id="layer1">
+                                <label class="checkbox" for="visible1">
+                                    <input id="visible1" class="visible" type="checkbox"/>Batiments
+                                    <input class="opacity" type="range" min="0" max="1" step="0.1"/>
+                                </label>
+                            </fieldset>
+                        </ul>
+                    </li>
+                    <li>1888
+                            <ul>
+                                <fieldset id="layer2">
+                                    <label class="checkbox" for="visible2">
+                                        <input id="visible2" class="visible" type="checkbox"/>Cartographie
+                                        <input class="opacity" type="range" min="0" max="1" step="0.1"/>
+                                    </label>
+                                </fieldset>
+                            </ul>
+                            <ul>
+                                <fieldset id="layer3">
+                                    <label class="checkbox" for="visible3">
+                                        <input id="visible3" class="visible" type="checkbox"/>Batiments
+                                        <input class="opacity" type="range" min="0" max="1" step="0.1"/>
+                                    </label>
+                                </fieldset>
+                            </ul>
+                        </li>
+                        <li>2018
+                                <ul>
+                                    <fieldset id="layer4">
+                                        <label class="checkbox" for="visible4">
+                                            <input id="visible4" class="visible" type="checkbox"/>Cartographie
+                                            <input class="opacity" type="range" min="0" max="1" step="0.1"/>
+                                        </label>
+                                    </fieldset>
+                                </ul>
+                                <ul>
+                                    <fieldset id="layer5">
+                                        <label class="checkbox" for="visible5">
+                                            <input id="visible5" class="visible" type="checkbox"/>Batiments
+                                            <input class="opacity" type="range" min="0" max="1" step="0.1"/>
+                                        </label>
+                                    </fieldset>
+                                </ul>
+                            </li>
+                    </ul>
+                </ul>
+                <div class="infoTitre"><h3>Info</h3></div>
+                <div id="info"></div>
+            </aside>     
+        </section>
+
+        <footer>
+
+        </footer>
+    </body>
+</html>
