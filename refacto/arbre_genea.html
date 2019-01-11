@@ -8,17 +8,22 @@
         <link rel="stylesheet" type="text/css" href="stylesheets/global.css">
         <link rel="stylesheet" type="text/css" href="stylesheets/header.css">
         <link rel="stylesheet" type="text/css" href="stylesheets/navigation.css">
-        <link rel="stylesheet" type="text/css" href="stylesheets/timeline.css">
         <link href='https://fonts.googleapis.com/css?family=Architects+Daughter' rel='stylesheet' type='text/css'>
-        <!-- <script type="text/javascript" src="javascripts/compat_ff.js"></script> -->
+        <script type="text/javascript" src="javascripts/compat_ff.js"></script>
         <script src="http://libs.cartocdn.com/cartodb.js/v3/3.15/cartodb.js"></script>
         <link rel="stylesheet" href="http://libs.cartocdn.com/cartodb.js/v3/3.15/themes/css/cartodb.css" />
 
         <script src="http://d3js.org/d3.v3.min.js"></script>
 
+        <script src="https://code.jquery.com/jquery-1.12.4.js"></script>
+        <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.js"></script>
+
         <script type="text/javascript" src="javascripts/utils.js"></script>
-        <script type="text/javascript" src="javascripts/tree_timeline.js"></script>
-        <script type="text/javascript" src="javascripts/timeline.js"></script>
+        <script type="text/javascript" src="javascripts/searchMember.js"></script>
+        <script type="text/javascript" src="javascripts/bihiSankey.js"></script>
+        <script type="text/javascript" src="javascripts/update.js"></script>
+        <script type="text/javascript" src="javascripts/tree_arbre.js"></script>
+        
         
         
     </head>
@@ -60,10 +65,13 @@
 
         <section>
                 <article>
-                        <h1>Ligne des temps de la famille</h1>
-                        <div id="timeline"></div>
+                        <div id="chart"></div>
                 </article>
         </section>
+        <aside>
+            <div id="RecherchePersonne"></div>
+            <div id="sideTooltip"></div>
+        </aside>
 
         <footer>
 

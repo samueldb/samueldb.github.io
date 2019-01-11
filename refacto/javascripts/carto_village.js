@@ -1,4 +1,3 @@
-// import {Group as ol.layer.Group, Tile as ol.layer.Tile} from 'ol/layer';
 var map;
 var apikey = "261bbc94c8266573016ba9454127b905b931b0a6";
 var user = 'samuel';
