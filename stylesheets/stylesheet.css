@@ -477,7 +477,7 @@ a:hover {
   color: #2268b2;
 }
 
-header {
+#header {
   padding-top: 40px;
   padding-bottom: 40px;
   font-family: 'Architects Daughter', 'Helvetica Neue', Helvetica, Arial, serif;
@@ -485,7 +485,7 @@ header {
   border-bottom: solid 1px #275da1;
 }
 
-header h1 {
+#header h1 {
   width: 800px;
   margin-top: 0;
   margin-bottom: 0.2em;
@@ -496,7 +496,7 @@ header h1 {
   letter-spacing: -1px;
 }
 
-header h2 {
+#header h2 {
   width: 800px;
   margin-top: 0;
   margin-bottom: 0;

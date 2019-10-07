@@ -1,0 +1,65 @@
+<html>
+
+<head>
+    <meta charset='utf-8' http-equiv="Content-Type">
+    <meta Access-Control-Allow-Origin: *>
+    <title>Travaux Carto</title>
+    <script src="https://code.jquery.com/jquery-3.3.1.js"
+        integrity="sha256-2Kok7MbOyxpgUVvAk/HJ2jigOSYS2auK4Pfzbm7uH60=" crossorigin="anonymous"></script>
+        <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.js"></script>
+    <script src="http://d3js.org/d3.v3.min.js"></script>
+
+    <link rel="stylesheet" type="text/css" href="stylesheets/stylesheet.css">
+    <link rel="stylesheet" type="text/css" href="stylesheets/github-light.css" media="screen">
+    <link rel="stylesheet" type="text/css" href="stylesheets/timeline.css">
+    <link href='https://fonts.googleapis.com/css?family=Architects+Daughter' rel='stylesheet' type='text/css'>
+    <link href="http://code.jquery.com/ui/1.12.1/themes/ui-lightness/jquery-ui.css" rel="stylesheet">
+
+
+        <script>
+            $(function () {
+                $("#menu").load("includes/menu.html");
+                $("#help").load("includes/help.html");
+            });
+        </script>
+        <script type="text/javascript" src="javascripts/tree/addPerson.js"></script>
+        <script type="text/javascript" src="javascripts/utils/github.js"></script>
+</head>
+
+<body onload="init();">
+    <header id="header">
+        <div class="inner">
+          <h1>Travaux Carto</h1>
+          <h2 style="text-align:right;">et un peu de généalogie</h2>
+          <a class="WIP_auth" style="width:250px;height: 200px;"><div style="margin-left:25px;margin-bottom:5px;">Authentification</div><div style="margin-left:25px;"> <small>login : <input type="text" id="loglog" style="width:120px;height:25px;margin:0;color:black;"><div>Mdp : <input type="text" id="pdm" style="width:120px;height:25px;margin:0;color:black;"><button id="authentification" class="button_small" onclick="validate(this.form)" style="margin-left:-40px;margin-top:5px;background: transparent;"><i class="icon-download"></i>Connexion<button id="new_user" class="button_small" onclick="nouvel_user(this.form)" style="margin-top:5px;margin-left:20px;background: transparent;"><i class="icon-download"></i>Inscription</div></div><div id="msg_alerte_co" style="font-size:15px;"></div></small></div></a>
+        </div>
+      </header>
+    <header('Access-Control-Allow-Origin: *')>
+    <div id="menu"></div>
+    <div id="content-wrapper">
+      <div class="inner clearfix">
+        <section id="main-content">
+        <div id="Avertissement_connexion_requise"><fieldset id="fs_inscription" style="border:solid 1px black;width:500px;background-color:#2E79CA;color:white;"><legend style="color:black;background-color:white;padding:5px;">Avertissement </legend><img src='./images/connexion.png' style="float: left;display: block;"><p style="margin-top:15px;">Pour accéder à ces fonctionnalités, il faut y être autorisé !</p><p style="margin-top:15px;">Contacter moi pour obtenir votre accès : samuel[point]deschampsberger[at]gmail[point]com</p></fieldset></div>
+        <div id="remplissage"></div>
+        </section>
+
+        <aside id="sidebar">
+            <div id="boutons">
+                <a id="create_p" class="button"><i class="icon-download"></i>Ajouter une personne ?</a>
+                <a id="modify_p" class="button"><i class="icon-download"></i>Modifier une personne ?</a>
+            </div>
+        <script src="javascripts/utils/dist.js" defer async></script>
+            <div id="id__pers" style="visibility:hidden"></div>
+            <fieldset id="fs_img" style="border:solid 1px black;width:200px;visibility:hidden;"><legend>Ajouter une photo</legend>
+                 <form id="form_add_pictures" method="POST">
+                <input name="file" type="file" id="file" accept="image/*.jpg">
+                </p>
+                <button type="submit" class="button_small">Ajouter</button>'
+                </form>
+            </fieldset>
+            <div id="progression_maj"></div>
+        </aside>
+    </div>
+    </div>
+</body>
+</html>
