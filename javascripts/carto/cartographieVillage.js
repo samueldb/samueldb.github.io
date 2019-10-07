@@ -4,28 +4,6 @@ var user = 'samuel';
 var sublayers = [];
 
 function init() {
-    // var testMap;
-    // var editor;
-        // map = new L.Map('cartodb-map', {
-            // center: [45,4],
-            // zoom: 5,
-            // attributionControl: false,
-            // layers: [Esri_NatGeoWorldMap,Stamen_TonerLines]
-          // });
-        // L.control.layers([Esri_WorldPhysical]).addTo(map);
-       // cartodb.createLayer(map, 'https://samueldeschampsberger.cartodb.com/api/v2/viz/55491dc2-3d03-11e5-a85a-0e4fddd5de28/viz.json')
-        // .addTo(map)
-        // .done(function(layer) {
-            // layer.setZIndex(1);
-            // var sublayer = layer.getSubLayer(0);
-            // sublayers.push(sublayer);
-          
-        // }	);
-        // map.options.minZoom = 2;
-        
-        
-        // ----------------------------------------------------------------------------------------------------------------------------------------------
-        
         var mapConfig_actuel = {
         'layers': [{
           'type': 'cartodb',
