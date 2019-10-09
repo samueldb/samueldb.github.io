@@ -18,10 +18,17 @@ var map;
                     else if (data_json.rows.length > 0){
                             // Pour chaque ligne, on ajoute les utilisateurs
                             for (var r of data_json.rows){
-                                users.push({"id":r.cartodb_id,"user":r.utilisateur,"passe":r.passe});
+                                users.push({"id":r.cartodb_id,"user":r.utilisateur,"passe":r.passe, "activated":r.activated});
                             }
                     }
-                    if ( users.find(function(a){return (a.user == username && a.passe == password);})){
+                    probable_user = users.find(function(a){return (a.user == username && a.passe == password);});
+                    if (probable_user){
+                        if (!probable_user.activated){
+                            $(msg_alerte_co).text("Votre compte n'est pas encore activé par le gestionnaire");
+                            $(msg_alerte_co).css('color','red');
+                            $(msg_alerte_co).css('margin-top','5px');
+                            setCookie('identifie','ko');
+                        }
                         $(msg_alerte_co).text("Vous êtes bien connecté");
                         $(msg_alerte_co).css('margin-top','5px');
                         setCookie('username',username);

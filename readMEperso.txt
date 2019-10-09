@@ -1,2 +1,2 @@
-07-09 : les cartes 1728 ne sont pas très belles, mais pas moyen de les exporter sans noirs via arcgis... RAF : import des batiments depuis cartodb afin d'avoir les info dessus. 
-07/10/2019 : refacto fonctionnel de tout le site. réorga du code. 
+07-09 : les cartes 1728 ne sont pas trï¿½s belles, mais pas moyen de les exporter sans noirs via arcgis... RAF : import des batiments depuis cartodb afin d'avoir les info dessus. 
+07/10/2019 : refacto fonctionnel de tout le site. reorga du code. 
