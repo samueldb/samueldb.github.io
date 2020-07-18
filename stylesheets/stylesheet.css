@@ -509,13 +509,14 @@ a:hover {
 
 .inner {
   position: relative;
-  width: 1200px;
+  width: 90%;
   margin: 0 auto;
 }
 
 #content-wrapper {
-  padding-top: 30px;
-  border-top: solid 1px #fff;
+    padding-top: 30px;
+    border-top: solid 1px #fff;
+    margin: 0 auto;
 }
 
 #main-content {
@@ -773,13 +774,13 @@ td {
 #nav a:hover,
 #nav a:focus {
     background-color: #07366D;
-    background: -moz-linear-gradient(bottom , ##3078CA 0pt, #07366D 50%, #07366D 51%, #3078CA 100%) repeat scroll 0 0 transparent;
-    background: -webkit-linear-gradient(bottom , ##3078CA 0pt, #07366D 50%, #07366D 51%, #3078CA 100%) repeat scroll 0 0 transparent;
-    background: -ms-linear-gradient(bottom , ##3078CA 0pt, #07366D 50%, #07366D 51%, #3078CA 100%) repeat scroll 0 0 transparent;
-    background: -o-linear-gradient(bottom , ##3078CA 0pt, #07366D 50%, #07366D 51%, #3078CA 100%) repeat scroll 0 0 transparent;
-    background: linear-gradient(bottom , ##3078CA 0pt, #07366D 50%, #07366D 51%, #3078CA 100%) repeat scroll 0 0 transparent;
+    background: -moz-linear-gradient(bottom , #3078CA 0pt, #07366D 50%, #07366D 51%, #3078CA 100%) repeat scroll 0 0 transparent;
+    background: -webkit-linear-gradient(bottom , #3078CA 0pt, #07366D 50%, #07366D 51%, #3078CA 100%) repeat scroll 0 0 transparent;
+    background: -ms-linear-gradient(bottom , #3078CA 0pt, #07366D 50%, #07366D 51%, #3078CA 100%) repeat scroll 0 0 transparent;
+    background: -o-linear-gradient(bottom , #3078CA 0pt, #07366D 50%, #07366D 51%, #3078CA 100%) repeat scroll 0 0 transparent;
+    background: linear-gradient(bottom , #3078CA 0pt, #07366D 50%, #07366D 51%, #3078CA 100%) repeat scroll 0 0 transparent;
     text-shadow: -1px -1px 0 #000;
-    transition: 0.5sec;
+    transition-duration: 0.5s;
 }
 
 #remplissage_old_personne {
@@ -1058,7 +1059,7 @@ footer a:hover {
       background-color: #F2F2F2;
       -webkit-box-shadow: 0px 0px 5px rgba(0, 0, 0, 0.4);
       -mox-box-shadow: 0px 0px 0px 5px rgba(0, 0, 0, 0.4);
-      box-shadow: 0px 0px 5px rbga(0, 0, 0, 0.4);
+      box-shadow: 0px 0px 5px 0px rgba(0, 0, 0, 0.4);
       pointer-events: none;
     }
 
@@ -1070,7 +1071,7 @@ footer a:hover {
       font-size: 14px;
       color: #474747;
       text-indent: 3px;
-      word-wrap: wrap-word;
+      word-wrap: break-word;
       display:block;
     }
     
