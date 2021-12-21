@@ -7,7 +7,7 @@ function init() {
     var testMap;
     var editor;
     var mbUrl = "https://dnv9my2eseobd.cloudfront.net/v3/cartodb.map-4xtxp73f/{x}/{y}/{z}.png";
-    var mbAttr = "attribution: 'Mapbox <a href=\"http://mapbox.com/about/maps\" target=\"_light\">Terms &amp; Feedback</a>'";
+    var mbAttr = "attribution: 'Mapbox <a href=\"https://mapbox.com/about/maps\" target=\"_light\">Terms &amp; Feedback</a>'";
     var grayscale   = L.tileLayer(mbUrl, {id: 'mapbox.light', attribution: mbAttr});
     
     var Stamen_Watercolor = L.tileLayer('http://stamen-tiles-{s}.a.ssl.fastly.net/watercolor/{z}/{x}/{y}.{ext}', {
@@ -31,7 +31,7 @@ function init() {
             maxZoom: 20,
             ext: 'png'
         });
-        // pas terrible en haute résolution
+        // pas terrible en haute rï¿½solution
         var Esri_WorldPhysical = L.tileLayer('http://server.arcgisonline.com/ArcGIS/rest/services/World_Physical_Map/MapServer/tile/{z}/{y}/{x}', {
             attribution: 'Tiles &copy; Esri &mdash; Source: US National Park Service',
             maxZoom: 8
