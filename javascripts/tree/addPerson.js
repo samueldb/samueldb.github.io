@@ -385,7 +385,7 @@ function checkValiditeInsert(insert, type) {
 
 function geocoder(adr, cp, ville) {
     var res = "";
-    getJSON('https://nominatim.openstreetmap.org/search?format=json&limit=1&addressdetails=1&q=' + adr + ' ' + cp + ' ' + ville).success(function (data) {
+    getJSON('https://nominatim.openstreetmap.org/search?format=json&limit=1&addressdetails=1&q=' + adr + ' ' + cp + ' ' + ville).done(function (data) {
         // s'il n'y a pas de data, 
         if (data.length > 0) {
             if (data[0].lon != undefined && data[0].lat != undefined) {
@@ -402,7 +402,7 @@ function geocoder(adr, cp, ville) {
         while (adr2.match(/\d/) != null) {
             adr2 = adr2.replace(/(\d)/, "");
         }
-        getJSON('https://nominatim.openstreetmap.org/search?format=json&limit=1&addressdetails=1&q=' + adr2 + ' ' + cp + ' ' + ville).success(function (dataAdr) {
+        getJSON('https://nominatim.openstreetmap.org/search?format=json&limit=1&addressdetails=1&q=' + adr2 + ' ' + cp + ' ' + ville).done(function (dataAdr) {
             if (dataAdr.length > 0) {
                 if (dataAdr[0].lon != undefined && dataAdr[0].lat != undefined) {
                     res = 'ST_SetSRID(ST_Point(' + dataAdr[0].lon + ', ' + dataAdr[0].lat + '),4326)';
@@ -414,7 +414,7 @@ function geocoder(adr, cp, ville) {
         });
     }
     if (res == "") {
-        getJSON('https://nominatim.openstreetmap.org/search?format=json&limit=1&addressdetails=1&q=' + ville).success(function (dataVille) {
+        getJSON('https://nominatim.openstreetmap.org/search?format=json&limit=1&addressdetails=1&q=' + ville).done(function (dataVille) {
             if (dataVille.length > 0) {
                 alert('l\'adresse n\'a pu être géocodée, seule la ville sera ajoutée');
                 res = 'ST_SetSRID(ST_Point(' + dataVille[0].lon + ', ' + dataVille[0].lat + '),4326)';
